@@ -1,0 +1,20 @@
+.lbtn:hover {
+    background-color: white !important;
+    color:#5A09DE !important;
+    border-color: #5A09DE;
+
+    
+}
+header{
+    z-index: 100;
+}
+main{
+    width:fit-content;
+}
+img {
+    width: 100vw;
+    height: 100vh;
+    object-fit: cover;
+    object-position: center;
+    
+}
