@@ -20,9 +20,14 @@
         }
         
         .full-screen-container {
-            height: 100vh;
-            width: 100vw;
+            height: 80vh;
+            width: 70vw;
             display: flex;
+            margin-left:auto;
+            margin-right:auto;
+            margin-top:70px;
+            
+            
         }
         
         .background-section {
