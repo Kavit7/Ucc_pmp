@@ -1,3 +1,6 @@
+<?php
+use app\widgets\Alert;
+?>
 <!DOCTYPE html>
 <html lang="en">
 <head>

@@ -1,3 +1,7 @@
+button{
+    background-color: #5A09DE !important;
+    color: white !important;
+}
 .lbtn:hover {
     background-color: white !important;
     color:#5A09DE !important;
