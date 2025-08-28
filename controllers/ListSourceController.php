@@ -4,12 +4,12 @@ namespace app\controllers;
 use Yii;
 use yii\web\Controller;
 use yii\data\ActiveDataProvider;
-use app\models\ListSource;
 use yii\helpers\ArrayHelper;
+use app\models\ListSource;
 
 class ListSourceController extends Controller
 {
-    public $layout='custom';
+    public $layout = 'custom';
 
     public function actionCreate()
     {
@@ -19,9 +19,7 @@ class ListSourceController extends Controller
             return $this->refresh();
         }
 
-        return $this->render('create', [
-            'model' => $model,
-        ]);
+        return $this->render('create', ['model' => $model]);
     }
 
     public function actionTest()
@@ -33,16 +31,14 @@ class ListSourceController extends Controller
 
         $model = new ListSource();
 
-        // Save new row from form
         if ($model->load(Yii::$app->request->post()) && $model->save()) {
             return $this->refresh();
         }
 
-        // Parent dropdown for GridView/form
         $parents = ArrayHelper::map(
             ListSource::find()->all(),
             'id',
-            function($m){ return $m->list_Name . ' - ' . $m->code; }
+            function($m) { return $m->list_Name . ' - ' . $m->code; }
         );
 
         return $this->render('test', [

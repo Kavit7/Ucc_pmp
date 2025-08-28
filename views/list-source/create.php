@@ -5,9 +5,25 @@ use yii\helpers\ArrayHelper;
 use app\models\ListSource;
 
 $this->title = 'Configure List Source';
+$form = ActiveForm::begin();
+$this->registerJs("
+    $(document).ready(function () {
+        $('.form-select').on('change', function() {
+            let select = $(this).val();
+            if (select === 'New-List') {
+                $('.List').show();
+            } else {
+                $('.List').hide();
+            }
+        });
+    });
+");
 ?>
-
-<div class="container d-flex justify-content-between align-items-center ms-5 mt-5">
-<button class="btn bg-success text-white">Add New List Name </button>
-<button class="btn bg-dark text-white ">Add List Type For the existing List Name</button>
+<select class="form-select">
+    <option value="">-------Select Configuration Task---------</option>
+    <option value="New-List">Add New List Name Configuration</option>
+    <option value="Existing-List">Add Configuration To existing List Name</option>
+</select>
+<div class="List" style="display:none;">
+    <?= $this->render('_formview', ['model' => $model]) ?>
 </div>
