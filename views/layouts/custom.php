@@ -25,6 +25,10 @@ $userInitials = strtoupper(substr($userName,0,1) . substr(strrchr($userName,' ')
     <title><?= Html::encode($this->title) ?></title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Rubik:ital,wght@0,300..900;1,300..900&display=swap" rel="stylesheet">
     <?php $this->head() ?>
     <style>
         :root {
@@ -238,7 +242,14 @@ $userInitials = strtoupper(substr($userName,0,1) . substr(strrchr($userName,' ')
 </header>
 
 <div class="portal-content">
+
     <div class="mt-4 flex-grow-1">
+        <?php foreach (Yii::$app->session->getAllFlashes() as $key =>$message): ?>
+    <div class="alert alert-<?=$key ?> alert-dismissible fade show " role="alert">
+            <?=$message ?>
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+    <?php endforeach ?>
         <?= $content ?>
     </div>
 </div>
@@ -254,6 +265,13 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     });
 });
+setTimeout(() => {
+    let alert=document.querySelector('.alert')
+    if (alert){
+        alert.classList.remove('show')
+    }
+    
+}, 2000);
 </script>
 
 <?php $this->endBody() ?>

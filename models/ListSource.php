@@ -14,7 +14,7 @@ class ListSource extends ActiveRecord
     public function rules()
     {
         return [
-            [['uuid', 'list_Name', 'code'], 'required'],
+            [['uuid', 'list_Name', 'code','category'], 'required'],
             [['description'], 'string'],
             [['parent_id', 'created_by', 'updated_by'], 'integer'],
             [['created_at', 'updated_at'], 'safe'],
