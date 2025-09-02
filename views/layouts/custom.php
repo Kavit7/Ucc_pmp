@@ -25,6 +25,7 @@ $userInitials = strtoupper(substr($userName,0,1) . substr(strrchr($userName,' ')
     <title><?= Html::encode($this->title) ?></title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+<<<<<<< HEAD
     <?php $this->head() ?>
     <style>
         :root {
@@ -59,10 +60,31 @@ $userInitials = strtoupper(substr($userName,0,1) . substr(strrchr($userName,' ')
             display: flex;
             flex: 1;
             position: relative;
+=======
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Rubik:ital,wght@0,300..900;1,300..900&display=swap" rel="stylesheet">
+    <?php $this->head() ?>
+    <style>
+        :root {
+            --sidebar-width: 270px;
+            --sidebar-bg: #374151;
+            --sidebar-color: #ffffff;
+            --sidebar-hover-bg: #2563EB;
+            --content-bg: #EAEBEB;
+        }
+
+        body {
+            font-family: 'SF Pro Display', sans-serif;
+            background-color: var(--content-bg);
+            overflow-x: hidden;
+>>>>>>> 1ebaa078084e2cc883cf30cc269da920b766552f
         }
 
         .portal-sidebar {
             width: var(--sidebar-width);
+<<<<<<< HEAD
             background: var(--sidebar-bg);
             color: var(--sidebar-color);
             display: flex;
@@ -75,11 +97,24 @@ $userInitials = strtoupper(substr($userName,0,1) . substr(strrchr($userName,' ')
             left: 0;
             top: 0;
             overflow-y: auto;
+=======
+            height: 100vh;
+            background: var(--sidebar-bg);
+            position: fixed;
+            top: 0;
+            left: 0;
+            color: var(--sidebar-color);
+            z-index: 1000;
+            padding-top: 20px;
+            display: flex;
+            flex-direction: column;
+>>>>>>> 1ebaa078084e2cc883cf30cc269da920b766552f
         }
 
         .sidebar-logo {
             display: flex;
             justify-content: center;
+<<<<<<< HEAD
             margin: 20px 0 30px;
             padding: 0 1.5rem;
         }
@@ -95,10 +130,15 @@ $userInitials = strtoupper(substr($userName,0,1) . substr(strrchr($userName,' ')
             flex-direction: column;
             flex: 1;
             padding: 0 0 20px;
+=======
+            margin-bottom: 20px;
+            padding: 0 1rem;
+>>>>>>> 1ebaa078084e2cc883cf30cc269da920b766552f
         }
 
         .nav-link {
             color: var(--sidebar-color);
+<<<<<<< HEAD
             padding: 0.9rem 1.5rem;
             display: flex;
             align-items: center;
@@ -106,11 +146,17 @@ $userInitials = strtoupper(substr($userName,0,1) . substr(strrchr($userName,' ')
             border-radius: 12px;
             transition: all 0.3s ease;
             text-decoration: none;
+=======
+            padding: 0.8rem 1rem;
+            display: flex;
+            align-items: center;
+>>>>>>> 1ebaa078084e2cc883cf30cc269da920b766552f
         }
 
         .nav-link i {
             width: 24px;
             text-align: center;
+<<<<<<< HEAD
             margin-right: 12px;
             font-size: 1.1rem;
         }
@@ -156,6 +202,29 @@ $userInitials = strtoupper(substr($userName,0,1) . substr(strrchr($userName,' ')
             background: var(--header-bg);
             border-bottom: 1px solid #e2e8f0;
             padding: 15px 30px;
+=======
+            margin-right: 10px;
+        }
+
+        .nav-link:hover,
+        .nav-link.active {
+            background-color: var(--sidebar-hover-bg);
+            color: #fff;
+            border-radius: 1rem;
+            transform: scale(0.93);
+        }
+
+        .logout-item {
+            margin-top: auto;
+            border-top: 1px solid rgba(223, 221, 221, 0.1);
+            padding-top: 1rem;
+        }
+
+        header {
+            background: #fff;
+            border-bottom: 1px solid #ddd;
+            padding: 10px 20px;
+>>>>>>> 1ebaa078084e2cc883cf30cc269da920b766552f
             display: flex;
             justify-content: space-between;
             align-items: center;
@@ -164,12 +233,18 @@ $userInitials = strtoupper(substr($userName,0,1) . substr(strrchr($userName,' ')
             top: 0;
             z-index: 100;
             flex-wrap: wrap;
+<<<<<<< HEAD
             box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
             width: 100%;
+=======
+            margin-left: var(--sidebar-width);
+            width: calc(100% - var(--sidebar-width));
+>>>>>>> 1ebaa078084e2cc883cf30cc269da920b766552f
         }
 
         .header-search {
             flex: 1;
+<<<<<<< HEAD
             max-width: 500px;
             position: relative;
             display: flex;
@@ -189,6 +264,22 @@ $userInitials = strtoupper(substr($userName,0,1) . substr(strrchr($userName,' ')
         .header-search .search-icon {
             color: #94a3b8;
             margin-right: 12px;
+=======
+            max-width: 400px;
+            position: relative;
+            display: flex;
+            align-items: center;
+            background: #fff;
+            border: 1px solid #EAEBEB;
+            border-radius: 20px;
+            padding: 5px 10px;
+        }
+
+        .header-search .search-icon {
+            color: #999;
+            margin-right: 8px;
+            cursor: pointer;
+>>>>>>> 1ebaa078084e2cc883cf30cc269da920b766552f
             font-size: 1rem;
         }
 
@@ -197,12 +288,16 @@ $userInitials = strtoupper(substr($userName,0,1) . substr(strrchr($userName,' ')
             outline: none;
             flex: 1;
             font-size: 0.95rem;
+<<<<<<< HEAD
             background: transparent;
+=======
+>>>>>>> 1ebaa078084e2cc883cf30cc269da920b766552f
         }
 
         .header-right {
             display: flex;
             align-items: center;
+<<<<<<< HEAD
             gap: 20px;
         }
 
@@ -239,11 +334,15 @@ $userInitials = strtoupper(substr($userName,0,1) . substr(strrchr($userName,' ')
             display: flex;
             align-items: center;
             justify-content: center;
+=======
+            gap: 15px;
+>>>>>>> 1ebaa078084e2cc883cf30cc269da920b766552f
         }
 
         .profile {
             display: flex;
             align-items: center;
+<<<<<<< HEAD
             gap: 12px;
             padding: 8px 16px;
             border-radius: 12px;
@@ -258,20 +357,35 @@ $userInitials = strtoupper(substr($userName,0,1) . substr(strrchr($userName,' ')
         .profile-icon {
             width: 42px;
             height: 42px;
+=======
+            gap: 10px;
+        }
+
+        .profile-icon {
+            width: 40px;
+            height: 40px;
+>>>>>>> 1ebaa078084e2cc883cf30cc269da920b766552f
             border-radius: 50%;
             object-fit: cover;
             display: flex;
             justify-content: center;
             align-items: center;
+<<<<<<< HEAD
             background: linear-gradient(135deg, var(--primary-color), var(--accent-color));
             color: #fff;
             font-weight: 600;
             font-size: 1rem;
+=======
+            background: #EAEBEB;
+            color: #000;
+            font-weight: 600;
+>>>>>>> 1ebaa078084e2cc883cf30cc269da920b766552f
         }
 
         .profile-info {
             display: flex;
             flex-direction: column;
+<<<<<<< HEAD
             line-height: 1.3;
         }
 
@@ -481,12 +595,48 @@ $userInitials = strtoupper(substr($userName,0,1) . substr(strrchr($userName,' ')
             .profile-info {
                 display: none;
             }
+=======
+            line-height: 1.2;
+        }
+
+        .profile-name {
+            font-size: 0.85rem;
+            color: #000;
+        }
+
+        .profile-role {
+            font-size: 0.85rem;
+            color: #666;
+        }
+
+        .portal-content {
+            margin-left: calc(var(--sidebar-width) + 15px);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        @media (max-width:768px){
+            .portal-sidebar { width: 70px; }
+            .portal-content { margin-left: 85px; }
+            .nav-link span { display: none; }
+            header { margin-left: 70px; width: calc(100% - 70px); }
+        }
+
+        @media (max-width:576px){
+            .portal-sidebar { position: absolute; height:auto; }
+            .portal-content { margin-left:0; width:100%; }
+            .header-search { max-width: 100%; }
+            .profile-name { display: none; }
+            header { margin-left:0; width:100%; }
+>>>>>>> 1ebaa078084e2cc883cf30cc269da920b766552f
         }
     </style>
 </head>
 <body>
 <?php $this->beginBody() ?>
 
+<<<<<<< HEAD
 <div class="overlay" id="overlay"></div>
 
 <div class="main-wrapper">
@@ -584,6 +734,57 @@ $userInitials = strtoupper(substr($userName,0,1) . substr(strrchr($userName,' ')
                 </div>
             </div>
         </footer>
+=======
+<div class="portal-sidebar">
+    <div class="sidebar-logo">
+        <img src="<?= Yii::getAlias('@web/images/logo.png') ?>" alt="Logo" style="height:50px; width:auto;">
+    </div>
+    
+    <nav class="nav flex-column">
+        <a class="nav-link active" href="#"><i class="fas fa-tachometer-alt"></i><span>Dashboard</span></a>
+        <a class="nav-link" href="#"><i class="fas fa-building"></i><span>Properties</span></a>
+        <a class="nav-link" href="#"><i class="fas fa-users"></i><span>User management</span></a>
+        <a class="nav-link" href="#"><i class="fas fa-file-contract"></i><span>Lease management</span></a>
+        <a class="nav-link" href="#"><i class="fas fa-credit-card"></i><span>Payments</span></a>
+        <a class="nav-link" href="#"><i class="fas fa-chart-bar"></i><span>Reports</span></a>
+        <a class="nav-link" href="#"><i class="fas fa-user-circle"></i><span>Profile</span></a>
+        <a class="nav-link logout-item" href="#"><i class="fas fa-sign-out-alt"></i><span>Logout</span></a>
+    </nav>
+</div>
+
+<header>
+    <div class="header-search">
+        <i class="fa fa-search search-icon"></i>
+        <input type="text" placeholder="Search here..." id="search-input">
+    </div>
+    <div class="header-right">
+        <i class="fa fa-bell notification-icon"></i>
+        <i class="fa fa-cog settings-icon"></i>
+        <div class="profile">
+            <?php if($userProfilePic): ?>
+                <img src="<?= Yii::getAlias('@web/uploads/' . $userProfilePic) ?>" alt="Profile" class="profile-icon">
+            <?php else: ?>
+                <div class="profile-icon"><?= $userInitials ?></div>
+            <?php endif; ?>
+            <div class="profile-info">
+                <span class="profile-name"><?= $userName ?></span>
+                <span class="profile-role"><?= $userRole ?></span>
+            </div>
+        </div>
+    </div>
+</header>
+
+<div class="portal-content">
+
+    <div class="mt-4 flex-grow-1">
+        <?php foreach (Yii::$app->session->getAllFlashes() as $key =>$message): ?>
+    <div class="alert alert-<?=$key ?> alert-dismissible fade show " role="alert">
+            <?=$message ?>
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+    <?php endforeach ?>
+        <?= $content ?>
+>>>>>>> 1ebaa078084e2cc883cf30cc269da920b766552f
     </div>
 </div>
 
@@ -595,6 +796,7 @@ document.addEventListener('DOMContentLoaded', function() {
         link.addEventListener('click', function() {
             navLinks.forEach(l => l.classList.remove('active'));
             this.classList.add('active');
+<<<<<<< HEAD
             
             // Close sidebar on mobile after clicking a link
             if (window.innerWidth < 768) {
@@ -632,6 +834,18 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     });
 });
+=======
+        });
+    });
+});
+setTimeout(() => {
+    let alert=document.querySelector('.alert')
+    if (alert){
+        alert.classList.remove('show')
+    }
+    
+}, 2000);
+>>>>>>> 1ebaa078084e2cc883cf30cc269da920b766552f
 </script>
 
 <?php $this->endBody() ?>
