@@ -506,8 +506,11 @@ $userInitials = strtoupper(substr($userName,0,1) . substr(strrchr($userName,' ')
 
              <a class="nav-link" href="#"><i class="fas fa-credit-card"></i><span>Payments</span></a>
             
-            <a class="nav-link" href="#"><i class="fas fa-dollar-sign"></i><span>Properties Prices</span></a>
-        </a>
+            
+               <a class="nav-link" href="<?= \yii\helpers\Url::to(['property-price/index']) ?>">
+                  <i class="fas fa-dollar-sign"></i>
+                  <span>Properties Prices</span>
+               </a>
 
             <a class="nav-link" href="#"><i class="fas fa-chart-bar"></i><span>Reports</span></a>
             <a class="nav-link" href="#"><i class="fas fa-user-circle"></i><span>Profile</span></a>
