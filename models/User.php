@@ -1,104 +1,56 @@
 <?php
-
 namespace app\models;
 
-class User extends \yii\base\BaseObject implements \yii\web\IdentityInterface
+use yii\db\ActiveRecord;
+use yii\behaviors\TimestampBehavior;
+
+class User extends ActiveRecord
 {
-    public $id;
-    public $username;
-    public $password;
-    public $authKey;
-    public $accessToken;
-
-    private static $users = [
-        '100' => [
-            'id' => '100',
-            'username' => 'admin',
-            'password' => 'admin',
-            'authKey' => 'test100key',
-            'accessToken' => '100-token',
-        ],
-        '101' => [
-            'id' => '101',
-            'username' => 'demo',
-            'password' => 'demo',
-            'authKey' => 'test101key',
-            'accessToken' => '101-token',
-        ],
-    ];
-
-
-    /**
-     * {@inheritdoc}
-     */
-    public static function findIdentity($id)
+    public $password; 
+    public $privileges = []; 
+    public static function tableName()
     {
-        return isset(self::$users[$id]) ? new static(self::$users[$id]) : null;
+        return 'users';
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    public static function findIdentityByAccessToken($token, $type = null)
+    public function behaviors()
     {
-        foreach (self::$users as $user) {
-            if ($user['accessToken'] === $token) {
-                return new static($user);
+        return [TimestampBehavior::class];
+    }
+
+    public function rules()
+    {
+        return [
+            [['full_name', 'email', 'phone', 'national_id', 'nationality', 'occupation', 'role'], 'required', 'message' => 'required'],
+            ['email', 'email'],
+            [['full_name', 'nationality', 'occupation', 'password'], 'string', 'max' => 255],
+            [['phone', 'national_id'], 'string', 'max' => 20],
+            [['role'], 'in', 'range' => ['Tenant', 'Manager', 'Admin']],
+            [['privileges'], 'safe'], 
+        ];
+    }
+
+    public function beforeSave($insert)
+    {
+        if (parent::beforeSave($insert)) {
+            if (!empty($this->password)) {
+                $this->password= \Yii::$app->security->generatePasswordHash($this->password);
             }
-        }
-
-        return null;
-    }
-
-    /**
-     * Finds user by username
-     *
-     * @param string $username
-     * @return static|null
-     */
-    public static function findByUsername($username)
-    {
-        foreach (self::$users as $user) {
-            if (strcasecmp($user['username'], $username) === 0) {
-                return new static($user);
+            if (is_array($this->privileges)) {
+                $this->privileges = json_encode($this->privileges);
             }
+            return true;
         }
-
-        return null;
+        return false;
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    public function getId()
+    public function afterFind()
     {
-        return $this->id;
+        parent::afterFind();
+        if (!empty($this->privileges)) {
+            $this->privileges = json_decode($this->privileges, true);
+        }
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    public function getAuthKey()
-    {
-        return $this->authKey;
-    }
-
-    /**
-     * {@inheritdoc}
-     */
-    public function validateAuthKey($authKey)
-    {
-        return $this->authKey === $authKey;
-    }
-
-    /**
-     * Validates password
-     *
-     * @param string $password password to validate
-     * @return bool if password provided is valid for current user
-     */
-    public function validatePassword($password)
-    {
-        return $this->password === $password;
-    }
+    
 }
