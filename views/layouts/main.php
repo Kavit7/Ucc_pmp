@@ -68,7 +68,11 @@ $this->registerLinkTag(['rel' => 'icon', 'type' => 'image/x-icon', 'href' => Yii
     </div>
 </main>
 
+<<<<<<< HEAD
+<footer id="footer" class="mt-auto py-3 bg-light">
+=======
 <footer id="footer" class="mt-auto py-3 bg-light" >
+>>>>>>> 1ebaa078084e2cc883cf30cc269da920b766552f
     <div class="container">
         <div class="row text-muted">
             <div class="col-md-6 text-center text-md-start">&copy; My Company <?= date('Y') ?></div>

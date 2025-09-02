@@ -1,16 +1,17 @@
 <?php
-namespace app\models;
-
+use Yii;
 use yii\db\ActiveRecord;
 use yii\behaviors\TimestampBehavior;
+use yii\web\IdentityInterface;
 
-class User extends ActiveRecord
+class User extends ActiveRecord implements IdentityInterface
 {
     public $password; 
     public $privileges = []; 
+
     public static function tableName()
     {
-        return 'users';
+        return 'users'; // choose your table
     }
 
     public function behaviors()
@@ -34,7 +35,7 @@ class User extends ActiveRecord
     {
         if (parent::beforeSave($insert)) {
             if (!empty($this->password)) {
-                $this->password= \Yii::$app->security->generatePasswordHash($this->password);
+                $this->password = Yii::$app->security->generatePasswordHash($this->password);
             }
             if (is_array($this->privileges)) {
                 $this->privileges = json_encode($this->privileges);
@@ -52,5 +53,34 @@ class User extends ActiveRecord
         }
     }
 
-    
+    // IdentityInterface methods
+    public static function findIdentity($id)
+    {
+        return static::findOne(['id' => $id, 'status' => 10]);
+    }
+
+    public static function findIdentityByAccessToken($token, $type = null)
+    {
+        return null;
+    }
+
+    public static function findByUsername($username)
+    {
+        return static::findOne(['username' => $username, 'status' => 10]);
+    }
+
+    public function getId()
+    {
+        return $this->id;
+    }
+
+    public function getAuthKey()
+    {
+        return $this->auth_key;
+    }
+
+    public function validateAuthKey($authKey)
+    {
+        return $this->getAuthKey() === $authKey;
+    }
 }

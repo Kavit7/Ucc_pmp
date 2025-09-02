@@ -1,4 +1,15 @@
 <?php
+<<<<<<< HEAD
+/* @var $this yii\web\View */
+/* @var $exception Exception */
+
+use yii\helpers\Html;
+
+$this->title = 'Error';
+?>
+<h1><?= Html::encode($this->title) ?></h1>
+<p><?= nl2br(Html::encode($exception->getMessage())) ?></p>
+=======
 
 /** @var yii\web\View $this */
 /** @var string $name */
@@ -25,3 +36,4 @@ $this->title = $name;
     </p>
 
 </div>
+>>>>>>> 1ebaa078084e2cc883cf30cc269da920b766552f
