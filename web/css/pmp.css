@@ -20,7 +20,7 @@ input{
     color: red;
 }
 th{
-    color:rgb(18, 20, 150) !important;
+    color:rgb(10, 10, 135) !important;
 }
 td{
     padding:15px !important;
@@ -63,4 +63,13 @@ form label{
 }
 .form-select:focus{
     border-color: #097bde;
+}
+.form-group{
+    color:#0c0a7e !important;
+}
+.form-container{
+    background: #ffffff;
+    width: 100%;
+    padding: 50px;
+    border-radius: 20px;
 }

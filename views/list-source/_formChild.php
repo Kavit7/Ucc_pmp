@@ -2,15 +2,21 @@
 use yii\widgets\ActiveForm;
 use yii\helpers\Html;
 
-$form = ActiveForm::begin();
+$form = ActiveForm::begin(
+);
 ?>
 
-<?= $form->field($model, 'parent_id')->dropDownList(
-    \yii\helpers\ArrayHelper::map($topListOptions, 'id', function($item) {
+<?php
+$topLists = \app\models\ListSource::find()->where(['parent_id' => null])->all();
+echo $form->errorSummary($model);
+echo $form->field($model, 'parent_id')->dropDownList(
+    \yii\helpers\ArrayHelper::map($topLists, 'id', function($item) {
         return (string)$item->list_Name;
     }),
     ['prompt' => 'Select Parent List']
-) ?>
+);
+?>
+
 
 
 
@@ -22,7 +28,7 @@ $form = ActiveForm::begin();
 <?php // <?= $form->field($model, 'code')->textInput(['readonly' => true]) ?> 
 
 <div class="mt-3">
-    <?= Html::submitButton('Add Child', ['class' => 'btn btn-success']) ?>
+    <?= Html::submitButton('Add Child',['class' => 'btn btn-success']) ?>
 </div>
 
 <?php ActiveForm::end(); ?>

@@ -66,34 +66,27 @@ public function actionAddChild()
 {
     $model = new ListSource();
 
-    // Get all top-level lists (parent_id = null)
+    // Get all top-level lists
     $topLists = ListSource::find()->where(['parent_id' => null])->all();
+    $topListOptions = \yii\helpers\ArrayHelper::map($topLists, 'id', 'list_Name');
 
-    // Convert objects to [id => list_Name] - ensure we get string values
-    $topListOptions = [];
-    foreach ($topLists as $list) {
-        $topListOptions[$list->id] = (string)$list->list_Name;
-    }
-
-    // Check if form is submitted
+    // Handle POST
     if ($model->load(Yii::$app->request->post())) {
 
-        // Ensure parent_id is an integer or null
-        if (!empty($model->parent_id)) {
-            $model->parent_id = (int)$model->parent_id;
-        } else {
-            $model->parent_id = null; // top-level if no parent selected
-        }
+        // parent_id can be null
+        $model->parent_id = $model->parent_id ?: null;
 
         // Generate UUID if empty
         if (empty($model->uuid)) {
-            $lastUuid = static::find()
+            $lastUuid = ListSource::find()
                 ->select('uuid')
                 ->where(['like','uuid','List_%',false])
                 ->orderBy(['id'=>SORT_DESC])
                 ->scalar();
 
-            $model->uuid = $lastUuid ? 'List_'. ((int)str_replace('List_','',$lastUuid)+1) : 'List_1';
+            $model->uuid = $lastUuid
+                ? 'List_'. ((int)str_replace('List_','',$lastUuid)+1)
+                : 'List_1';
         }
 
         // Generate code if empty
@@ -106,14 +99,15 @@ public function actionAddChild()
             $model->sort_by = $model->generateSort();
         }
 
-        // Save model
+        // Try to save
         if ($model->save()) {
             Yii::$app->session->setFlash('success', 'Child configuration added successfully!');
-            return $this->refresh();
+            // PRG: redirect to same page or another
+            return $this->redirect(['list-source/create']);
         }
+        // If save fails, errors will be shown in errorSummary of form
     }
 
-    // Render form (for GET or if save fails)
     return $this->render('_formChild', [
         'model' => $model,
         'topListOptions' => $topListOptions,
@@ -121,31 +115,9 @@ public function actionAddChild()
 }
 
 
+
+
+
 }
 
-    /*public function actionTest()
-    {
-        $dataProvider = new ActiveDataProvider([
-            'query' => ListSource::find()->orderBy(['sort_by' => SORT_ASC]),
-            'pagination' => ['pageSize' => 20],
-        ]);
-
-        $model = new ListSource();
-
-        if ($model->load(Yii::$app->request->post()) && $model->save()) {
-            return $this->refresh();
-        }
-
-        $parents = ArrayHelper::map(
-            ListSource::find()->all(),
-            'id',
-            function($m) { return $m->list_Name . ' - ' . $m->code; }
-        );
-
-        return $this->render('test', [
-            'dataProvider' => $dataProvider,
-            'model' => $model,
-            'parents' => $parents
-        ]);
-    }*/
-
+    
