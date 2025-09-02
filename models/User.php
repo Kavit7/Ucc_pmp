@@ -1,4 +1,35 @@
 <?php
+<<<<<<< HEAD
+namespace app\models;
+
+use Yii;
+use yii\db\ActiveRecord;
+use yii\web\IdentityInterface;
+
+class User extends ActiveRecord implements IdentityInterface
+{
+    /**
+     * Table name
+     */
+    public static function tableName()
+    {
+        return 'user';
+    }
+
+    /**
+     * Find user by ID (required by IdentityInterface)
+     */
+    public static function findIdentity($id)
+    {
+        return static::findOne(['id' => $id, 'status' => 10]);
+    }
+
+    /**
+     * Not implementing token login
+     */
+    public static function findIdentityByAccessToken($token, $type = null)
+    {
+=======
 
 namespace app\models;
 
@@ -47,10 +78,22 @@ class User extends \yii\base\BaseObject implements \yii\web\IdentityInterface
             }
         }
 
+>>>>>>> 1ebaa078084e2cc883cf30cc269da920b766552f
         return null;
     }
 
     /**
+<<<<<<< HEAD
+     * Find by username
+     */
+    public static function findByUsername($username)
+    {
+        return static::findOne(['username' => $username, 'status' => 10]);
+    }
+
+    /**
+     * IdentityInterface methods
+=======
      * Finds user by username
      *
      * @param string $username
@@ -69,12 +112,23 @@ class User extends \yii\base\BaseObject implements \yii\web\IdentityInterface
 
     /**
      * {@inheritdoc}
+>>>>>>> 1ebaa078084e2cc883cf30cc269da920b766552f
      */
     public function getId()
     {
         return $this->id;
     }
 
+<<<<<<< HEAD
+    public function getAuthKey()
+    {
+        return $this->auth_key;
+    }
+
+    public function validateAuthKey($authKey)
+    {
+        return $this->auth_key === $authKey;
+=======
     /**
      * {@inheritdoc}
      */
@@ -100,5 +154,6 @@ class User extends \yii\base\BaseObject implements \yii\web\IdentityInterface
     public function validatePassword($password)
     {
         return $this->password === $password;
+>>>>>>> 1ebaa078084e2cc883cf30cc269da920b766552f
     }
 }
