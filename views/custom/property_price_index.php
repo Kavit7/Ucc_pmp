@@ -22,7 +22,6 @@ $this->registerJsFile('https://cdn.jsdelivr.net/npm/sweetalert2@11', [
             <thead class="table-light">
                 <tr>
                     <th>Property</th>
-                    <th>UUID</th>
                     <th>Type</th>
                     <th>Unit Amount</th>
                     <th>Period</th>
@@ -36,7 +35,6 @@ $this->registerJsFile('https://cdn.jsdelivr.net/npm/sweetalert2@11', [
                 <?php foreach ($prices as $price): ?>
                     <tr>
                         <td><?= $price->property ? Html::encode($price->property->property_name) : '-' ?></td>
-                        <td><?= Html::encode($price->uuid) ?></td>
                         <td><?= Html::encode($price->price_type) ?></td>
                         <td><?= number_format($price->unit_amount, 2) ?></td>
                         <td><?= Html::encode($price->period) ?></td>

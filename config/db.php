@@ -2,7 +2,8 @@
 
 return [
     'class' => 'yii\db\Connection',
-    'dsn' => 'mysql:host=localhost;dbname=property_management_system',
+   // 'dsn' => 'mysql:host=localhost;dbname=property_management_system',
+   'dsn' => 'mysql:host=localhost;dbname=pmp_db_',
 
     'username' => 'root',
     'password' => '',

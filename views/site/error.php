@@ -1,5 +1,5 @@
 <?php
-<<<<<<< HEAD
+
 /* @var $this yii\web\View */
 /* @var $exception Exception */
 
@@ -36,4 +36,3 @@ $this->title = $name;
     </p>
 
 </div>
->>>>>>> 1ebaa078084e2cc883cf30cc269da920b766552f

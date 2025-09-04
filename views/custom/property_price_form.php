@@ -33,12 +33,7 @@ $indexUrl = Url::to(['property-price/index']); // correct redirect URL
         ArrayHelper::map(Property::find()->all(), 'id', 'property_name'),
         ['prompt' => 'Select Property']
     ) ?>
-
-    <?= $form->field($model, 'uuid')->textInput([
-        'maxlength' => true,
-        'placeholder' => 'Unique Code e.g. price-001'
-    ]) ?>
-
+    
     <?= $form->field($model, 'price_type')->dropDownList([
         'Rent' => 'Rent',
         'Sale' => 'Sale',

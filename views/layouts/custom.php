@@ -15,6 +15,9 @@ $userProfilePic = Yii::$app->user->identity->profile_pic ?? null;
 $userName = Yii::$app->user->identity->name ?? 'Guest';
 $userRole = Yii::$app->user->identity->role ?? 'User';
 $userInitials = strtoupper(substr($userName,0,1) . substr(strrchr($userName,' '),0,1));
+
+// Get current route to set active class
+$currentRoute = Yii::$app->controller->getRoute();
 ?>
 <?php $this->beginPage() ?>
 <!DOCTYPE html>
@@ -94,19 +97,22 @@ $userInitials = strtoupper(substr($userName,0,1) . substr(strrchr($userName,' ')
             display: flex;
             flex-direction: column;
             flex: 1;
-            padding: 0 0 20px;
+            padding: 0 0 30px;
+            
         }
 
-        .nav-link {
-            color: var(--sidebar-color);
-            padding: 0.9rem 1.5rem;
-            display: flex;
-            align-items: center;
-            margin: 0.3rem 1rem;
-            border-radius: 12px;
-            transition: all 0.3s ease;
-            text-decoration: none;
-        }
+                .nav-link {
+                color: var(--sidebar-color);
+                padding: 1rem 1.5rem;   /* Increased top/bottom padding */
+                display: flex;
+                align-items: center;
+                margin: 0.2rem 1rem;    /* Increased vertical spacing between links */
+                border-radius: 12px;
+                transition: all 0.3s ease;
+                text-decoration: none;
+                cursor: pointer;
+            }
+
 
         .nav-link i {
             width: 24px;
@@ -127,21 +133,7 @@ $userInitials = strtoupper(substr($userName,0,1) . substr(strrchr($userName,' ')
             box-shadow: 0 4px 12px rgba(59, 130, 246, 0.4);
         }
 
-        .logout-section {
-            margin-top: auto;
-            border-top: 1px solid rgba(255, 255, 255, 0.1);
-            padding: 1.5rem 1.5rem;
-        }
-
-        .logout-link {
-            color: #f87171;
-            background: rgba(248, 113, 113, 0.1);
-        }
-
-        .logout-link:hover {
-            background: rgba(248, 113, 113, 0.2);
-            color: #fca5a5;
-        }
+       
 
         .content-wrapper {
             flex: 1;
@@ -241,6 +233,11 @@ $userInitials = strtoupper(substr($userName,0,1) . substr(strrchr($userName,' ')
             justify-content: center;
         }
 
+        /* Profile Dropdown Styles */
+        .profile-dropdown {
+            position: relative;
+        }
+        
         .profile {
             display: flex;
             align-items: center;
@@ -249,10 +246,11 @@ $userInitials = strtoupper(substr($userName,0,1) . substr(strrchr($userName,' ')
             border-radius: 12px;
             transition: all 0.3s ease;
             cursor: pointer;
+            background: #f8fafc;
         }
 
         .profile:hover {
-            background: #f8fafc;
+            background: #e2e8f0;
         }
 
         .profile-icon {
@@ -284,6 +282,75 @@ $userInitials = strtoupper(substr($userName,0,1) . substr(strrchr($userName,' ')
         .profile-role {
             font-size: 0.8rem;
             color: #64748b;
+        }
+
+        .dropdown-menu {
+            position: absolute;
+            top: 100%;
+            right: 0;
+            width: 250px;
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
+            padding: 10px 0;
+            margin-top: 10px;
+            z-index: 1000;
+            opacity: 0;
+            visibility: hidden;
+            transform: translateY(10px);
+            transition: all 0.3s ease;
+        }
+
+        .dropdown-menu.show {
+            opacity: 1;
+            visibility: visible;
+            transform: translateY(0);
+        }
+
+        .dropdown-header {
+            padding: 15px 20px 10px;
+            border-bottom: 1px solid #f1f5f9;
+            margin-bottom: 5px;
+        }
+
+        .dropdown-header .profile-name {
+            font-size: 1rem;
+            margin-bottom: 3px;
+        }
+
+        .dropdown-header .profile-role {
+            font-size: 0.85rem;
+        }
+
+        .dropdown-item {
+            display: flex;
+            align-items: center;
+            padding: 12px 20px;
+            color: #475569;
+            text-decoration: none;
+            transition: all 0.2s ease;
+            cursor: pointer;
+        }
+
+        .dropdown-item i {
+            width: 20px;
+            margin-right: 12px;
+            color: #94a3b8;
+        }
+
+        .dropdown-item:hover {
+            background: #f1f5f9;
+            color: var(--primary-color);
+        }
+
+        .dropdown-item:hover i {
+            color: var(--primary-color);
+        }
+
+        .dropdown-divider {
+            height: 1px;
+            background: #f1f5f9;
+            margin: 8px 0;
         }
 
         .portal-content {
@@ -445,6 +512,11 @@ $userInitials = strtoupper(substr($userName,0,1) . substr(strrchr($userName,' ')
             header {
                 padding: 15px 20px;
             }
+            
+            .dropdown-menu {
+                right: 10px;
+                width: calc(100vw - 40px);
+            }
         }
 
         @media (max-width: 576px) {
@@ -491,39 +563,63 @@ $userInitials = strtoupper(substr($userName,0,1) . substr(strrchr($userName,' ')
 
 <div class="main-wrapper">
     <div class="portal-sidebar" id="sidebar">
-        <div class="sidebar-logo">
-            <img src="<?= Yii::getAlias('@web/image/logo.jpg') ?>" alt="Logo">
-        </div>
-        
-        <nav class="sidebar-nav">
-            <a class="nav-link active" href="#"><i class="fas fa-tachometer-alt"></i><span>Dashboard</span></a>
-            <a class="nav-link" href="#"><i class="fas fa-building"></i><span>Properties</span></a>
-            <a class="nav-link" href="#"><i class="fas fa-users"></i><span>User management</span></a>
-           <a class="nav-link" href="<?= \yii\helpers\Url::to(['custom/leases']) ?>">
-                <i class="fas fa-file-contract"></i>
-                <span>Lease management</span>
-            </a>
+    <div class="sidebar-logo">
+        <img src="<?= Yii::getAlias('@web/image/logo.jpg') ?>" alt="Logo">
+    </div>
+    
+    <nav class="sidebar-nav">
+        <a class="nav-link <?= strpos($currentRoute, 'site') !== false || strpos($currentRoute, 'dashboard') !== false ? 'active' : '' ?>" href="#">
+            <i class="fas fa-tachometer-alt"></i>
+            <span>Dashboard</span>
+        </a>
 
-             <a class="nav-link" href="#"><i class="fas fa-credit-card"></i><span>Payments</span></a>
-            
-            
-               <a class="nav-link" href="<?= \yii\helpers\Url::to(['property-price/index']) ?>">
-                  <i class="fas fa-dollar-sign"></i>
-                  <span>Properties Prices</span>
-               </a>
+        <a class="nav-link <?= strpos($currentRoute, 'property/') !== false && strpos($currentRoute, 'property-price') === false ? 'active' : '' ?>" href="<?= \yii\helpers\Url::to(['property/create']) ?>">
+            <i class="fas fa-building"></i>
+            <span>Properties</span>
+        </a>
 
-            <a class="nav-link" href="#"><i class="fas fa-chart-bar"></i><span>Reports</span></a>
-            <a class="nav-link" href="#"><i class="fas fa-user-circle"></i><span>Profile</span></a>
-            
-         <div class="logout-section">
-    <?= \yii\helpers\Html::a(
-        '<i class="fas fa-sign-out-alt"></i><span>Logout</span>',
-        ['custom/logout'], // controller/action
-        ['class' => 'nav-link logout-link']
-    ) ?>
+       <a class="nav-link <?= strpos($currentRoute, 'property-price') !== false ? 'active' : '' ?>" href="<?= \yii\helpers\Url::to(['property-price/index']) ?>">
+            <i class="fas fa-dollar-sign"></i>
+            <span>Properties Prices</span>
+        </a>
+
+
+        <a class="nav-link <?= strpos($currentRoute, 'custom/leases') !== false || strpos($currentRoute, 'lease') !== false ? 'active' : '' ?>" href="<?= \yii\helpers\Url::to(['custom/leases']) ?>">
+            <i class="fas fa-file-contract"></i>
+            <span>Lease management</span>
+        </a>
+
+        <!-- Bills -->
+        <a class="nav-link <?= strpos($currentRoute, 'custom/bill') !== false ? 'active' : '' ?>" href="<?= \yii\helpers\Url::to(['custom/bill']) ?>">
+            <i class="fas fa-file-invoice"></i>
+            <span>Bills</span>
+        </a>
+
+        <!-- Payments -->
+        <a class="nav-link <?= strpos($currentRoute, 'custom/payment') !== false ? 'active' : '' ?>" href="<?= \yii\helpers\Url::to(['custom/payment']) ?>">
+            <i class="fas fa-credit-card"></i>
+            <span>Payments</span>
+        </a>
+
+       
+        <a class="nav-link <?= strpos($currentRoute, 'user') !== false ? 'active' : '' ?>" href="#">
+            <i class="fas fa-users"></i>
+            <span>User management</span>
+        </a>
+
+        <a class="nav-link <?= strpos($currentRoute, 'report') !== false ? 'active' : '' ?>" href="#">
+            <i class="fas fa-chart-bar"></i>
+            <span>Reports</span>
+        </a>
+
+        <a class="nav-link <?= strpos($currentRoute, 'custom/profile') !== false ? 'active' : '' ?>" href="<?= \yii\helpers\Url::to(['custom/profile']) ?>">
+            <i class="fas fa-user-circle"></i>
+            <span>Profile</span>
+        </a>
+
+    </nav>
 </div>
 
-    </div>
 
     <div class="content-wrapper">
         <header>
@@ -546,15 +642,42 @@ $userInitials = strtoupper(substr($userName,0,1) . substr(strrchr($userName,' ')
                     <i class="fa fa-cog"></i>
                 </div>
                 
-                <div class="profile">
-                    <?php if($userProfilePic): ?>
-                        <img src="<?= Yii::getAlias('@web/uploads/' . $userProfilePic) ?>" alt="Profile" class="profile-icon">
-                    <?php else: ?>
-                        <div class="profile-icon"><?= $userInitials ?></div>
-                    <?php endif; ?>
-                    <div class="profile-info">
-                        <span class="profile-name"><?= $userName ?></span>
-                        <span class="profile-role"><?= $userRole ?></span>
+                <!-- Profile Dropdown -->
+                <div class="profile-dropdown">
+                    <div class="profile" id="profileToggle">
+                        <?php if($userProfilePic): ?>
+                            <img src="<?= Yii::getAlias('@web/uploads/' . $userProfilePic) ?>" alt="Profile" class="profile-icon">
+                        <?php else: ?>
+                            <div class="profile-icon"><?= $userInitials ?></div>
+                        <?php endif; ?>
+                        <div class="profile-info">
+                            <span class="profile-name"><?= $userName ?></span>
+                            <span class="profile-role"><?= $userRole ?></span>
+                        </div>
+                        <i class="fas fa-chevron-down" style="font-size: 12px;"></i>
+                    </div>
+                    
+                    <div class="dropdown-menu" id="dropdownMenu">
+                        <div class="dropdown-header">
+                            <div class="profile-name"><?= $userName ?></div>
+                            <div class="profile-role"><?= $userRole ?></div>
+                        </div>
+                        
+                        <div class="dropdown-divider"></div>
+                       
+                       <a href="<?= \yii\helpers\Url::to(['custom/change-password']) ?>" class="dropdown-item">
+                            <i class="fas fa-key"></i>
+                            <span>Change Password</span>
+                        </a>
+
+                        
+                        <div class="dropdown-divider"></div>
+                        
+                        <?= \yii\helpers\Html::a(
+                            '<i class="fas fa-sign-out-alt"></i><span>Logout</span>',
+                            ['custom/logout'],
+                            ['class' => 'dropdown-item']
+                        ) ?>
                     </div>
                 </div>
             </div>
@@ -590,11 +713,24 @@ $userInitials = strtoupper(substr($userName,0,1) . substr(strrchr($userName,' ')
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
 <script>
 document.addEventListener('DOMContentLoaded', function() {
-    const navLinks = document.querySelectorAll('.nav-link');
+    const navLinks = document.querySelectorAll('.nav-link:not(.logout-link)');
+    const sidebar = document.getElementById('sidebar');
+    const overlay = document.getElementById('overlay');
+    
+    // Set active class on click
     navLinks.forEach(link => {
-        link.addEventListener('click', function() {
+        link.addEventListener('click', function(e) {
+            // Don't prevent default for links with actual href
+            if(this.getAttribute('href') === '#') {
+                e.preventDefault();
+            }
+            
             navLinks.forEach(l => l.classList.remove('active'));
             this.classList.add('active');
+            
+            // Store active state in localStorage
+            const linkText = this.querySelector('span').textContent;
+            localStorage.setItem('activeNavItem', linkText);
             
             // Close sidebar on mobile after clicking a link
             if (window.innerWidth < 768) {
@@ -604,10 +740,18 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     });
     
+    // Restore active state from localStorage on page load
+    const activeNavText = localStorage.getItem('activeNavItem');
+    if (activeNavText) {
+        navLinks.forEach(link => {
+            if (link.querySelector('span').textContent === activeNavText) {
+                link.classList.add('active');
+            }
+        });
+    }
+    
     // Mobile menu toggle
     const menuToggle = document.getElementById('menuToggle');
-    const sidebar = document.getElementById('sidebar');
-    const overlay = document.getElementById('overlay');
     
     if (menuToggle) {
         menuToggle.addEventListener('click', function() {
@@ -631,6 +775,32 @@ document.addEventListener('DOMContentLoaded', function() {
             overlay.classList.remove('active');
         }
     });
+    
+    // Profile dropdown functionality
+    const profileToggle = document.getElementById('profileToggle');
+    const dropdownMenu = document.getElementById('dropdownMenu');
+    
+    if (profileToggle && dropdownMenu) {
+        profileToggle.addEventListener('click', function(e) {
+            e.stopPropagation();
+            dropdownMenu.classList.toggle('show');
+        });
+        
+        // Close dropdown when clicking outside
+        document.addEventListener('click', function(e) {
+            if (!profileToggle.contains(e.target) && !dropdownMenu.contains(e.target)) {
+                dropdownMenu.classList.remove('show');
+            }
+        });
+        
+        // Close dropdown when clicking on a dropdown item
+        const dropdownItems = dropdownMenu.querySelectorAll('.dropdown-item');
+        dropdownItems.forEach(item => {
+            item.addEventListener('click', function() {
+                dropdownMenu.classList.remove('show');
+            });
+        });
+    }
 });
 </script>
 

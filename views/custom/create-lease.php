@@ -14,7 +14,7 @@ $this->title = 'Create Lease';
                 </div>
                 <div class="card-body">
                     <?php $form = ActiveForm::begin([
-                        'options' => ['class' => 'needs-validation'],
+                        'options' => ['class'=>'needs-validation', 'enctype'=>'multipart/form-data'],
                     ]); ?>
 
                     <?= $form->field($lease, 'property_id')->dropDownList(
@@ -32,7 +32,8 @@ $this->title = 'Create Lease';
                         ['prompt'=>'Select Price', 'class'=>'form-select']
                     ) ?>
 
-                    <?= $form->field($lease, 'lease_doc_url')->textInput(['placeholder'=>'Document URL','class'=>'form-control']) ?>
+                    <!-- File upload field -->
+                    <?= $form->field($lease, 'lease_doc_file')->fileInput() ?>
 
                     <div class="row">
                         <div class="col-md-6 mb-3">
