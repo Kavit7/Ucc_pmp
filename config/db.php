@@ -2,9 +2,7 @@
 
 return [
     'class' => 'yii\db\Connection',
-   // 'dsn' => 'mysql:host=localhost;dbname=property_management_system',
-   'dsn' => 'mysql:host=localhost;dbname=pmp_db_',
-
+    'dsn' => 'mysql:host=localhost;dbname=pmp_db', 
     'username' => 'root',
     'password' => '',
     'charset' => 'utf8',
@@ -14,3 +12,4 @@ return [
     //'schemaCacheDuration' => 60,
     //'schemaCache' => 'cache',
 ];
+
