@@ -13,7 +13,7 @@ $this->params['breadcrumbs'][] = $this->title;
         <h2 class="mb-4"><?= Html::encode($this->title) ?></h2>
 
         <?php $form = ActiveForm::begin([
-            'options' => ['novalidate' => true], // Disable default HTML5 validation
+            'options' => ['novalidate' => true], 
         ]); ?>
 
         <div class="row g-3 mb-3">
@@ -60,7 +60,7 @@ $this->params['breadcrumbs'][] = $this->title;
                 <div style="position: relative;">
                     <?= Html::passwordInput('User[password]', null, [
                         'id' => 'password-input',
-                        'class' => 'form-control pe-5' // padding for icon
+                        'class' => 'form-control pe-5' 
                     ]) ?>
                     <span id="toggle-password" 
                         style="position: absolute; right: 10px; top: 50%; transform: translateY(-50%); cursor: pointer;">

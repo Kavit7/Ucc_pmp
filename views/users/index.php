@@ -77,7 +77,7 @@ $this->registerCss("
 $currentFilter = $filter ?? 'all';
 ?>
 
-<div class="user-container">
+<div class="content user-container">
     <!-- Add User Button -->
     <?= Html::a('<span style="font-size:18px;">＋</span> Add User', ['create'], ['class' => 'add-user-btn']) ?>
 

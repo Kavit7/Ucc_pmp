@@ -496,9 +496,14 @@ $userInitials = strtoupper(substr($userName,0,1) . substr(strrchr($userName,' ')
         </div>
         
         <nav class="sidebar-nav">
-            <a class="nav-link active" href="#"><i class="fas fa-tachometer-alt"></i><span>Dashboard</span></a>
+            <a class="nav-link " href="#"><i class="fas fa-tachometer-alt"></i><span>Dashboard</span></a>
             <a class="nav-link" href="#"><i class="fas fa-building"></i><span>Properties</span></a>
-            <a class="nav-link" href="#"><i class="fas fa-users"></i><span>User management</span></a>
+            <a class="nav-link <?= Yii::$app->controller->id === 'users' ? 'active' : '' ?>"
+                href="<?= \yii\helpers\Url::to(['users/index']) ?>">
+                    <i class="fas fa-users"></i><span>User management</span>
+            </a>
+
+
            <a class="nav-link" href="<?= \yii\helpers\Url::to(['custom/leases']) ?>">
                 <i class="fas fa-file-contract"></i>
                 <span>Lease management</span>
