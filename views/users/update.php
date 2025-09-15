@@ -34,9 +34,9 @@ $this->params['breadcrumbs'][] = $this->title;
         <div class="row g-3 align-items-end mb-3">
             <div class="col-md-3">
                 <?= $form->field($model, 'role')->dropDownList([
-                    'Tenant' => 'Tenant',
-                    'Manager' => 'Manager',
-                    'Admin' => 'Admin'
+                    'tenant' => 'tenant',
+                    'manager' => 'manager',
+                    'admin' => 'admin'
                 ], [
                     'prompt' => 'Select Role',
                     'id' => 'user-role',

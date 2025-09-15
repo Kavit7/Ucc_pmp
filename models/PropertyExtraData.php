@@ -85,7 +85,9 @@ class PropertyExtraData extends \yii\db\ActiveRecord
     {
         return $this->hasOne(Property::class, ['id' => 'property_id']);
     }
-
+  public function getPropertyAttribute(){
+    return $this->hasOne(PropertyAttribute::class,['id'=>'property_attribute_id']);
+  }
     
 
 }

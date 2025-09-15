@@ -1,46 +1,74 @@
 <?php
+
 namespace app\controllers;
 
 use Yii;
+use yii\filters\AccessControl;
 use yii\web\Controller;
+use yii\web\Response;
+use yii\filters\VerbFilter;
 use app\models\LoginForm;
 
 class LoginController extends Controller
-{
-    public $layout = 'login'; // layout ya login page
+{  
+    public $layout='login';
+    public function behaviors()
+    {
+        return [
+            'access' => [
+                'class' => AccessControl::class,
+                'only' => ['logout'],
+                'rules' => [
+                    [
+                        'actions' => ['logout'],
+                        'allow' => true,
+                        'roles' => ['@'], // only authenticated users
+                    ],
+                ],
+            ],
+            'verbs' => [
+                'class' => VerbFilter::class,
+                'actions' => [
+                    'logout' => ['post'],
+                ],
+            ],
+        ];
+    }
+
+    public function actions()
+    {
+        return [
+            'error' => [
+                'class' => 'yii\web\ErrorAction',
+            ],
+            'captcha' => [
+                'class' => 'yii\captcha\CaptchaAction',
+                'fixedVerifyCode' => YII_ENV_TEST ? 'testme' : null,
+            ],
+        ];
+    }
 
     public function actionIndex()
     {
-        $model = new LoginForm();
+        return $this->render('login');
+    }
 
-        if ($model->load(Yii::$app->request->post()) && $model->login()) {
-            // admin pekee, redirect dashboard
-            return $this->redirect(['custom/index']);
+    public function actionLogin()
+    {
+        if (!Yii::$app->user->isGuest) {
+            return $this->goHome();
         }
 
-        return $this->render('index', [
+        $model = new LoginForm();
+        if ($model->load(Yii::$app->request->post()) && $model->login()) {
+            return $this->goBack(); // ✅ uses LoginForm::login() which calls Users model
+        }
+
+        $model->password = '';
+        return $this->render('login', [
             'model' => $model,
         ]);
     }
-
-
-    public function actionTestLogin()
-{
-    $username = 'admin';
-    $password = 'admin123';
-
-    $user = \app\models\User::findOne(['username' => $username, 'status' => 10]);
-
-    if (!$user) {
-        return "Admin not found!";
-    }
-
-    if (\Yii::$app->getSecurity()->validatePassword($password, $user->password_hash)) {
-        return "Password correct, login works!";
-    } else {
-        return "Password incorrect!";
-    }
-}
 
     public function actionLogout()
     {

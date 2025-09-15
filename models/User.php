@@ -30,6 +30,9 @@ class User extends ActiveRecord
         ];
     }
 
+    public function setPassword($password){
+        $this->password_hash = yii::$app->security->generatePasswordHash($password);
+    }
     public function beforeSave($insert)
     {
         if (parent::beforeSave($insert)) {

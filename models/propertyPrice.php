@@ -3,52 +3,29 @@ namespace app\models;
 
 use Yii;
 use yii\db\ActiveRecord;
+use app\models\Property;
+use app\models\ListSource;
 
-/**
- * This is the model class for table "property_price".
- *
- * @property int $id
- * @property string $uuid
- * @property float $unit_amount
- * @property string $period
- * @property float $min_monthly_rent
- * @property float $max_monthly_rent
- * @property int $property_id
- * @property string $price_type
- * @property string $created_at
- * @property int $created_by
- * @property string $updated_at
- * @property int $updated_by
- *
- * @property Property $property
- */
 class PropertyPrice extends ActiveRecord
 {
-    /**
-     * @inheritdoc
-     */
     public static function tableName()
     {
         return 'property_price';
     }
 
-    /**
-     * @inheritdoc
-     */
     public function rules()
     {
         return [
-            [['uuid', 'unit_amount', 'period', 'min_monthly_rent', 'max_monthly_rent', 'property_id', 'price_type'], 'required'],
+            [['unit_amount', 'property_id', 'price_type'], 'required'],
             [['unit_amount', 'min_monthly_rent', 'max_monthly_rent'], 'number'],
-            [['property_id', 'created_by', 'updated_by'], 'integer'],
+            [['property_id', 'price_type', 'created_by', 'updated_by'], 'integer'],
+            [['period'], 'string', 'max' => 50],
+            [['uuid'], 'string', 'max' => 100],
+            [['uuid'], 'unique'],
             [['created_at', 'updated_at'], 'safe'],
-            [['uuid', 'price_type', 'period'], 'string', 'max' => 100],
         ];
     }
 
-    /**
-     * @inheritdoc
-     */
     public function attributeLabels()
     {
         return [
@@ -67,11 +44,32 @@ class PropertyPrice extends ActiveRecord
         ];
     }
 
-    /**
-     * Relation to Property
-     */
+    // Relation to Property
     public function getProperty()
     {
         return $this->hasOne(Property::class, ['id' => 'property_id']);
+    }
+     public function getPropertyPrice()
+    {
+        return $this->hasOne(Property::class, ['id' => 'property_id']);
+    }
+    // Relation to price type (ListSource)
+    public function getPriceTypeName()
+    {
+        return $this->hasOne(ListSource::class, ['id' => 'price_type']);
+    }
+
+    public function beforeSave($insert)
+    {
+        if (parent::beforeSave($insert)) {
+            if ($insert) {
+                // generate UUID if new record
+                $this->uuid = Yii::$app->security->generateRandomString(36);
+                $this->created_by = Yii::$app->user->id ?? null;
+            }
+            $this->updated_by = Yii::$app->user->id ?? null;
+            return true;
+        }
+        return false;
     }
 }
