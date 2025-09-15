@@ -28,4 +28,7 @@ class Bill extends ActiveRecord
     {
         return $this->hasOne(\app\models\Lease::class, ['id' => 'lease_id']);
     }
+    public function getBillStatus(){
+        return $this->hasOne(ListSource::class,['id'=>'bill_status']);
+    }
 }

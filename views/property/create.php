@@ -1,23 +1,20 @@
 <?php
-
+use app\models\Street;
+use yii\helpers\ArrayHelper;
 use yii\widgets\ActiveForm;
 use yii\helpers\Html;
 use yii\helpers\Url;
-
 /* @var $this yii\web\View */
 /* @var $model app\models\Property */
 /* @var $childProperty array */
 /* @var $childUsage array */
 /* @var $childOwner array */
 /* @var $childStatus array */
-
 $this->registerCssFile("https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css");
 ?>
-<script src="https://cdn.tailwindcss.com"></script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-
 <style>
     :root {
         --primary: #4f46e5;
@@ -31,17 +28,12 @@ $this->registerCssFile("https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.
         --success: #10b981;
     }
     
-    body {
-        font-family: 'Inter', 'Roboto', sans-serif;
-        background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
-        min-height: 100vh;
-        padding: 20px;
-    }
+ 
     
     .form-card {
         max-width: 1200px;
         margin: 2rem auto;
-        padding: 3rem;
+        padding: 2rem 2rem 3rem;
         background-color: #ffffff;
         border-radius: 20px;
         box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.15);
@@ -49,32 +41,25 @@ $this->registerCssFile("https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.
         overflow: hidden;
     }
     
-    .form-card::before {
-        content: '';
-        position: absolute;
-        top: 0;
-        left: 0;
-        right: 0;
-        height: 6px;
-        background: linear-gradient(90deg, var(--primary), #3b82f6, var(--secondary));
-    }
-    
     .form-header {
-        text-align: center;
-        margin-bottom: 3rem;
+        margin-bottom: 2rem;
         position: relative;
     }
     
     .form-header h5 {
-        font-size: 2.25rem;
-        font-weight: 700;
+        font-size: 1.5rem;
+        font-weight: 600;
         color: var(--dark-text);
-        margin-bottom: 0.5rem;
+        margin: 0;
+        display: flex;
+        align-items: center;
     }
     
-    .form-header p {
-        color: var(--light-text);
-        font-size: 1.125rem;
+    .form-header .back-icon {
+        margin-right: 15px;
+        cursor: pointer;
+        color: var(--primary);
+        font-size: 1.2rem;
     }
     
     .form-label {
@@ -120,7 +105,7 @@ $this->registerCssFile("https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.
         font-size: 1.125rem;
         font-weight: 600;
         color: white;
-        background: linear-gradient(90deg, var(--primary), #6366f1);
+        background: #2563EB;
         border: none;
         border-radius: 12px;
         box-shadow: 0 4px 6px rgba(79, 70, 229, 0.25);
@@ -128,34 +113,10 @@ $this->registerCssFile("https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.
         cursor: pointer;
     }
     
-    .btn-submit:hover {
-        transform: translateY(-2px);
-        box-shadow: 0 6px 12px rgba(79, 70, 229, 0.3);
-        background: linear-gradient(90deg, var(--primary-dark), var(--primary));
-    }
+    
     
     .btn-submit:active {
         transform: translateY(0);
-    }
-    
-    .section-title {
-        font-size: 1.5rem;
-        font-weight: 600;
-        color: var(--dark-text);
-        margin: 2.5rem 0 1.5rem;
-        padding-bottom: 0.75rem;
-        border-bottom: 2px solid var(--border-color);
-        position: relative;
-    }
-    
-    .section-title::after {
-        content: '';
-        position: absolute;
-        bottom: -2px;
-        left: 0;
-        width: 60px;
-        height: 2px;
-        background: linear-gradient(90deg, var(--primary), #3b82f6);
     }
     
     .dynamic-placeholder {
@@ -181,124 +142,174 @@ $this->registerCssFile("https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.
         display: block;
     }
     
+    /* Custom grid layout for form rows */
+    .form-row {
+        display: flex;
+        flex-wrap: wrap;
+        margin: 0 -10px;
+        margin-bottom: 1.5rem;
+    }
+    
+    .form-row .form-group {
+        flex: 1;
+        padding: 0 10px;
+        margin-bottom: 0;
+    }
+    
+    .form-row.cols-2 .form-group {
+        flex: 0 0 50%;
+    }
+    
+    .form-row.cols-3 .form-group {
+        flex: 0 0 33.333333%;
+    }
+    
+    .form-row.cols-1 .form-group {
+        flex: 0 0 100%;
+    }
+    
+    .form-actions {
+        display: flex;
+        justify-content: flex-end;
+        gap: 1rem;
+        margin-top: 2rem;
+        padding-top: 1rem;
+        border-top: 1px solid var(--border-color);
+    }
+      .help-block{
+  color:red;
+  font-weight:bold;
+} 
+    
     @media (max-width: 768px) {
         .form-card {
             padding: 1.5rem;
         }
         
         .form-header h5 {
-            font-size: 1.75rem;
+            font-size: 1.25rem;
         }
         
-        .section-title {
-            font-size: 1.25rem;
+        .form-row.cols-2 .form-group,
+        .form-row.cols-3 .form-group {
+            flex: 0 0 100%;
         }
     }
 </style>
-
 <div class="form-card">
     <div class="form-header">
-        <h5>ADD NEW PROPERTY</h5>
-        <p>Please fill out the form below with the property details</p>
+        <h5>
+            <i class="fas fa-arrow-left back-icon"></i>
+            Add new property
+        </h5>
     </div>
-
     <?php $form = ActiveForm::begin(); ?>
-
-    <h3 class="section-title">Basic Information</h3>
-    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+    
+    <!-- First row: Two fields -->
+    <div class="form-row cols-2">
         <div class="form-group">
-            <label class="form-label">Property Name</label>
+           
             <?= $form->field($model, 'property_name')->textInput([
-                'placeholder' => 'Enter Property name',
+                'placeholder' => 'Property Name',
                 'class' => 'styled-input',
-            ])->label(false) ?>
+            ]) ?>
         </div>
         <div class="form-group">
-            <label class="form-label">Property Type</label>
+           
             <?= $form->field($model, 'property_type_id')->dropDownList($childProperty, [
-                'prompt' => 'Select property type',
+                'prompt' => 'Property Type',
                 'id' => 'property_type_id',
                 'class' => 'styled-select'
-            ])->label(false) ?>
+            ]) ?>
         </div>
+    </div>
+    
+    <!-- Second row: Three fields -->
+    <div class="form-row cols-2">
         <div class="form-group">
-            <label class="form-label">Identifier Code</label>
-            <?= $form->field($model, 'identifier_code')->textInput([
-                'placeholder' => 'Identifier Code',
-                'class' => 'styled-input'
-            ])->label(false) ?>
-        </div>
-        <div class="form-group">
-            <label class="form-label">Usage Type</label>
-            <?= $form->field($model, 'usage_type_id')->dropDownList($childUsage, [
-                'prompt' => 'Select Usage Type',
-                'class' => 'styled-select'
-            ])->label(false) ?>
-        </div>
-        <div class="form-group">
-            <label class="form-label">Ownership Type</label>
+            
             <?= $form->field($model, 'ownership_type_id')->dropDownList($childOwner, [
-                'prompt' => 'Select Ownership Type',
+                'prompt' => 'Ownership Type',
                 'class' => 'styled-select'
-            ])->label(false) ?>
+            ]) ?>
         </div>
         <div class="form-group">
-            <label class="form-label">Document URL</label>
-            <?= $form->field($model, 'document_url')->fileInput([
-                'class' => 'styled-input'
-            ])->label(false) ?>
-        </div>
-    </div>
-
-    <h3 class="section-title">Description</h3>
-    <div class="form-group">
-        <?= $form->field($model, 'description')->textArea([
-            'placeholder' => 'Enter Description here',
-            'class' => 'styled-textarea'
-        ])->label(false) ?>
-    </div>
-
-    <h3 class="section-title">Additional Information</h3>
-    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        <div class="form-group">
-            <label class="form-label">Property Status</label>
+          
             <?= $form->field($model, 'property_status_id')->dropDownList($childStatus, [
-                'prompt' => 'Select Property status',
+                'prompt' => 'Enter Status Type',
                 'class' => 'styled-select'
-            ])->label(false) ?>
+            ]) ?>
         </div>
         <div class="form-group">
-            <label class="form-label">Street</label>
-            <?= $form->field($model, 'street_id')->textInput([
-                'placeholder' => 'Select street',
-                'class' => 'styled-input'
-            ])->label(false) ?>
+            
+            <?= $form->field($model, 'usage_type_id')->dropDownList($childUsage, [
+                'prompt' => 'Usage Type',
+                'class' => 'styled-select'
+            ]) ?>
+        </div>
+        <div class="form-group">
+            
+            <?= $form->field($model, 'street_id')->dropDownList(ArrayHelper::map(Street::find()->all(),'street_id','street_name'),[
+                'prompt' => 'Location',
+                'class' => 'styled-select'
+            ])?>
         </div>
     </div>
-
-    <h3 class="section-title">Property Attributes</h3>
+    
+    <!-- Third row: Two fields -->
+    <div class="form-row cols-2">
+        <div class="form-group">
+           
+            <?= $form->field($model, 'documentFile')->fileInput([
+                'class' => 'styled-input'
+            ]) ?>
+        </div>
+        <div class="form-group">
+            
+            <?= $form->field($model, 'identifier_code')->textInput([
+                'placeholder' => 'Unique Property Identity',
+                'class' => 'styled-input'
+            ]) ?>
+        </div>
+    </div>
+    
+    <!-- Fourth row: One field (full width) -->
+    <div class="form-row cols-1">
+        <div class="form-group">
+            
+            <?= $form->field($model, 'description')->textArea([
+                'placeholder' => 'Description',
+                'class' => 'styled-textarea'
+            ]) ?>
+        </div>
+    </div>
+    
     <div id="dynamic-form-container" class="mt-2">
         <div class="dynamic-placeholder">
             <i class="fas fa-clipboard-list"></i>
             <p>Select a Property Type to view additional attributes</p>
         </div>
     </div>
-
+    
     <div class="mt-12 flex justify-end">
-        <?= Html::submitButton('Next Step <i class="fas fa-arrow-right ml-2"></i>', ['class' => 'btn-submit']) ?>
+         <?= Html::submitButton('Save', ['class' => 'btn btn-submit me-3', ])?>
+
     </div>
 
     <?php ActiveForm::end(); ?>
 </div>
-
 <?php
 $attributeUrl = Url::to(['property-attribute/get-attributes']);
 $js = <<<JS
 $(document).ready(function () {
+    // Back button functionality
+    $('.back-icon').on('click', function() {
+        window.history.back();
+    });
+    
     $('#property_type_id').on('change', function () {
         let propertyId = $(this).val();
         if (!propertyId) return;
-
         $.ajax({
             url: '{$attributeUrl}',
             type: 'GET',
@@ -306,21 +317,17 @@ $(document).ready(function () {
             success: function(response) {
                 let container = $('#dynamic-form-container');
                 container.empty();
-
                 if (response.length === 0) {
-                    container.html('<div class="dynamic-placeholder"><i class="fas fa-times-circle"></i><p>Hakuna sifa zilizopatikana kwa aina hii ya mali.</p></div>');
+                    container.html('<div class="dynamic-placeholder"><i class="fas fa-times-circle"></i><p>No attributes found for this property type.</p></div>');
                     return;
                 }
-
                 // Create grid container for attributes
                 let gridContainer = $('<div>').addClass('grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6');
                 container.append(gridContainer);
-
                 response.forEach(function(attr) {
                     let fieldHtml = '';
                     let attrId = attr.id;
                     let attrName = attr.attribute_name;
-
                     switch(attr.attribute_datatype.toLowerCase()) {
                         case 'text':
                             fieldHtml = '<div class="form-group">' +
@@ -339,8 +346,7 @@ $(document).ready(function () {
                             fieldHtml = '<div class="form-group">' +
                                         '<label class="form-label">'+attr.attribute_name+'</label>' +
                                         '<select class="styled-select" name="answers['+attr.id+']">' +
-                                        '<option value="">Chagua Data</option>';
-
+                                        '<option value="">Select</option>';
                             if (Array.isArray(attr.list_source) && attr.list_source.length > 0) {
                                 attr.list_source.forEach(function(item) {
                                     fieldHtml += '<option value="'+item.id+'">'+item.list_Name+'</option>';
@@ -359,12 +365,11 @@ $(document).ready(function () {
             },
             error: function(err) {
                 console.log('Error:', err);
-                $('#dynamic-form-container').html('<div class="text-red-500 p-4"><i class="fas fa-exclamation-circle mr-2"></i>Kuna hitilafu. Tafadhali jaribu tena.</div>');
+                $('#dynamic-form-container').html('<div class="text-red-500 p-4"><i class="fas fa-exclamation-circle mr-2"></i>Error occurred. Please try again.</div>');
             }
         });
     });
 });
 JS;
-
 $this->registerJs($js);
 ?>

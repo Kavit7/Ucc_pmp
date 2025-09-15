@@ -35,7 +35,7 @@ $this->title = 'Payments';
 
                     <td>
                         <?php 
-                            switch ($payment->bill_status) {
+                            switch (strtolower($payment->billStatus->list_Name)) {
                                 case 'pending': echo '<span class="badge bg-warning">Pending</span>'; break;
                                 case 'paid': echo '<span class="badge bg-success">Paid</span>'; break;
                                 case 'overdue': echo '<span class="badge bg-danger">Overdue</span>'; break;
@@ -51,3 +51,22 @@ $this->title = 'Payments';
         <p>No payments have been made yet.</p>
     <?php endif; ?>
 </div>
+<style>
+    :root {
+        --primary: #4f46e5;
+        --primary-dark: #4338ca;
+        --secondary: #10b981;
+        --light-bg: #f9fafb;
+        --dark-text: #1f2937;
+        --mid-text: #4b5563;
+        --light-text: #6b7280;
+        --border-color: #e5e7eb;
+        --success: #10b981;
+    }
+     body {
+        font-family: 'Inter', 'Roboto', sans-serif;
+        background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+        min-height: 100vh;
+        
+    }
+</style>

@@ -6,7 +6,7 @@ $db = require __DIR__ . '/db.php';
 $config = [
     'id' => 'basic',
     'basePath' => dirname(__DIR__),
-    'defaultRoute'=>'list-source/create',
+    'defaultRoute'=>'dashboard/admin-dash',
     'bootstrap' => ['log'],
     'aliases' => [
         '@bower' => '@vendor/bower-asset',
@@ -15,16 +15,24 @@ $config = [
     'components' => [
         'request' => [
             'cookieValidationKey' => '220sE_-yG6ktrNmPk6TAlvQm2C6GBrsa',
-
+            
         ],
+        'authManager' => [
+        'class' => 'yii\rbac\DbManager', // stores RBAC data in database
+    ],
+         'formatter' => [
+        'class' => 'yii\i18n\Formatter',
+        'currencyCode' => 'TZS', // or 'TZS' for Tanzanian Shilling
+    ],
         'cache' => [
             'class' => 'yii\caching\FileCache',
         ],
         'user' => [
-            'identityClass' => 'app\models\User',
+            'identityClass' => 'app\models\Users',
             'enableAutoLogin' => true,
 
-            'loginUrl' => ['login/index'], // login page
+
+            'loginUrl' => ['login/login'], // login page
         ],
         'errorHandler' => [
             // ensure site/error exists

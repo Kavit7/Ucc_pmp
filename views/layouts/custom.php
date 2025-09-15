@@ -1,7 +1,7 @@
 <?php
 use app\assets\AppAsset;
 use yii\helpers\Html;
-
+use yii\helpers\Url;
 AppAsset::register($this);
 
 $this->registerCsrfMetaTags();
@@ -15,6 +15,10 @@ $userProfilePic = Yii::$app->user->identity->profile_pic ?? null;
 $userName = Yii::$app->user->identity->name ?? 'Guest';
 $userRole = Yii::$app->user->identity->role ?? 'User';
 $userInitials = strtoupper(substr($userName,0,1) . substr(strrchr($userName,' '),0,1));
+if (Yii::$app->user->isGuest && Yii::$app->controller->id != 'login') {
+    Yii::$app->response->redirect(Url::to(['login/login']))->send();
+    Yii::$app->end(); // Hii inahakikisha rest ya page haifanyi render
+}
 
 // Get current route to set active class
 $currentRoute = Yii::$app->controller->getRoute();
@@ -28,12 +32,14 @@ $currentRoute = Yii::$app->controller->getRoute();
     <title><?= Html::encode($this->title) ?></title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css">
+
     <?php $this->head() ?>
     <style>
         :root {
             --sidebar-width: 280px;
-            --sidebar-bg: #1e293b;
-            --sidebar-color: #e2e8f0;
+            --sidebar-bg: #120912ff;
+            --sidebar-color: #ffffffff;
             --sidebar-hover-bg: #3b82f6;
             --content-bg: #f1f5f9;
             --header-bg: #ffffff;
@@ -47,18 +53,19 @@ $currentRoute = Yii::$app->controller->getRoute();
             padding: 0;
             box-sizing: border-box;
         }
+            
 
         body {
-            font-family: 'Inter', 'Segoe UI', sans-serif;
-            background-color: var(--content-bg);
-            overflow-x: hidden;
-            color: #334155;
-            display: flex;
-            flex-direction: column;
-            min-height: 100vh;
-        }
-
-        .main-wrapper {
+        font-family: 'Inter', 'Roboto', sans-serif !important;
+        background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+        min-height: 100vh;
+        flex-direction: column;
+        overflow-x: hidden;
+        display: flex;
+        background-color: var(--content-bg);
+       
+    }
+             .main-wrapper {
             display: flex;
             flex: 1;
             position: relative;
@@ -356,6 +363,7 @@ $currentRoute = Yii::$app->controller->getRoute();
         .portal-content {
             padding: 30px;
             flex: 1;
+            
         }
 
         .content-card {
@@ -566,29 +574,45 @@ $currentRoute = Yii::$app->controller->getRoute();
     <div class="sidebar-logo">
         <img src="<?= Yii::getAlias('@web/image/logo.jpg') ?>" alt="Logo">
     </div>
-    
-    <nav class="sidebar-nav">
-        <a class="nav-link <?= strpos($currentRoute, 'site') !== false || strpos($currentRoute, 'dashboard') !== false ? 'active' : '' ?>" href="#">
-            <i class="fas fa-tachometer-alt"></i>
-            <span>Dashboard</span>
-        </a>
+            
+      <nav class="sidebar-nav">
+       <a class="nav-link <?= $currentRoute == 'dashboard/admin_dash' ? 'active' : '' ?>" href="<?= \yii\helpers\Url::to(['dashboard/admin-dash']) ?>">
+        <i class="fas fa-tachometer-alt"></i>
+          <span>Dashboard</span>
+      </a>
 
-        <a class="nav-link <?= strpos($currentRoute, 'property/') !== false && strpos($currentRoute, 'property-price') === false ? 'active' : '' ?>" href="<?= \yii\helpers\Url::to(['property/create']) ?>">
+
+
+        <a class="nav-link <?= $currentRoute == 'property/index' ? 'active' : '' ?>" href="<?= \yii\helpers\Url::to(['property/index']) ?>">
             <i class="fas fa-building"></i>
             <span>Properties</span>
         </a>
 
+     <?php if(Yii::$app->user->identity->role==='admin'): ?>
        <a class="nav-link <?= strpos($currentRoute, 'property-price') !== false ? 'active' : '' ?>" href="<?= \yii\helpers\Url::to(['property-price/index']) ?>">
             <i class="fas fa-dollar-sign"></i>
             <span>Properties Prices</span>
         </a>
-
-
-        <a class="nav-link <?= strpos($currentRoute, 'custom/leases') !== false || strpos($currentRoute, 'lease') !== false ? 'active' : '' ?>" href="<?= \yii\helpers\Url::to(['custom/leases']) ?>">
+     <?php endif; ?>
+      
+        <a class="nav-link <?= strpos($currentRoute, '/leases') !== false || strpos($currentRoute, 'lease') !== false ? 'active' : '' ?>"  href="<?= \yii\helpers\Url::to(['custom/leases']) ?>">
             <i class="fas fa-file-contract"></i>
             <span>Lease management</span>
         </a>
 
+    <?php if(Yii::$app->user->identity->role==='admin'): ?>
+        <a class="nav-link <?= $currentRoute == 'list-source/create' ? 'active' : '' ?>" href="<?= \yii\helpers\Url::to(['list-source/create']) ?>">
+            <i class="fas fa-building"></i>
+            <span>Configuration</span>
+        </a>
+       
+
+        <a class="nav-link <?= $currentRoute == 'property-attribute/create' ? 'active' : '' ?>" href="<?= \yii\helpers\Url::to(['property-attribute/create']) ?>">
+            <i class="fas fa-building"></i>
+            <span>Property Extra data</span>
+        </a>
+
+ <?php endif; ?>
         <!-- Bills -->
         <a class="nav-link <?= strpos($currentRoute, 'custom/bill') !== false ? 'active' : '' ?>" href="<?= \yii\helpers\Url::to(['custom/bill']) ?>">
             <i class="fas fa-file-invoice"></i>
@@ -602,17 +626,19 @@ $currentRoute = Yii::$app->controller->getRoute();
         </a>
 
        
-        <a class="nav-link <?= strpos($currentRoute, 'user') !== false ? 'active' : '' ?>" href="#">
-            <i class="fas fa-users"></i>
-            <span>User management</span>
-        </a>
+       <?php if (Yii::$app->user->identity->role === 'admin'||Yii::$app->user->identity->role === 'manager' ): ?>
+       <a class="nav-link <?= Yii::$app->controller->id === 'users' ? 'active' : '' ?>"
+                href="<?= \yii\helpers\Url::to(['users/index']) ?>">
+                    <i class="fas fa-users"></i><span>User management</span>
+            </a>
+           <?php endif; ?>
 
         <a class="nav-link <?= strpos($currentRoute, 'report') !== false ? 'active' : '' ?>" href="#">
             <i class="fas fa-chart-bar"></i>
             <span>Reports</span>
         </a>
 
-        <a class="nav-link <?= strpos($currentRoute, 'custom/profile') !== false ? 'active' : '' ?>" href="<?= \yii\helpers\Url::to(['custom/profile']) ?>">
+        <a class="nav-link <?= strpos($currentRoute, 'custom/profile') !== false ? 'active' : '' ?>" href="<?= \yii\helpers\Url::to(['dashboard/admin-dash']) ?>">
             <i class="fas fa-user-circle"></i>
             <span>Profile</span>
         </a>
@@ -622,76 +648,100 @@ $currentRoute = Yii::$app->controller->getRoute();
 
 
     <div class="content-wrapper">
-        <header>
-            <button class="menu-toggle" id="menuToggle">
-                <i class="fas fa-bars"></i>
-            </button>
-            
-            <div class="header-search">
-                <i class="fa fa-search search-icon"></i>
-                <input type="text" placeholder="Search here..." id="search-input">
-            </div>
-            
-            <div class="header-right">
-                <div class="icon-button">
-                    <i class="fa fa-bell"></i>
-                    <span class="notification-badge">3</span>
-                </div>
-                
-                <div class="icon-button">
-                    <i class="fa fa-cog"></i>
-                </div>
-                
-                <!-- Profile Dropdown -->
-                <div class="profile-dropdown">
-                    <div class="profile" id="profileToggle">
-                        <?php if($userProfilePic): ?>
-                            <img src="<?= Yii::getAlias('@web/uploads/' . $userProfilePic) ?>" alt="Profile" class="profile-icon">
-                        <?php else: ?>
-                            <div class="profile-icon"><?= $userInitials ?></div>
-                        <?php endif; ?>
-                        <div class="profile-info">
-                            <span class="profile-name"><?= $userName ?></span>
-                            <span class="profile-role"><?= $userRole ?></span>
-                        </div>
-                        <i class="fas fa-chevron-down" style="font-size: 12px;"></i>
-                    </div>
-                    
-                    <div class="dropdown-menu" id="dropdownMenu">
-                        <div class="dropdown-header">
-                            <div class="profile-name"><?= $userName ?></div>
-                            <div class="profile-role"><?= $userRole ?></div>
-                        </div>
-                        
-                        <div class="dropdown-divider"></div>
-                       
-                       <a href="<?= \yii\helpers\Url::to(['custom/change-password']) ?>" class="dropdown-item">
-                            <i class="fas fa-key"></i>
-                            <span>Change Password</span>
-                        </a>
+   <?php
+$user = Yii::$app->user->identity;
+$userProfilePic = $user->profile_picture ?? null;
+$userInitials = strtoupper(substr($user->username ?? 'U', 0, 1));
 
-                        
-                        <div class="dropdown-divider"></div>
-                        
-                        <?= \yii\helpers\Html::a(
-                            '<i class="fas fa-sign-out-alt"></i><span>Logout</span>',
-                            ['custom/logout'],
-                            ['class' => 'dropdown-item']
-                        ) ?>
-                    </div>
-                </div>
+// Hapa tunahakiki kama file ipo kwenye server
+$profileUrl = ($userProfilePic && file_exists(Yii::getAlias('@webroot/uploads/' . $userProfilePic)))
+    ? Yii::getAlias('@web/uploads/' . $userProfilePic)
+    : null; // hakuna picha, tutaonyesha initials
+?>
+
+<header style="display:flex;align-items:center;justify-content:space-between; padding:0 15px;">
+    <div class="header-left" style="display:flex;align-items:center;gap:15px;">
+        <button class="menu-toggle" id="menuToggle">
+            <i class="fas fa-bars"></i>
+        </button>
+
+        <?php if ($currentRoute === 'dashboard/admin-dash'): ?>
+            <div class="header-search">
+                <form action="<?= \yii\helpers\Url::to(['property/index']) ?>" method="get" style="display:flex;align-items:center;width:250px;max-width:100%;">
+                    <i class="fa fa-search search-icon"></i>
+                    <input 
+                        type="text" 
+                        name="q" 
+                        placeholder="Search properties..." 
+                        value="<?= Yii::$app->request->get('q') ?>" 
+                        style="border:none;outline:none;flex:1;background:transparent;">
+                </form>
             </div>
-        </header>
+        <?php endif; ?>
+    </div>
+
+    <div class="header-right" style="display:flex;align-items:center;gap:15px;">
+        <div class="icon-button">
+            <i class="fa fa-bell"></i>
+            <span class="notification-badge">3</span>
+        </div>
+        
+        <div class="icon-button">
+            <i class="fa fa-cog"></i>
+        </div>
+
+        <!-- Profile Dropdown -->
+        <div class="profile-dropdown">
+            <div class="profile" id="profileToggle" style="display:flex;align-items:center;gap:8px;">
+                <?php if ($profileUrl): ?>
+                    <img src="<?= $profileUrl ?>" alt="Profile" class="profile-icon" style="width:40px;height:40px;border-radius:50%;object-fit:cover;">
+                <?php else: ?>
+                    <div class="profile-icon" style="width:40px;height:40px;border-radius:50%;background:#007bff;color:#fff;display:flex;align-items:center;justify-content:center;font-weight:bold;">
+                        <?= $userInitials ?>
+                    </div>
+                <?php endif; ?>
+
+                <div class="profile-info" style="display:flex;flex-direction:column;">
+                    <span class="profile-name"><?= $user->full_name ?></span>
+                    <span class="profile-role"><?= ucfirst($user->role) ?></span>
+                </div>
+                <i class="fas fa-chevron-down" style="font-size: 12px;"></i>
+            </div>
+
+            <div class="dropdown-menu" id="dropdownMenu">
+                <div class="dropdown-header">
+                    <div class="profile-name"><?= $user->full_name ?></div>
+                    <div class="profile-role"><?= ucfirst($user->role) ?></div>
+                </div>
+
+                <div class="dropdown-divider"></div>
+               
+               <a href="<?= \yii\helpers\Url::to(['custom/change-password']) ?>" class="dropdown-item">
+                    <i class="fas fa-key"></i>
+                    <span>Change Password</span>
+                </a>
+
+                <div class="dropdown-divider"></div>
+                
+                <?= \yii\helpers\Html::a(
+                    '<i class="fas fa-sign-out-alt"></i><span>Logout</span>',
+                    ['custom/logout'],
+                    ['class' => 'dropdown-item']
+                ) ?>
+            </div>
+        </div>
+    </div>
+</header>
+
+
+
 
         <div class="portal-content">
-            <div class="content-card">
-                <h1 class="page-title">Dashboard</h1>
-                <p class="page-subtitle">Welcome back, <?= $userName ?>! Here's what's happening with your properties today.</p>
-                
-                <div class="mt-4">
-                    <?= $content ?>
-                </div>
-            </div>
+    <div class="mt-4">
+        <?= $content ?>
+    </div>
+
+
         </div>
 
         <footer class="footer">

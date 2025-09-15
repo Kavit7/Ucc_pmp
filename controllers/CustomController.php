@@ -5,169 +5,312 @@ use Yii;
 use yii\web\Controller;
 use yii\web\UploadedFile;
 use yii\filters\AccessControl;
+use yii\web\Response;
 use app\models\Lease;
 use app\models\Bill;
+use app\models\ListSource;
+use app\models\ChangePasswordForm;
 
 class CustomController extends Controller
 {
     public $layout = 'custom';
 
+    /**
+     * Access control
+     */
     public function behaviors()
     {
         return [
             'access' => [
                 'class' => AccessControl::class,
-                'only' => ['index', 'logout', 'leases', 'create-lease', 'delete-lease', 'bill', 'payment'],
+                'only' => ['index','logout','leases','create-lease','delete-lease','bill','payment','profile','change-password','check-current-password'],
                 'rules' => [
                     [
                         'allow' => true,
-                        'roles' => ['@'],
+                        'roles' => ['?','@'], // logged-in users
                     ],
                 ],
                 'denyCallback' => function($rule, $action) {
-                    return Yii::$app->response->redirect(['login/index']);
+                    return $this->redirect(['login/index']);
                 },
             ],
         ];
     }
 
-    // Dashboard
+    /**
+     * Dashboard
+     */
     public function actionIndex()
     {
         $user = Yii::$app->user->identity;
         return $this->render('index', ['user' => $user]);
     }
 
-    // Logout
+    /**
+     * Logout
+     */
     public function actionLogout()
     {
         Yii::$app->user->logout();
-        return $this->redirect(['login/index']);
+        return $this->redirect(['login/login']);
     }
 
-    // List leases
-    public function actionLeases()
-    {
-        $leases = Lease::find()->with(['property', 'tenant', 'propertyPrice'])->all();
-        return $this->render('leases', ['leases' => $leases]);
-    }
+    /**
+     * Create lease
+     */
 
-    // Create lease
-    public function actionCreateLease()
-    {
-        $lease = new Lease();
+    /**
+ * List all leases
+ */
 
-        if ($lease->load(Yii::$app->request->post())) {
+public function actionLeases()
+{
+    $leases = Lease::find()->with(['property','tenant','propertyPrice'])->all();
+    return $this->render('leases', [
+        'leases' => $leases
+    ]);
+}
 
-            // handle file upload
-            $lease->lease_doc_file = UploadedFile::getInstance($lease, 'lease_doc_file');
-            if ($lease->uploadDocument()) {
-                // file path is saved in lease_doc_url
+public function actionCreateLease()
+{
+    $lease = new Lease();
+
+    if ($lease->load(Yii::$app->request->post())) {
+
+        // ✅ Check if the property is already under an active lease
+        $activeLease = Lease::find()
+            ->where(['property_id' => $lease->property_id])
+            ->andWhere(['>=', 'lease_end_date', date('Y-m-d')])
+            ->andWhere(['status' => 1]) // 1 = Active
+            ->exists();
+
+        if ($activeLease) {
+            if (Yii::$app->request->isAjax) {
+                Yii::$app->response->format = \yii\web\Response::FORMAT_JSON;
+                return [
+                    'status' => 'error',
+                    'message' => 'This property is already leased until its current lease expires.'
+                ];
             }
 
-            if ($lease->save()) {
-                // Create bill automatically
-                $bill = new Bill();
-                $bill->uuid = Yii::$app->security->generateRandomString(12);
-                $bill->lease_id = $lease->id;
-                $bill->amount = $lease->propertyPrice->unit_amount ?? 0;
-                $bill->due_date = $lease->lease_start_date;
-                $bill->bill_status = 'pending';
-                $bill->created_by = Yii::$app->user->id ?? null;
-                $bill->save();
+            Yii::$app->session->setFlash('error', 'This property is already leased until its current lease expires.');
+            return $this->redirect(['custom/leases']);
+        }
 
-                Yii::$app->session->setFlash('success', 'Lease na Bill zimeundwa!');
-                return $this->redirect(['bill']); // view ya Bill
+        // Handle uploaded lease document
+        $lease->lease_doc_file = UploadedFile::getInstance($lease, 'lease_doc_file');
+        if ($lease->lease_doc_file instanceof UploadedFile) {
+            if (!$lease->uploadDocument()) {
+                if (Yii::$app->request->isAjax) {
+                    Yii::$app->response->format = \yii\web\Response::FORMAT_JSON;
+                    return [
+                        'status' => 'error',
+                        'message' => 'Failed to upload lease document.'
+                    ];
+                }
+                Yii::$app->session->setFlash('error', 'Failed to upload lease document.');
+                return $this->render('create-lease', ['lease' => $lease]);
             }
         }
 
+        // Generate UUID for Lease (like Property)
+        if (empty($lease->uuid)) {
+            $lastUuid = Lease::find()
+                ->select('uuid')
+                ->where(['like', 'uuid', 'Lease_%', false])
+                ->orderBy(['id' => SORT_DESC])
+                ->scalar();
+
+            $lease->uuid = $lastUuid
+                ? 'Lease_' . ((int)str_replace('Lease_', '', $lastUuid) + 1)
+                : 'Lease_1';
+        }
+
+        // Calculate lease duration in months
+        $lease->duration_months = $lease->getDurationMonths();
+
+        // Set created_by / updated_by
+        if (!Yii::$app->user->isGuest) {
+            $lease->created_by = Yii::$app->user->id;
+            $lease->updated_by = Yii::$app->user->id;
+        }
+
+        // Save lease
+        if ($lease->save(false)) {
+
+    // Automatically create related bill
+    $bill = new Bill();
+    $bill->uuid = Yii::$app->security->generateRandomString(12);
+    $bill->lease_id = $lease->id;
+    $bill->amount = ($lease->propertyPrice->unit_amount ?? 0) * ($lease->duration_months ?? 1);
+    $bill->due_date = $lease->lease_start_date;
+    $bill->created_by = Yii::$app->user->id ?? null;
+
+    // Assign default "Pending" status before saving
+    $pending = ListSource::find()
+        ->where(['list_Name' => 'Pending', 'category' => 'Bill Status'])
+        ->one();
+    $bill->bill_status = $pending ? $pending->id : null;
+
+    if ($bill->save(false)) {
+        // Bill saved successfully
+    }
+
+    if (Yii::$app->request->isAjax) {
+        Yii::$app->response->format = \yii\web\Response::FORMAT_JSON;
+        return [
+            'status' => 'success',
+            'message' => 'Lease and Bill created successfully!'
+        ];
+    }
+
+    Yii::$app->session->setFlash('success', 'Lease and Bill created successfully!');
+    return $this->redirect(['custom/bill']);
+}
+
+        if (Yii::$app->request->isAjax) {
+            Yii::$app->response->format = \yii\web\Response::FORMAT_JSON;
+            return [
+                'status' => 'error',
+                'errors' => $lease->errors
+            ];
+        }
+
+        Yii::$app->session->setFlash('error', 'Failed to create lease.');
         return $this->render('create-lease', ['lease' => $lease]);
     }
 
-    // Delete lease
+    // GET request: render form
+    return $this->render('create-lease', ['lease' => $lease]);
+}
+
+
+    /**
+     * Delete lease
+     */
     public function actionDeleteLease($id)
     {
         $lease = Lease::findOne($id);
         if ($lease) {
             $lease->delete();
-            Yii::$app->session->setFlash('success', 'Lease deleted successfully.');
+            Yii::$app->session->setFlash('success','Lease deleted successfully.');
         } else {
-            Yii::$app->session->setFlash('error', 'Lease not found.');
+            Yii::$app->session->setFlash('error','Lease not found.');
         }
         return $this->redirect(['leases']);
     }
 
-    // Bills view
+    /**
+     * View all bills
+     */
     public function actionBill()
     {
         $bills = Bill::find()->with('lease')->all();
-        return $this->render('bill', [
-            'bills' => $bills,
-        ]);
+        return $this->render('bill', ['bills' => $bills]);
     }
-
-
-            // CustomController.php
-        public function actionProfile()
-        {
-            $user = Yii::$app->user->identity; // inatoa user aliye login
-            return $this->render('profile', [
-                'user' => $user,
-            ]);
-            
-        }
-     // UserController.php
-
-// Inline check for current password
-// Check current password inline via AJAX
-public function actionCheckCurrentPassword()
+    
+   public function actionGetPrices($id)
 {
     Yii::$app->response->format = \yii\web\Response::FORMAT_JSON;
-    $data = json_decode(Yii::$app->request->getRawBody(), true);
-    $password = $data['currentPassword'] ?? '';
 
-    $user = Yii::$app->user->identity;
-    $isValid = $user && $user->validatePassword($password);
+    $prices = \app\models\PropertyPrice::find()
+        ->where(['property_id' => $id])
+        ->all();
 
-    return ['valid' => $isValid];
+    $result = [];
+    foreach ($prices as $price) {
+        $result[$price->id] = number_format($price->unit_amount, 2);
+    }
+
+    return $result;
 }
 
-// Change password action
-public function actionChangePassword()
+
+
+    public function actionDeleteBill($id)
 {
-    $model = new \app\models\ChangePasswordForm();
+    Yii::$app->response->format = \yii\web\Response::FORMAT_JSON;
+    $bill = Bill::findOne($id);
+
+    if ($bill) {
+        $bill->delete();
+        return ['status' => 'success', 'message' => 'Bill deleted successfully.'];
+    }
+
+    return ['status' => 'error', 'message' => 'Bill not found.'];
+}
+
+    /**
+     * User profile
+     */
+    public function actionProfile()
+    {
+        $user = Yii::$app->user->identity;
+        return $this->render('profile', ['user' => $user]);
+    }
+
+    /**
+     * Inline AJAX check for current password
+     */
+    public function actionCheckCurrentPassword()
+    {
+        Yii::$app->response->format = Response::FORMAT_JSON;
+        $data = json_decode(Yii::$app->request->getRawBody(), true);
+        $password = $data['currentPassword'] ?? '';
+
+        $user = Yii::$app->user->identity;
+        $isValid = $user && $user->validatePassword($password);
+
+        return ['valid' => $isValid];
+    }
+
+    /**
+     * Change password
+     */
+    public function actionChangePassword()
+{
+    $model = new ChangePasswordForm();
 
     if ($model->load(Yii::$app->request->post()) && $model->validate()) {
         $user = Yii::$app->user->identity;
 
-        // Validate old password
+        // Hakikisha current password ni sahihi
         if (!$user->validatePassword($model->currentPassword)) {
             Yii::$app->session->setFlash('error', 'Current password is incorrect.');
             return $this->refresh();
         }
 
-        // Set new password
+        // Badilisha password kwa hash
         $user->setPassword($model->newPassword);
-        $user->auth_key = Yii::$app->security->generateRandomString();
-        $user->save(false);
 
-        Yii::$app->session->setFlash('success', 'Password has been changed. Please login again.');
+        // Huu mstari unaondoa authKey
+        // $user->authKey = Yii::$app->security->generateRandomString();
+
+        $user->save(false); // bypass validation, save immediately
+
+        Yii::$app->session->setFlash('success', 'Password changed successfully. Please login again.');
         Yii::$app->user->logout();
 
-        return $this->redirect(['login/index']);
+        return $this->redirect(['login/login']);
     }
 
     return $this->render('change-password', ['model' => $model]);
 }
 
 
-
-    // Payments view (example: only paid bills)
-    public function actionPayment()
+    /**
+     * Payments view
+     */
+  /* public function actionPayment()
     {
-        $payments = Bill::find()->where(['not', ['paid_date' => null]])->with('lease')->all();
-        return $this->render('payment', [
-            'payments' => $payments,
-        ]);
-    }
+        $payments = Bill::find()->where(['not',['paid_date'=>null]])->with('lease')->all();
+        return $this->render('payment', ['payments' => $payments]);
+    }*/
+
+    public function actionPayment()
+{
+    $payments = Bill::find()->with('lease')->all(); // inarudisha zote bila kuchuja
+    return $this->render('payment', ['payments' => $payments]);
+}
+
 }

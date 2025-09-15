@@ -99,6 +99,9 @@ class PropertyAttributeAnswer extends \yii\db\ActiveRecord
     {
         return $this->hasMany(PropertyExtraData::class, ['attribute_answer_id' => 'id']);
     }
+    public function getListSource(){
+        return $this->hasOne(ListSource::class,['id'=>'answer_id']);
+    }
 
     
     

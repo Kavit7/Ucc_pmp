@@ -14,7 +14,7 @@ class ChangePasswordForm extends Model
     {
         return [
             [['currentPassword', 'newPassword', 'confirmPassword'], 'required'],
-            ['confirmPassword', 'compare', 'compareAttribute'=>'newPassword', 'message'=>"Nenosiri jipya na uthibitisho wake hazifanani"],
+            ['confirmPassword', 'compare', 'compareAttribute'=>'newPassword', 'message'=>"Password do not match"],
             ['newPassword', 'string', 'min'=>8, 'tooShort'=>"Nenosiri jipya lazima liwe na angalau herufi 8"],
         ];
     }
@@ -29,12 +29,12 @@ class ChangePasswordForm extends Model
 
         // Validate current password
         if (!Yii::$app->security->validatePassword($this->currentPassword, $user->password_hash)) {
-            $this->addError('currentPassword', 'Nenosiri la sasa si sahihi');
+            $this->addError('currentPassword', 'Wrong new Password');
             return false;
         }
 
         // Set new password with hash
-        $user->password_hash = Yii::$app->security->generatePasswordHash($this->newPassword);
+        $user->password = Yii::$app->security->generatePasswordHash($this->newPassword);
 
         if ($user->save(false)) {
             return true;

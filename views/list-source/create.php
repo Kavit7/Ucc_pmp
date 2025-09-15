@@ -3,6 +3,8 @@ use yii\widgets\ActiveForm;
 use yii\helpers\Html;
 use yii\helpers\ArrayHelper;
 use app\models\ListSource;
+use yii\helpers\Url;
+
 
 $this->title = 'Configure List Source';
 $form = ActiveForm::begin();
@@ -15,7 +17,7 @@ $(document).ready(function () {
             $('.ChildList').hide();
         } else if (select === 'Existing-List') {
             $('.List').hide();
-            window.location.href='list-source/add-child'
+            window.location.href='" . Url::to(['list-source/add-child']) . "';
         } else {
             $('.List, .ChildList').hide();
         }
@@ -24,9 +26,7 @@ $(document).ready(function () {
 ");
 ?>
 
-<html>
-<head>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons/font/bootstrap-icons.css" rel="stylesheet">
     <style>
         :root {
@@ -39,10 +39,10 @@ $(document).ready(function () {
             --border: #e2e8f0;
         }
         
-        body {
+        .body {
             background-color: #f5f7fa;
             color: var(--text);
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            font-family: 'Inter', 'Roboto', sans-serif;
         }
         
         .page-header {
@@ -61,8 +61,8 @@ $(document).ready(function () {
         }
         
         .card-header {
-            background: linear-gradient(135deg, var(--primary-dark), var(--primary));
-            color: white;
+            background: #eae7e7ff !important;
+            color: #0b6ab3ff;
             padding: 1.5rem;
             font-weight: 600;
             border: none;
@@ -130,47 +130,49 @@ $(document).ready(function () {
             box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
         }
     </style>
-</head>
-<body>
+
+
         <div class="container mb-5">
-        <div class="card">
-            <div class="card-header">
-                <div class="d-flex align-items-center">
-                    <i class="bi bi-sliders me-2"></i>
-                    <span>Configuration Options</span>
-                </div>
+    
+    
+        <div class="card-header">
+            <div class="d-flex align-items-center">
+                <i class="bi bi-sliders me-2"></i>
+                <span>Configuration Options</span>
             </div>
+        </div>
 
-            <div class="card-body p-4">
-                <div class="select-card">
-                    <label class="form-label">Select Configuration Task</label>
-                    <select class="form-select form-select-lg">
-                        <option value="">------- Select Configuration Task ---------</option>
-                        <option value="New-List">➕ Add New List Name Configuration</option>
-                        <option value="Existing-List">🔗 Add Configuration To Existing List Name</option>
-                    </select>
-                </div>
+            <div class="select-card">
+                <label class="form-label">Select Configuration Task</label>
+                <select class="form-select form-select-sm">
+                    <option value="">------- Select Configuration Task ---------</option>
+                    <option value="New-List">➕ Add New List Name Configuration</option>
+                    <option value="Existing-List">🔗 Add Configuration To Existing List Name</option>
+                </select>
+            
 
-                <!-- New List Form -->
-                <div class="List" style="display:none;">
-                    <div class="config-card">
-                        <h5 class="config-title"><i class="bi bi-plus-circle"></i> Add New List Name</h5>
+            <!-- New List Form -->
+            <div class="List" style="display:none;">
+                <div class="config-card">
+                    <h5 class="config-title"><i class="bi bi-plus-circle"></i> Add New List Name</h5>
+
+                    <?php $form = ActiveForm::begin(); ?>
                         <?= $this->render('_formview', ['model' => $model]) ?>
-                    </div>
+                    <?php ActiveForm::end(); ?>
+
                 </div>
-
-                <!-- Child List Form -->
             </div>
-        </div>
 
-        <!-- Source Table -->
-        <div class="mt-5">
-            <?= $this->render('source', ['sources' => $sources]) ?>
         </div>
+    
+
+    <!-- Source Table -->
+    <div class="mt-5">
+        <?= $this->render('source', ['sources' => $sources]) ?>
     </div>
+    <?php ActiveForm::end(); ?>
+</div>
 
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
-</body>
-</html>
+    
 
-<?php ActiveForm::end(); ?>
+
