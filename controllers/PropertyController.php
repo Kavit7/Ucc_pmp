@@ -11,25 +11,54 @@ use app\models\PropertyAttributeAnswer;
 use app\models\PropertyExtraData;
 use yii\helpers\ArrayHelper;
 use yii\data\ActiveDataProvider;
-
+use app\models\PropertySearch;
 class PropertyController extends Controller
 {
     public $layout='custom';
 
-     public function actionIndex()
-    {
-         $dataProvider = new ActiveDataProvider(['query'=>Property::find(),
-    'pagination'=>[
-        'pageSize'=>12,
-    ],
-    ]);
+ public function actionIndex()
+{
+    $searchModel = new PropertySearch(); 
 
-        return $this->render('index',[
-            'dataProvider'=>$dataProvider,
-        ]);
+    // pata id ya parent OwnerShip
+    $parentOwner = ListSource::find()
+        ->select('id')
+        ->where(['list_name' => 'OwnerShip'])
+        ->scalar(); // inarudisha single value badala ya array
+    //pata id ya parent status
+    $parentStatus = ListSource::find()
+        ->select('id')
+        ->where(['list_name' => 'Status'])
+        ->scalar(); 
+    // pata watoto wake
+    $childOwner = [];
+    $childStatus=[];
+    if ($parentOwner) {
+        $childOwner = ArrayHelper::map(
+            ListSource::find()->where(['parent_id' => $parentOwner])->all(),
+            'id',
+            'list_Name'
+        );
     }
-    
-  
+         if ($parentStatus) {
+        $childStatus = ArrayHelper::map(
+            ListSource::find()->where(['parent_id' => $parentStatus])->all(),
+            'id',
+            'list_Name'
+        );
+    }
+
+    $dataProvider = $searchModel->search(Yii::$app->request->queryParams);
+    $dataProvider->pagination->pageSize = 12;
+
+    return $this->render('index', [
+        'searchModel'  => $searchModel,
+        'dataProvider' => $dataProvider,
+        'childOwner'   => $childOwner,
+        'childStatus' =>$childStatus,
+    ]);
+}
+
    public function actionCreate()
     {
         $model = new Property();
@@ -381,4 +410,5 @@ public function actionSales(){
     ]);
 
 }
+
 }
