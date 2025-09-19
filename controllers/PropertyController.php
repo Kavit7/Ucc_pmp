@@ -10,6 +10,7 @@ use app\models\ListSource;
 use app\models\PropertyAttributeAnswer;
 use app\models\PropertyExtraData;
 use yii\helpers\ArrayHelper;
+use yii\data\ActiveDataProvider;
 
 class PropertyController extends Controller
 {
@@ -17,10 +18,14 @@ class PropertyController extends Controller
 
      public function actionIndex()
     {
-         $models = Property::find()->all();
+         $dataProvider = new ActiveDataProvider(['query'=>Property::find(),
+    'pagination'=>[
+        'pageSize'=>12,
+    ],
+    ]);
 
         return $this->render('index',[
-            'models'=>$models,
+            'dataProvider'=>$dataProvider,
         ]);
     }
     
