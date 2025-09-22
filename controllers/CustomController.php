@@ -10,7 +10,7 @@ use app\models\Lease;
 use app\models\Bill;
 use app\models\ListSource;
 use app\models\ChangePasswordForm;
-
+use app\controllers\NotFoundHttpException;
 class CustomController extends Controller
 {
     public $layout = 'custom';
@@ -199,6 +199,47 @@ public function actionCreateLease()
         }
         return $this->redirect(['leases']);
     }
+ public function actionViewLease($tenant){
+    $leases=Lease::find()->where(['tenant_id'=>$tenant])->all();
+    $tname=\app\models\Users::find()->where(['user_id'=>$tenant])->one();
+    return $this->render('view-lease',[
+        'leases'=>$leases,
+        'tname'=>$tname,
+    ]);
+ }
+ public function actionRenew($id)
+{
+    $oldLease = $this->findModel($id);
+
+    $model = new Lease();
+    $model->tenant_id = $oldLease->tenant_id;
+    $model->property_id = $oldLease->property_id;
+
+    if ($model->load(Yii::$app->request->post())) {
+        $model->lease_doc_file = UploadedFile::getInstance($model, 'lease_doc_file');
+
+        if ($model->lease_doc_file instanceof UploadedFile) {
+            if (!$model->uploadDocument()) {
+                Yii::$app->session->setFlash('error', 'Failed to upload lease document.');
+                return $this->render('renew', [
+                    'lease' => $model,
+                    'oldLease' => $oldLease,
+                ]);
+            }
+        }
+
+        if ($model->save(false)) { 
+            Yii::$app->session->setFlash('success', 'Lease renewed successfully.');
+            return $this->redirect(['leases', 'id' => $model->id]);
+        }
+    }
+
+    return $this->render('renew', [
+        'lease' => $model,
+        'oldLease' => $oldLease,
+    ]);
+}
+
 
     /**
      * View all bills
@@ -225,6 +266,30 @@ public function actionCreateLease()
     return $result;
 }
 
+public function actionTerminate($id)
+{
+  $model = Lease::findOne($id);
+if ($model !== null) {
+    // pata parent_id ya status yake ya sasa
+    $parent = \app\models\ListSource::find()
+        ->select(['parent_id'])
+        ->where(['id' => $model->status]) // hii inapaswa kuwa status, sio lease->id
+        ->scalar(); // inarudisha single value badala ya object
+
+    // pata id ya status yenye jina "Terminated" na parent huyo
+    $statusId = \app\models\ListSource::find()
+        ->select(['id'])
+        ->where(['list_Name' => 'Terminated', 'parent_id' => $parent])
+        ->scalar();
+
+    if ($statusId) {
+        $model->status = $statusId; // weka id sahihi ya status
+        $model->save(false);
+    }
+}
+
+    return $this->redirect(['leases']); // rudi kwenye list baada ya terminate
+}
 
 
     public function actionDeleteBill($id)
@@ -312,5 +377,11 @@ public function actionCreateLease()
     $payments = Bill::find()->with('lease')->all(); // inarudisha zote bila kuchuja
     return $this->render('payment', ['payments' => $payments]);
 }
+protected function findModel($id)
+    {
+        if (($model = Lease::findOne($id)) !== null) {
+            return $model;
+        }
+    }
 
 }

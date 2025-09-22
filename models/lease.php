@@ -82,12 +82,31 @@ class Lease extends ActiveRecord
         }
 
         if ($insert) {
+            // Set the user who created the record
+            $this->created_by = Yii::$app->user->id;
+            $this->updated_by=Yii::$app->user->id;
+            // Generate UUID if empty
+           if (empty($this->uuid)) {
+    $lastNumber = (int) self::find()
+        ->select(['MAX(CAST(SUBSTRING(uuid,6) AS UNSIGNED)) AS maxNumber'])
+        ->where(['like', 'uuid', 'Lease_%', false])
+        ->scalar();
+
+    $lastNumber = $lastNumber ?: 0;
+
+    do {
+        $lastNumber++;
+        $newUuid = 'Lease_' . $lastNumber;
+    } while (self::find()->where(['uuid' => $newUuid])->exists());
+
+    $this->uuid = $newUuid;
+}
+
+        
             $this->created_at = date('Y-m-d H:i:s');
-            $this->created_by = Yii::$app->user->id ?? 2;
         }
 
         $this->updated_at = date('Y-m-d H:i:s');
-        $this->updated_by = Yii::$app->user->id ?? 2;
 
         return true;
     }
