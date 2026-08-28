@@ -212,7 +212,19 @@ $this->registerCss($css);
                 <?= $form->field($model, 'property_type_id')->dropDownList($childProperty, ['prompt' => 'Select Property Type']) ?>
                 <?= $form->field($model, 'ownership_type_id')->dropDownList($childOwner, ['prompt' => 'Select Ownership Type']) ?>
                 <?= $form->field($model, 'property_status_id')->dropDownList($childStatus, ['prompt' => 'Select Status']) ?>
-                <?= $form->field($model, 'street_id')->dropDownList(ArrayHelper::map(Street::find()->all(),'street_id','street_name'), ['prompt' => 'Select Street']) ?>
+                <?= $form->field($model, 'street_id')->widget(\kartik\select2\Select2::class, [
+                    'initValueText' => $model->street->street_name ?? null,
+                    'options' => ['placeholder' => 'Search location e.g. Masaki, Dar es Salaam'],
+                    'pluginOptions' => [
+                        'allowClear' => true,
+                        'minimumInputLength' => 2,
+                        'ajax' => [
+                            'url' => \yii\helpers\Url::to(['property/search-street']),
+                            'dataType' => 'json',
+                            'delay' => 250,
+                        ],
+                    ],
+                ]) ?>
             </div>
             
             <!-- Document -->

@@ -12,9 +12,39 @@ use app\models\PropertyExtraData;
 use yii\helpers\ArrayHelper;
 use yii\data\ActiveDataProvider;
 use app\models\PropertySearch;
+use app\models\Street;
 class PropertyController extends Controller
 {
     public $layout='custom';
+
+    /**
+     * Searchable street lookup for the location Select2 field: type any
+     * combination of street/district/region ("masaki dar es salaam") and
+     * get matching streets back, so property location entry is a search
+     * instead of scrolling a 16,000+ option dropdown.
+     */
+    public function actionSearchStreet()
+    {
+        Yii::$app->response->format = \yii\web\Response::FORMAT_JSON;
+
+        $q = trim(Yii::$app->request->get('q', ''));
+        $query = Street::find()->alias('s')
+            ->select(['s.street_id AS id', "CONCAT(s.street_name, ' — ', d.district_name, ', ', r.name) AS text"])
+            ->innerJoin('district d', 'd.district_id = s.district_id')
+            ->innerJoin('region r', 'r.region_id = s.region_id')
+            ->orderBy(['s.street_name' => SORT_ASC])
+            ->limit(30);
+
+        foreach (preg_split('/\s+/', $q, -1, PREG_SPLIT_NO_EMPTY) as $word) {
+            $query->andWhere(['or',
+                ['like', 's.street_name', $word],
+                ['like', 'd.district_name', $word],
+                ['like', 'r.name', $word],
+            ]);
+        }
+
+        return ['results' => $query->asArray()->all()];
+    }
 
  public function actionIndex()
 {

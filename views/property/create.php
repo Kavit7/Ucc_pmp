@@ -245,11 +245,19 @@ $this->registerCssFile(Yii::getAlias('@web/lib/fontawesome/css/all.min.css'));
             ]) ?>
         </div>
         <div class="form-group">
-            
-            <?= $form->field($model, 'street_id')->dropDownList(ArrayHelper::map(Street::find()->all(),'street_id','street_name'),[
-                'prompt' => 'Location',
-                'class' => 'styled-select'
-            ])?>
+
+            <?= $form->field($model, 'street_id')->widget(\kartik\select2\Select2::class, [
+                'options' => ['placeholder' => 'Search location e.g. Masaki, Dar es Salaam'],
+                'pluginOptions' => [
+                    'allowClear' => true,
+                    'minimumInputLength' => 2,
+                    'ajax' => [
+                        'url' => \yii\helpers\Url::to(['property/search-street']),
+                        'dataType' => 'json',
+                        'delay' => 250,
+                    ],
+                ],
+            ]) ?>
         </div>
     </div>
     
