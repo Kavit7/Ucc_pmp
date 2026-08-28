@@ -145,9 +145,7 @@ use yii\helpers\Html;
 }
 </style>
 
-<!-- FontAwesome CDN -->
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css" />
-
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&family=Inter:wght@400;500;600;700&display=swap";
+<!-- FontAwesome (local) -->
+<link rel="stylesheet" href="<?= Yii::getAlias('@web/lib/fontawesome/css/all.min.css') ?>" />
 
 

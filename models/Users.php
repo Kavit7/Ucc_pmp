@@ -2,8 +2,10 @@
 namespace app\models;
 
 
+use Yii;
 use yii\db\ActiveRecord;
 use yii\web\IdentityInterface;
+use yii\web\UploadedFile;
 
 class Users extends ActiveRecord implements IdentityInterface
 {
@@ -18,6 +20,19 @@ class Users extends ActiveRecord implements IdentityInterface
     const STATUS_BLOCKED = 'blocked';
 
     public $privileges = [];
+
+    /**
+     * Plaintext password, write-only. Never persisted as-is; beforeSave()
+     * hashes it into password_hash. Left empty on update forms to keep
+     * the existing password unchanged.
+     */
+    public $password;
+
+    /**
+     * Uploaded profile picture file, write-only. uploadProfilePicture()
+     * saves it and sets profile_picture to the resulting web path.
+     */
+    public $profilePictureFile;
 
     public static function tableName()
     {
@@ -35,8 +50,10 @@ class Users extends ActiveRecord implements IdentityInterface
             [['created_at', 'updated_at'], 'safe'],
             [['created_by', 'updated_by'], 'integer'],
             [['uuid', 'national_id', 'nationality', 'occupation'], 'string', 'max' => 100],
-            [['full_name', 'email', 'password'], 'string', 'max' => 255],
-            [['phone'], 'string', 'max' => 50],
+            [['full_name', 'email'], 'string', 'max' => 255],
+            [['password'], 'string', 'max' => 255],
+            [['phone', 'profile_picture'], 'string', 'max' => 255],
+            [['profilePictureFile'], 'file', 'skipOnEmpty' => true, 'extensions' => 'png, jpg, jpeg', 'maxSize' => 2 * 1024 * 1024],
             [['uuid'], 'unique'],
             [['email'], 'unique'],
             [['created_by'], 'exist', 'skipOnError' => true, 'targetClass' => Users::class, 'targetAttribute' => ['created_by' => 'user_id']],
@@ -45,22 +62,28 @@ class Users extends ActiveRecord implements IdentityInterface
     }
 
     public function beforeSave($insert)
-{
-    if (parent::beforeSave($insert)) {
-        if (is_array($this->privileges)) {
-            $this->privileges = json_encode($this->privileges);
+    {
+        if (parent::beforeSave($insert)) {
+            if (!empty($this->password)) {
+                $this->password_hash = \Yii::$app->security->generatePasswordHash($this->password);
+            }
+            if ($insert && empty($this->auth_key)) {
+                $this->auth_key = \Yii::$app->security->generateRandomString(32);
+            }
+            if (is_array($this->privileges)) {
+                $this->privileges = json_encode($this->privileges);
+            }
+            return true;
         }
-        return true;
+        return false;
     }
-    return false;
-}
 
 
     // 🔑 Authentication methods
     public static function findByUsername($username)
     {
         return static::find()
-            ->where(['full_name' => $username, 'status' => self::STATUS_ACTIVE])
+            ->where(['email' => $username, 'status' => self::STATUS_ACTIVE])
             ->one();
     }
 
@@ -92,10 +115,44 @@ class Users extends ActiveRecord implements IdentityInterface
     // ✅ Hash password check
     public function validatePassword($password)
     {
-        return \Yii::$app->security->validatePassword($password, $this->password);
+        return \Yii::$app->security->validatePassword($password, $this->password_hash);
     }
       public function setPassword($password){
-        $this->password = \Yii::$app->security->generatePasswordHash($password);
+        $this->password_hash = \Yii::$app->security->generatePasswordHash($password);
+    }
+
+    /**
+     * Saves profilePictureFile to webroot/uploads, deletes the previous
+     * picture (if any), and sets profile_picture to the new relative path.
+     */
+    public function uploadProfilePicture()
+    {
+        if (!$this->profilePictureFile instanceof UploadedFile) {
+            return true;
+        }
+
+        $folder = Yii::getAlias('@webroot/uploads/');
+        if (!is_dir($folder)) {
+            mkdir($folder, 0777, true);
+        }
+
+        $fileName = Yii::$app->security->generateRandomString() . '.' . $this->profilePictureFile->extension;
+        if (!$this->profilePictureFile->saveAs($folder . $fileName)) {
+            return false;
+        }
+
+        $oldPicture = $this->profile_picture;
+        $this->profile_picture = 'uploads/' . $fileName;
+
+        if (!$this->save(false, ['profile_picture'])) {
+            return false;
+        }
+
+        if ($oldPicture && file_exists(Yii::getAlias('@webroot/' . $oldPicture))) {
+            @unlink(Yii::getAlias('@webroot/' . $oldPicture));
+        }
+
+        return true;
     }
    /**
      * Gets query for [[CreatedBy]].

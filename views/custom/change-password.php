@@ -4,8 +4,8 @@ use yii\helpers\Html;
 $this->title = 'Change Password';
 ?>
 
-<link href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css" rel="stylesheet">
-<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<link href="<?= Yii::getAlias('@web/lib/sweetalert2/sweetalert2.min.css') ?>" rel="stylesheet">
+<script src="<?= Yii::getAlias('@web/lib/sweetalert2/sweetalert2.min.js') ?>"></script>
 
 <style>
     /* Card style - light border, subtle shadow */

@@ -27,7 +27,7 @@ $(document).ready(function () {
 ?>
 
 
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons/font/bootstrap-icons.css" rel="stylesheet">
+    <link href="<?= Yii::getAlias('@web/lib/bootstrap-icons/bootstrap-icons.css') ?>" rel="stylesheet">
     <style>
         :root {
             --primary: #3f51b5;

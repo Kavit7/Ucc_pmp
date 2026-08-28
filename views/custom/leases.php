@@ -7,7 +7,8 @@ use yii\web\JsExpression;
 $this->title = 'Leases';
 
 // Register SweetAlert2 and jQuery
-$this->registerJsFile('https://cdn.jsdelivr.net/npm/sweetalert2@11', [
+$this->registerCssFile(Yii::getAlias('@web/lib/sweetalert2/sweetalert2.min.css'));
+$this->registerJsFile(Yii::getAlias('@web/lib/sweetalert2/sweetalert2.min.js'), [
     'depends' => [\yii\web\JqueryAsset::class]
 ]);
 

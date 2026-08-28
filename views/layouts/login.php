@@ -9,9 +9,8 @@ use yii\helpers\Html;
     <?= Html::csrfMetaTags() ?>
     <title><?= Html::encode($this->title) ?></title>
     
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link href="<?= Yii::getAlias('@web/lib/bootstrap/css/bootstrap.min.css') ?>" rel="stylesheet">
+    <link href="<?= Yii::getAlias('@web/lib/fontawesome/css/all.min.css') ?>" rel="stylesheet">
     
     <style>
         * {
@@ -245,7 +244,7 @@ use yii\helpers\Html;
         &copy; <?= date('Y') ?> Property Management Portal. All rights reserved.
     </footer>
 
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="<?= Yii::getAlias('@web/lib/bootstrap/js/bootstrap.bundle.min.js') ?>"></script>
     <script>
         document.querySelectorAll('input').forEach(input => {
             input.addEventListener('focus', function() {

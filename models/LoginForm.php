@@ -22,11 +22,20 @@ class LoginForm extends Model
         ];
     }
 
+    public function attributeLabels()
+    {
+        return [
+            'username' => 'Email',
+            'password' => 'Password',
+            'rememberMe' => 'Remember Me',
+        ];
+    }
+
     public function validatePassword($attribute, $params)
     {
         if (!$this->hasErrors()) {
             $user = $this->getUser();
-            if (!$user || !Yii::$app->security->validatePassword($this->password, $user->password)) {
+            if (!$user || !Yii::$app->security->validatePassword($this->password, $user->password_hash)) {
                 $this->addError($attribute, 'Incorrect username or password.');
             }
         }

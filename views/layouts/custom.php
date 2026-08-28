@@ -30,9 +30,8 @@ $currentRoute = Yii::$app->controller->getRoute();
     <meta charset="<?= Yii::$app->charset ?>">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title><?= Html::encode($this->title) ?></title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css">
+    <link rel="stylesheet" href="<?= Yii::getAlias('@web/lib/fontawesome/css/all.min.css') ?>">
+    <link rel="stylesheet" href="<?= Yii::getAlias('@web/lib/bootstrap-icons/bootstrap-icons.css') ?>">
 
     <?php $this->head() ?>
     <style>
@@ -633,12 +632,12 @@ $currentRoute = Yii::$app->controller->getRoute();
             </a>
            <?php endif; ?>
 
-        <a class="nav-link <?= strpos($currentRoute, 'report') !== false ? 'active' : '' ?>" href="#">
+        <a class="nav-link <?= strpos($currentRoute, 'report') !== false ? 'active' : '' ?>" href="<?= \yii\helpers\Url::to(['report/index']) ?>">
             <i class="fas fa-chart-bar"></i>
             <span>Reports</span>
         </a>
 
-        <a class="nav-link <?= strpos($currentRoute, 'custom/profile') !== false ? 'active' : '' ?>" href="<?= \yii\helpers\Url::to(['dashboard/admin-dash']) ?>">
+        <a class="nav-link <?= strpos($currentRoute, 'custom/profile') !== false ? 'active' : '' ?>" href="<?= \yii\helpers\Url::to(['custom/profile']) ?>">
             <i class="fas fa-user-circle"></i>
             <span>Profile</span>
         </a>
@@ -650,12 +649,23 @@ $currentRoute = Yii::$app->controller->getRoute();
     <div class="content-wrapper">
    <?php
 $user = Yii::$app->user->identity;
+
+\app\models\Notification::syncOverdueBillNotifications();
+$recentNotifications = \app\models\Notification::find()
+    ->where(['user_id' => $user->user_id])
+    ->orderBy(['created_at' => SORT_DESC])
+    ->limit(6)
+    ->all();
+$unreadNotifCount = \app\models\Notification::find()
+    ->where(['user_id' => $user->user_id, 'is_read' => 0])
+    ->count();
+
 $userProfilePic = $user->profile_picture ?? null;
-$userInitials = strtoupper(substr($user->username ?? 'U', 0, 1));
+$userInitials = strtoupper(substr($user->full_name ?? 'U', 0, 1));
 
 // Hapa tunahakiki kama file ipo kwenye server
-$profileUrl = ($userProfilePic && file_exists(Yii::getAlias('@webroot/uploads/' . $userProfilePic)))
-    ? Yii::getAlias('@web/uploads/' . $userProfilePic)
+$profileUrl = ($userProfilePic && file_exists(Yii::getAlias('@webroot/' . $userProfilePic)))
+    ? Yii::getAlias('@web/' . $userProfilePic)
     : null; // hakuna picha, tutaonyesha initials
 ?>
 
@@ -681,14 +691,45 @@ $profileUrl = ($userProfilePic && file_exists(Yii::getAlias('@webroot/uploads/' 
     </div>
 
     <div class="header-right" style="display:flex;align-items:center;gap:15px;">
-        <div class="icon-button">
+        <div class="icon-button" id="notifToggle">
             <i class="fa fa-bell"></i>
-            <span class="notification-badge">3</span>
+            <?php if ($unreadNotifCount > 0): ?>
+                <span class="notification-badge"><?= $unreadNotifCount > 9 ? '9+' : $unreadNotifCount ?></span>
+            <?php endif; ?>
+
+            <div class="dropdown-menu" id="notifMenu" style="width:320px; right:-10px;">
+                <div class="dropdown-header d-flex justify-content-between align-items-center" style="cursor:default;">
+                    <span class="profile-name" style="font-weight:600;">Notifications</span>
+                    <?php if ($unreadNotifCount > 0): ?>
+                        <?= \yii\helpers\Html::a('Mark all read', ['custom/mark-all-notifications-read'], [
+                            'class' => 'text-decoration-none',
+                            'style' => 'font-size:0.8rem;',
+                            'data-method' => 'post',
+                        ]) ?>
+                    <?php endif; ?>
+                </div>
+
+                <?php if (empty($recentNotifications)): ?>
+                    <div class="dropdown-item" style="cursor:default;">No notifications yet.</div>
+                <?php else: ?>
+                    <?php foreach ($recentNotifications as $notif): ?>
+                        <a href="<?= \yii\helpers\Url::to(['custom/read-notification', 'id' => $notif->id]) ?>"
+                           class="dropdown-item" style="align-items:flex-start; white-space:normal; <?= $notif->is_read ? '' : 'background:#f5f6ff;' ?>">
+                            <i class="fas fa-circle" style="font-size:6px; margin-top:6px; <?= $notif->is_read ? 'visibility:hidden;' : 'color:#4f46e5;' ?>"></i>
+                            <div>
+                                <div style="font-weight:600; color:#334155; font-size:0.88rem;"><?= \yii\helpers\Html::encode($notif->title) ?></div>
+                                <div style="font-size:0.8rem; color:#94a3b8;"><?= \yii\helpers\Html::encode($notif->message) ?></div>
+                            </div>
+                        </a>
+                    <?php endforeach; ?>
+                <?php endif; ?>
+
+                <div class="dropdown-divider"></div>
+                <?= \yii\helpers\Html::a('View all notifications', ['custom/notifications'], ['class' => 'dropdown-item justify-content-center']) ?>
+            </div>
         </div>
-        
-        <div class="icon-button">
-            <i class="fa fa-cog"></i>
-        </div>
+
+        <?= \yii\helpers\Html::a('<i class="fa fa-cog"></i>', ['custom/settings'], ['class' => 'icon-button', 'title' => 'Settings']) ?>
 
         <!-- Profile Dropdown -->
         <div class="profile-dropdown">
@@ -760,7 +801,6 @@ $profileUrl = ($userProfilePic && file_exists(Yii::getAlias('@webroot/uploads/' 
     </div>
 </div>
 
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
 <script>
 document.addEventListener('DOMContentLoaded', function() {
     const navLinks = document.querySelectorAll('.nav-link:not(.logout-link)');
@@ -829,26 +869,43 @@ document.addEventListener('DOMContentLoaded', function() {
     // Profile dropdown functionality
     const profileToggle = document.getElementById('profileToggle');
     const dropdownMenu = document.getElementById('dropdownMenu');
-    
+
     if (profileToggle && dropdownMenu) {
         profileToggle.addEventListener('click', function(e) {
             e.stopPropagation();
             dropdownMenu.classList.toggle('show');
         });
-        
+
         // Close dropdown when clicking outside
         document.addEventListener('click', function(e) {
             if (!profileToggle.contains(e.target) && !dropdownMenu.contains(e.target)) {
                 dropdownMenu.classList.remove('show');
             }
         });
-        
+
         // Close dropdown when clicking on a dropdown item
         const dropdownItems = dropdownMenu.querySelectorAll('.dropdown-item');
         dropdownItems.forEach(item => {
             item.addEventListener('click', function() {
                 dropdownMenu.classList.remove('show');
             });
+        });
+    }
+
+    // Notifications dropdown functionality
+    const notifToggle = document.getElementById('notifToggle');
+    const notifMenu = document.getElementById('notifMenu');
+
+    if (notifToggle && notifMenu) {
+        notifToggle.addEventListener('click', function(e) {
+            e.stopPropagation();
+            notifMenu.classList.toggle('show');
+        });
+
+        document.addEventListener('click', function(e) {
+            if (!notifToggle.contains(e.target)) {
+                notifMenu.classList.remove('show');
+            }
         });
     }
 });

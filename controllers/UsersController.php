@@ -6,6 +6,7 @@ use Yii;
 use yii\web\Controller;
 use yii\web\NotFoundHttpException;
 use app\models\Users;
+use app\models\Notification;
 use yii\data\ActiveDataProvider;
 
 class UsersController extends Controller
@@ -53,14 +54,7 @@ public function actionCreate()
             $model->uuid = 'User_' . ($lastNumber + 1);
         }
 
-        // --- Password handling ---
-        $postData = Yii::$app->request->post('Users');
-        if (!empty($postData['password'])) {
-    $model->password = Yii::$app->security->generatePasswordHash($postData['password']);
-
-        } 
-
-        // --- Save user ---
+        // --- Save user (password, if provided, is hashed in Users::beforeSave()) ---
         if ($model->save()) {
             $auth = Yii::$app->authManager;
             $auth->revokeAll($model->user_id);
@@ -78,6 +72,13 @@ public function actionCreate()
                     }
                 }
             }
+
+            Notification::notifyRoles(
+                ['admin', 'manager'],
+                'New user added',
+                "{$model->full_name} was added as " . ucfirst($model->role) . '.',
+                ['users/update', 'id' => $model->user_id]
+            );
 
             Yii::$app->session->setFlash('success', 'User created successfully!');
             return $this->redirect(['index']);

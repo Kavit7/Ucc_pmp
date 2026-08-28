@@ -10,6 +10,8 @@ use app\models\Lease;
 use app\models\Bill;
 use app\models\ListSource;
 use app\models\ChangePasswordForm;
+use app\models\Notification;
+use yii\data\ActiveDataProvider;
 use app\controllers\NotFoundHttpException;
 class CustomController extends Controller
 {
@@ -23,7 +25,7 @@ class CustomController extends Controller
         return [
             'access' => [
                 'class' => AccessControl::class,
-                'only' => ['index','logout','leases','create-lease','delete-lease','bill','payment','profile','change-password','check-current-password'],
+                'only' => ['index','logout','leases','create-lease','delete-lease','bill','payment','profile','upload-profile-picture','change-password','check-current-password','notifications','read-notification','mark-all-notifications-read','settings','update-settings'],
                 'rules' => [
                     [
                         'allow' => true,
@@ -155,6 +157,20 @@ public function actionCreateLease()
     if ($bill->save(false)) {
         // Bill saved successfully
     }
+
+    $propertyName = $lease->property->property_name ?? 'a property';
+    Notification::notify(
+        $lease->tenant_id,
+        'Lease created',
+        "Your lease for {$propertyName} has been created.",
+        ['custom/leases']
+    );
+    Notification::notifyRoles(
+        ['admin', 'manager'],
+        'New lease created',
+        "{$propertyName} was leased to " . ($lease->tenant->full_name ?? 'a tenant') . '.',
+        ['custom/leases']
+    );
 
     if (Yii::$app->request->isAjax) {
         Yii::$app->response->format = \yii\web\Response::FORMAT_JSON;
@@ -312,6 +328,85 @@ if ($model !== null) {
     {
         $user = Yii::$app->user->identity;
         return $this->render('profile', ['user' => $user]);
+    }
+
+    /**
+     * Upload/replace the current user's profile picture.
+     */
+    public function actionUploadProfilePicture()
+    {
+        $user = Yii::$app->user->identity;
+        $user->profilePictureFile = UploadedFile::getInstanceByName('profilePictureFile');
+
+        if ($user->profilePictureFile && $user->validate(['profilePictureFile']) && $user->uploadProfilePicture()) {
+            Yii::$app->session->setFlash('success', 'Profile picture updated.');
+        } else {
+            $errors = $user->getFirstErrors();
+            Yii::$app->session->setFlash('error', $errors ? reset($errors) : 'Please choose a valid image (png, jpg, jpeg, max 2MB).');
+        }
+
+        return $this->redirect(['custom/profile']);
+    }
+
+    /**
+     * Full notifications list for the current user.
+     */
+    public function actionNotifications()
+    {
+        Notification::syncOverdueBillNotifications();
+
+        $dataProvider = new ActiveDataProvider([
+            'query' => Notification::find()->where(['user_id' => Yii::$app->user->id]),
+            'pagination' => ['pageSize' => 15],
+            'sort' => ['defaultOrder' => ['created_at' => SORT_DESC]],
+        ]);
+
+        return $this->render('notifications', ['dataProvider' => $dataProvider]);
+    }
+
+    /**
+     * Marks a single notification read and follows its link, if any.
+     */
+    public function actionReadNotification($id)
+    {
+        $notification = Notification::findOne(['id' => $id, 'user_id' => Yii::$app->user->id]);
+        if ($notification) {
+            $notification->markRead();
+            if ($notification->link) {
+                return $this->redirect($notification->link);
+            }
+        }
+        return $this->redirect(['custom/notifications']);
+    }
+
+    /**
+     * Marks all of the current user's notifications read.
+     */
+    public function actionMarkAllNotificationsRead()
+    {
+        Notification::updateAll(['is_read' => 1], ['user_id' => Yii::$app->user->id, 'is_read' => 0]);
+        return $this->redirect(Yii::$app->request->referrer ?: ['custom/notifications']);
+    }
+
+    /**
+     * Account settings: notification preference + quick links.
+     */
+    public function actionSettings()
+    {
+        return $this->render('settings', ['user' => Yii::$app->user->identity]);
+    }
+
+    /**
+     * Save account settings.
+     */
+    public function actionUpdateSettings()
+    {
+        $user = Yii::$app->user->identity;
+        $user->notifications_enabled = (int) Yii::$app->request->post('notifications_enabled', 0);
+        $user->save(false, ['notifications_enabled']);
+
+        Yii::$app->session->setFlash('success', 'Settings saved.');
+        return $this->redirect(['custom/settings']);
     }
 
     /**

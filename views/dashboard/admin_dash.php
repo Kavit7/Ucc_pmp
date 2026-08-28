@@ -111,7 +111,7 @@
 </div>
 
 <!-- Chart.js -->
-<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script src="<?= Yii::getAlias('@web/lib/chartjs/chart.min.js') ?>"></script>
 
 <script>
     document.addEventListener("DOMContentLoaded", function() {

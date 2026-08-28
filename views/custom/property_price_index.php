@@ -8,7 +8,8 @@ use app\models\ListSource;
 /* @var $this yii\web\View */
 /* @var $prices app\models\PropertyPrice[] */
 
-$this->registerJsFile('https://cdn.jsdelivr.net/npm/sweetalert2@11', [
+$this->registerCssFile(Yii::getAlias('@web/lib/sweetalert2/sweetalert2.min.css'));
+$this->registerJsFile(Yii::getAlias('@web/lib/sweetalert2/sweetalert2.min.js'), [
     'depends' => [\yii\web\JqueryAsset::class]
 ]);
 

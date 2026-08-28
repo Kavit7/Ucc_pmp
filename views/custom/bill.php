@@ -8,8 +8,7 @@ use yii\helpers\Url;
 /* @var $bills app\models\Bill[] */
 
 $this->title = 'Bills';
-$this->registerCssFile('https://fonts.cdnfonts.com/css/sf-pro-display');
-$this->registerCssFile('https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css');
+$this->registerCssFile(Yii::getAlias('@web/lib/fontawesome/css/all.min.css'));
 
 // Prepare summary counts
 $totalBills = count($bills);
@@ -143,7 +142,8 @@ $filteredBills = array_filter($bills, function($b) use ($currentFilter) {
 
 <!-- JS for filtering & delete -->
 <?php
-$this->registerJsFile('https://cdn.jsdelivr.net/npm/sweetalert2@11', [
+$this->registerCssFile(Yii::getAlias('@web/lib/sweetalert2/sweetalert2.min.css'));
+$this->registerJsFile(Yii::getAlias('@web/lib/sweetalert2/sweetalert2.min.js'), [
     'depends'=>[\yii\web\JqueryAsset::class]
 ]);
 

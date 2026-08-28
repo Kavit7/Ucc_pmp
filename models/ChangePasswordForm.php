@@ -28,13 +28,13 @@ class ChangePasswordForm extends Model
         $user = Yii::$app->user->identity;
 
         // Validate current password
-        if (!Yii::$app->security->validatePassword($this->currentPassword, $user->password_hash)) {
+        if (!$user->validatePassword($this->currentPassword)) {
             $this->addError('currentPassword', 'Wrong new Password');
             return false;
         }
 
         // Set new password with hash
-        $user->password = Yii::$app->security->generatePasswordHash($this->newPassword);
+        $user->setPassword($this->newPassword);
 
         if ($user->save(false)) {
             return true;
