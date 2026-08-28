@@ -25,13 +25,13 @@ use yii\helpers\Html;
             display: flex;
             justify-content: center;
             align-items: center;
-            background: url('https://i.pinimg.com/736x/41/36/c2/4136c2a92d65d7c7ea796e3057a558a2.jpg') no-repeat center center fixed;
+            background: url('<?= Yii::getAlias('@web/images/login-bg.jpg') ?>') no-repeat center 20% fixed;
             background-size: cover;
             position: relative;
             padding: 20px;
         }
-        
-        /* White semi-transparent overlay */
+
+        /* Gradient overlay - keeps the image visible while still giving the card contrast */
         body::before {
             content: '';
             position: absolute;
@@ -39,7 +39,7 @@ use yii\helpers\Html;
             left: 0;
             width: 100%;
             height: 100%;
-            background: rgba(255, 255, 255, 0.35); /* transparency adjustable */
+            background: linear-gradient(135deg, rgba(255, 255, 255, 0.55) 0%, rgba(255, 255, 255, 0.12) 100%);
             z-index: 0;
         }
 
@@ -71,7 +71,7 @@ use yii\helpers\Html;
         
         .logo i {
             font-size: 42px;
-            color: #4e54c8;
+            color: #4f46e5;
             background: #fff;
             width: 80px;
             height: 80px;
@@ -106,7 +106,7 @@ use yii\helpers\Html;
             left: 18px;
             top: 50%;
             transform: translateY(-50%);
-            color: #4e54c8;
+            color: #4f46e5;
             font-size: 18px;
             z-index: 1;
         }
@@ -129,8 +129,8 @@ use yii\helpers\Html;
         .input-group input:focus {
             outline: none;
             background: rgba(255, 255, 255, 0.9);
-            border-color: rgba(78, 84, 200, 0.7);
-            box-shadow: 0 0 10px rgba(78, 84, 200, 0.2);
+            border-color: rgba(79, 70, 229, 0.7);
+            box-shadow: 0 0 10px rgba(79, 70, 229, 0.2);
         }
         
         .remember-forgot {
@@ -149,7 +149,7 @@ use yii\helpers\Html;
             width: 18px;
             height: 18px;
             margin-right: 8px;
-            accent-color: #4e54c8;
+            accent-color: #4f46e5;
         }
         
         .remember label {
@@ -158,22 +158,10 @@ use yii\helpers\Html;
             cursor: pointer;
         }
         
-        .forgot {
-            color: #4e54c8;
-            font-size: 14px;
-            text-decoration: none;
-            transition: color 0.3s ease;
-        }
-        
-        .forgot:hover {
-            color: #333;
-            text-decoration: underline;
-        }
-        
         .login-btn {
             width: 100%;
             padding: 16px;
-            background: linear-gradient(135deg, #4e54c8, #8f94fb);
+            background: linear-gradient(135deg, #4f46e5, #818cf8);
             border: none;
             border-radius: 12px;
             color: #fff;
@@ -185,33 +173,18 @@ use yii\helpers\Html;
         }
         
         .login-btn:hover {
-            background: linear-gradient(135deg, #8f94fb, #4e54c8);
+            background: linear-gradient(135deg, #818cf8, #4f46e5);
             transform: translateY(-2px);
             box-shadow: 0 8px 20px rgba(0, 0, 0, 0.3);
         }
         
-        .register-link {
+        .help-note {
             text-align: center;
             margin-top: 25px;
+            color: #666;
+            font-size: 13px;
         }
-        
-        .register-link p {
-            color: #555;
-            font-size: 14px;
-        }
-        
-        .register-link a {
-            color: #4e54c8;
-            text-decoration: none;
-            font-weight: 500;
-            transition: color 0.3s ease;
-        }
-        
-        .register-link a:hover {
-            text-decoration: underline;
-            color: #8f94fb;
-        }
-        
+
         footer {
             position: absolute;
             bottom: 20px;

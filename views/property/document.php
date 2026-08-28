@@ -255,7 +255,9 @@ $this->registerCss($css);
         </div>
     </div>
     
-    <div style="padding: 0 25px 25px;">
+    <div style="padding: 0 25px 25px; display:flex; gap:10px; flex-wrap:wrap;">
         <?= Html::a('<i class="fas fa-arrow-left"></i> Back to List', ['index'], ['class' => 'back-button']) ?>
+        <?= Html::a('<i class="fas fa-edit"></i> Edit Property', ['update', 'id' => $model->id], ['class' => 'back-button', 'style' => 'background:#4f46e5;']) ?>
+        <?= Html::a('<i class="fas fa-file-signature"></i> Create Lease for this Property', ['custom/create-lease', 'property_id' => $model->id], ['class' => 'back-button', 'style' => 'background:#10b981;']) ?>
     </div>
 </div>

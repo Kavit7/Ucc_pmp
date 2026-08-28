@@ -10,13 +10,21 @@ use yii\helpers\Url;
 $this->title = 'Bills';
 $this->registerCssFile(Yii::getAlias('@web/lib/fontawesome/css/all.min.css'));
 
-// Prepare summary counts
+// Prepare summary counts. bill_status is a list_source id (Pending/Paid) -
+// "overdue" isn't a stored status, it's a pending bill whose due date has passed.
+$today = date('Y-m-d');
+$billState = function ($bill) use ($today) {
+    $status = strtolower($bill->billStatus->list_Name ?? '');
+    if ($status === 'pending' && $bill->due_date < $today) {
+        return 'overdue';
+    }
+    return $status;
+};
+
 $totalBills = count($bills);
-$paidBills = count(array_filter($bills, fn($b) => $b->bill_status === 'paid'));
-$pendingBills = count(array_filter($bills, function($bill) {
-    return strtolower($bill->billStatus->list_Name) === 'pending';
-}));
-$overdueBills = count(array_filter($bills, fn($b) => $b->bill_status === 'overdue'));
+$paidBills = count(array_filter($bills, fn($b) => $billState($b) === 'paid'));
+$pendingBills = count(array_filter($bills, fn($b) => $billState($b) === 'pending'));
+$overdueBills = count(array_filter($bills, fn($b) => $billState($b) === 'overdue'));
 
 // Styling
 $this->registerCss("
@@ -50,10 +58,10 @@ $this->registerCss("
 $currentFilter = Yii::$app->request->get('filter', 'all');
 
 // Filter bills for table
-$filteredBills = array_filter($bills, function($b) use ($currentFilter) {
+$filteredBills = array_filter($bills, function($b) use ($currentFilter, $billState) {
     return match($currentFilter) {
-        'paid' => $b->bill_status === 'paid',
-        'unpaid' => in_array($b->bill_status, ['pending','overdue']),
+        'paid' => $billState($b) === 'paid',
+        'unpaid' => in_array($billState($b), ['pending', 'overdue']),
         default => true
     };
 });
@@ -107,25 +115,30 @@ $filteredBills = array_filter($bills, function($b) use ($currentFilter) {
                     <tr><td colspan="7" class="no-bills">No bills found.</td></tr>
                 <?php else: ?>
                     <?php foreach ($filteredBills as $bill): ?>
-                        <tr id="bill-row-<?= $bill->id ?>" data-status="<?= $bill->bill_status ?>">
+                        <?php $state = $billState($bill); ?>
+                        <tr id="bill-row-<?= $bill->id ?>" data-status="<?= $state ?>">
                             <td><?= $bill->id ?></td>
-                            <td><?= Html::encode($bill->lease->lease_number ?? $bill->lease->uuid) ?></td>
-                            <td><?= '$'.number_format($bill->amount,2) ?></td>
+                            <td><?= Html::encode($bill->lease->uuid ?? '-') ?></td>
+                            <td>TZS <?= number_format($bill->amount, 2) ?></td>
                             <td><?= Yii::$app->formatter->asDate($bill->due_date) ?></td>
                             <td>
                                 <?php
-                                $statusClass = match(strtolower($bill->billStatus->list_Name)){
+                                $statusClass = match($state){
                                     'paid' => 'text-success border-success',
                                     'pending' => 'text-warning border-warning',
                                     'overdue' => 'text-danger border-danger',
                                     default => 'text-secondary border-secondary'
                                 };
-                                $statusLabel = ucfirst($bill->billStatus->list_Name);
                                 ?>
-                                <span class="badge <?= $statusClass ?>"><?= $statusLabel ?></span>
+                                <span class="badge <?= $statusClass ?>"><?= ucfirst($state) ?></span>
                             </td>
                             <td><?= $bill->paid_date ? Yii::$app->formatter->asDate($bill->paid_date) : '-' ?></td>
                             <td>
+                                <?php if ($state !== 'paid'): ?>
+                                    <?= Html::a('Record Payment', ['custom/record-payment', 'id' => $bill->id], [
+                                        'class' => 'btn btn-success btn-sm',
+                                    ]) ?>
+                                <?php endif; ?>
                                 <?= Html::button('Delete', [
                                     'class' => 'btn btn-danger btn-sm delete-bill-btn',
                                     'data-id'=>$bill->id,

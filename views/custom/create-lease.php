@@ -188,5 +188,10 @@ document.addEventListener('DOMContentLoaded', function () {
             });
         }
     });
+
+    // Property may already be preselected (e.g. arriving from a property's detail page)
+    if (propertySelect.value) {
+        propertySelect.dispatchEvent(new Event('change'));
+    }
 });
 </script>

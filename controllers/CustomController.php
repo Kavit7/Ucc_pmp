@@ -25,7 +25,7 @@ class CustomController extends Controller
         return [
             'access' => [
                 'class' => AccessControl::class,
-                'only' => ['index','logout','leases','create-lease','delete-lease','bill','payment','profile','upload-profile-picture','change-password','check-current-password','notifications','read-notification','mark-all-notifications-read','settings','update-settings'],
+                'only' => ['index','logout','leases','create-lease','delete-lease','bill','payment','record-payment','profile','upload-profile-picture','change-password','check-current-password','notifications','read-notification','mark-all-notifications-read','settings','update-settings'],
                 'rules' => [
                     [
                         'allow' => true,
@@ -76,6 +76,11 @@ public function actionLeases()
 public function actionCreateLease()
 {
     $lease = new Lease();
+
+    // Allow linking here from a property's detail page with the property preselected.
+    if (Yii::$app->request->isGet && Yii::$app->request->get('property_id')) {
+        $lease->property_id = (int) Yii::$app->request->get('property_id');
+    }
 
     if ($lease->load(Yii::$app->request->post())) {
 
@@ -459,19 +464,83 @@ if ($model !== null) {
 
 
     /**
-     * Payments view
+     * Payments view: recorded payments only (bills already marked Paid).
      */
-  /* public function actionPayment()
-    {
-        $payments = Bill::find()->where(['not',['paid_date'=>null]])->with('lease')->all();
-        return $this->render('payment', ['payments' => $payments]);
-    }*/
-
     public function actionPayment()
-{
-    $payments = Bill::find()->with('lease')->all(); // inarudisha zote bila kuchuja
-    return $this->render('payment', ['payments' => $payments]);
-}
+    {
+        $paidId = $this->billStatusId('Paid');
+
+        $payments = Bill::find()
+            ->with(['lease.property', 'lease.tenant'])
+            ->where(['bill_status' => $paidId])
+            ->orderBy(['paid_date' => SORT_DESC])
+            ->all();
+
+        return $this->render('payment', ['payments' => $payments]);
+    }
+
+    /**
+     * Record a payment against a pending bill: sets paid_date, moves the
+     * bill to "Paid", and optionally stores a receipt.
+     */
+    public function actionRecordPayment($id)
+    {
+        $bill = Bill::findOne($id);
+        if (!$bill) {
+            throw new NotFoundHttpException('Bill not found.');
+        }
+
+        if (Yii::$app->request->isPost) {
+            $paidDate = Yii::$app->request->post('paid_date') ?: date('Y-m-d');
+            $receiptFile = UploadedFile::getInstanceByName('receiptFile');
+
+            if ($receiptFile) {
+                $folder = Yii::getAlias('@webroot/uploads/');
+                if (!is_dir($folder)) {
+                    mkdir($folder, 0777, true);
+                }
+                $fileName = Yii::$app->security->generateRandomString() . '.' . $receiptFile->extension;
+                if ($receiptFile->saveAs($folder . $fileName)) {
+                    $bill->receipt_url = 'uploads/' . $fileName;
+                }
+            }
+
+            $bill->paid_date = $paidDate;
+            $bill->bill_status = $this->billStatusId('Paid');
+
+            if ($bill->save(false)) {
+                $propertyName = $bill->lease->property->property_name ?? 'a property';
+                $amount = number_format($bill->amount, 2);
+
+                Notification::notify(
+                    $bill->lease->tenant_id ?? null,
+                    'Payment recorded',
+                    "Your payment of TZS {$amount} for {$propertyName} has been recorded.",
+                    ['custom/payment']
+                );
+                Notification::notifyRoles(
+                    ['admin', 'manager'],
+                    'Payment recorded',
+                    "TZS {$amount} payment recorded for {$propertyName}.",
+                    ['custom/payment']
+                );
+
+                Yii::$app->session->setFlash('success', 'Payment recorded successfully.');
+            } else {
+                Yii::$app->session->setFlash('error', 'Failed to record payment.');
+            }
+
+            return $this->redirect(['custom/bill']);
+        }
+
+        return $this->render('record-payment', ['bill' => $bill]);
+    }
+
+    private function billStatusId($name)
+    {
+        $parentId = ListSource::find()->select('id')->where(['list_Name' => 'Bill Status'])->scalar();
+        return ListSource::find()->where(['list_Name' => $name, 'parent_id' => $parentId])->select('id')->scalar();
+    }
 protected function findModel($id)
     {
         if (($model = Lease::findOne($id)) !== null) {

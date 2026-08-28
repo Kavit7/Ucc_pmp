@@ -9,43 +9,67 @@ use yii\bootstrap5\ActiveForm;
 use yii\bootstrap5\Html;
 
 $this->title = 'Login';
-$this->params['breadcrumbs'][] = $this->title;
 ?>
-<div class="site-login bg-white p-5">
-    <h1><?= Html::encode($this->title) ?></h1>
+<div class="login-card">
+    <div class="logo">
+        <i class="fas fa-building"></i>
+        <h1>UCC PMP</h1>
+        <p>Property Management Portal</p>
+    </div>
 
-    <p>Please fill out the following fields to login:</p>
+    <?php $form = ActiveForm::begin([
+        'id' => 'login-form',
+        'fieldConfig' => [
+            'template' => "{input}{error}",
+        ],
+    ]); ?>
 
-    <div class="row">
-        <div class="col-lg-12">
-
-            <?php $form = ActiveForm::begin([
-                'id' => 'login-form',
-                'fieldConfig' => [
-                    'template' => "{label}\n{input}\n{error}",
-                    'labelOptions' => ['class' => 'col-lg-1 col-form-label mr-lg-3'],
-                    'inputOptions' => ['class' => 'col-lg-3 form-control'],
-                    'errorOptions' => ['class' => 'col-lg-7 invalid-feedback'],
-                ],
-            ]); ?>
-
-            <?= $form->field($model, 'username')->label('Email')->textInput(['autofocus' => true]) ?>
-
-            <?= $form->field($model, 'password')->passwordInput() ?>
-
-            <?= $form->field($model, 'rememberMe')->checkbox([
-                'template' => "<div class=\"custom-control custom-checkbox\">{input} {label}</div>\n<div class=\"col-lg-8\">{error}</div>",
+        <div class="input-group">
+            <i class="fas fa-envelope"></i>
+            <?= $form->field($model, 'username', ['options' => ['class' => '']])->label(false)->textInput([
+                'autofocus' => true,
+                'placeholder' => 'Email address',
+                'class' => 'form-control',
             ]) ?>
-
-            <div class="form-group">
-                <div>
-                    <?= Html::submitButton('Login', ['class' => 'btn btn-primary w-100', 'name' => 'login-button']) ?>
-                </div>
-            </div>
-
-            <?php ActiveForm::end(); ?>
-
-
         </div>
+
+        <div class="input-group">
+            <i class="fas fa-lock"></i>
+            <?= $form->field($model, 'password', ['options' => ['class' => '']])->label(false)->passwordInput([
+                'placeholder' => 'Password',
+                'class' => 'form-control',
+                'id' => 'password-input',
+            ]) ?>
+            <i class="fas fa-eye password-toggle" id="togglePassword" style="left:auto; right:18px; cursor:pointer;"></i>
+        </div>
+
+        <div class="remember-forgot">
+            <div class="remember">
+                <?= Html::activeCheckbox($model, 'rememberMe', ['label' => false, 'id' => 'remember-me']) ?>
+                <label for="remember-me">Remember me</label>
+            </div>
+        </div>
+
+        <?= Html::submitButton('Sign In', ['class' => 'login-btn', 'name' => 'login-button']) ?>
+
+    <?php ActiveForm::end(); ?>
+
+    <div class="help-note">
+        Forgot your password? Contact your system administrator.
     </div>
 </div>
+
+<script>
+    (function () {
+        var toggle = document.getElementById('togglePassword');
+        var pwd = document.getElementById('password-input');
+        if (toggle && pwd) {
+            toggle.addEventListener('click', function () {
+                var isHidden = pwd.type === 'password';
+                pwd.type = isHidden ? 'text' : 'password';
+                toggle.classList.toggle('fa-eye');
+                toggle.classList.toggle('fa-eye-slash');
+            });
+        }
+    })();
+</script>

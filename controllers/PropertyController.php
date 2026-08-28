@@ -387,28 +387,53 @@ protected function findModel($id)
 
 
 public function actionRented(){
-    $Rents= Property::find()
-    ->all();
+    $Rents = Property::find()
+        ->where(['usage_type_id' => $this->usageTypeId('rented')])
+        ->all();
     return $this->render('rented',[
        'Rents'=>$Rents
     ]);
 
 }
 public function actionStores(){
-    $stores= Property::find()
-    ->all();
+    $stores = Property::find()
+        ->where(['usage_type_id' => $this->usageTypeId('storage')])
+        ->all();
     return $this->render('Stores',[
        'stores'=>$stores
     ]);
 
 }
 public function actionSales(){
-    $sales= Property::find()
-    ->all();
+    $sales = Property::find()
+        ->where(['usage_type_id' => $this->usageTypeId('sale')])
+        ->all();
     return $this->render('sales',[
        'sales'=>$sales
     ]);
 
+}
+
+/**
+ * Resolves a "Usage Type" list_source id by its (case-insensitive) name,
+ * e.g. usageTypeId('rented') -> the id of the "Rented" child under the
+ * "Usage Type" parent category.
+ */
+private function usageTypeId($name)
+{
+    $parentUsage = ListSource::find()->where(['parent_id' => null, 'category' => 'Usage Type'])->one();
+    if (!$parentUsage) {
+        return null;
+    }
+
+    $children = ListSource::find()->where(['parent_id' => $parentUsage->id])->all();
+    foreach ($children as $child) {
+        if (strtolower($child->list_Name) === strtolower($name)) {
+            return $child->id;
+        }
+    }
+
+    return null;
 }
 
 }
