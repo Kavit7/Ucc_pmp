@@ -35,9 +35,7 @@ class PropertyLocation extends \yii\db\ActiveRecord
     {
         return [
             [['location_id', 'property_id', 'status_id'], 'default', 'value' => null],
-            [['id'], 'required'],
-            [['id', 'location_id', 'property_id', 'status_id'], 'integer'],
-            [['id'], 'unique'],
+            [['location_id', 'property_id', 'status_id'], 'integer'],
             [['location_id'], 'exist', 'skipOnError' => true, 'targetClass' => Location::class, 'targetAttribute' => ['location_id' => 'id']],
             [['property_id'], 'exist', 'skipOnError' => true, 'targetClass' => Property::class, 'targetAttribute' => ['property_id' => 'id']],
             [['status_id'], 'exist', 'skipOnError' => true, 'targetClass' => ListSource::class, 'targetAttribute' => ['status_id' => 'id']],

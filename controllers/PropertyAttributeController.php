@@ -112,21 +112,36 @@ public function actionGetAttributes($id)
         ->with(['propertyType', 'dataType'])
         ->all();
 
+    // Fetch every top-level category once and index by lowercased name,
+    // instead of running a separate "find parent" query per attribute.
+    $parentsByCategory = [];
+    foreach (ListSource::find()->where(['parent_id' => null])->all() as $parent) {
+        $parentsByCategory[strtolower($parent->category)] = $parent;
+    }
+
+    // Batch-fetch all children for the matched categories in one query,
+    // instead of a separate query per attribute.
+    $neededParentIds = [];
+    foreach ($attributes as $attr) {
+        if (isset($parentsByCategory[strtolower($attr->attribute_name)])) {
+            $neededParentIds[] = $parentsByCategory[strtolower($attr->attribute_name)]->id;
+        }
+    }
+
+    $childrenByParentId = [];
+    if ($neededParentIds) {
+        foreach (ListSource::find()->where(['parent_id' => $neededParentIds])->all() as $child) {
+            $childrenByParentId[$child->parent_id][] = $child;
+        }
+    }
+
     $result = [];
     foreach ($attributes as $attr) {
         $listOptions = [];
-
-        $parent = ListSource::find()
-            ->where('parent_id IS NULL AND LOWER(category) = :cat', [':cat' => strtolower($attr->attribute_name)])
-            ->one();
+        $parent = $parentsByCategory[strtolower($attr->attribute_name)] ?? null;
 
         if ($parent) {
-            $children = ListSource::find()
-                ->where(['parent_id' => $parent->id])
-                ->all();
-                
-            // Return as array of objects instead of associative array
-            foreach ($children as $child) {
+            foreach ($childrenByParentId[$parent->id] ?? [] as $child) {
                 $listOptions[] = [
                     'id' => $child->id,
                     'list_Name' => $child->list_Name
@@ -138,7 +153,7 @@ public function actionGetAttributes($id)
             'id' => $attr->id,
             'attribute_name' => $attr->attribute_name,
             'attribute_datatype' => $attr->dataType ? strtolower($attr->dataType->list_Name) : null,
-            'list_source' => $listOptions, 
+            'list_source' => $listOptions,
         ];
     }
 

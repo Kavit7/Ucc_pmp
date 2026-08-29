@@ -41,13 +41,19 @@ class RbacController extends Controller
         // Manager: create, edit, view
         $manager = $auth->getRole('manager');
         foreach (['create','edit','view'] as $permName) {
-            $auth->addChild($manager, $auth->getPermission($permName));
+            $permission = $auth->getPermission($permName);
+            if (!$auth->hasChild($manager, $permission)) {
+                $auth->addChild($manager, $permission);
+            }
         }
 
         // Admin: all permissions
         $admin = $auth->getRole('admin');
         foreach ($permissions as $permName) {
-            $auth->addChild($admin, $auth->getPermission($permName));
+            $permission = $auth->getPermission($permName);
+            if (!$auth->hasChild($admin, $permission)) {
+                $auth->addChild($admin, $permission);
+            }
         }
 
         echo "RBAC initialization completed.\n";
