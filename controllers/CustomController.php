@@ -282,7 +282,52 @@ public function actionCreateLease()
             }
         }
 
-        if ($model->save(false)) { 
+        // Needed for the bill amount below - actionCreateLease sets this
+        // the same way, but this action was missing it entirely.
+        $model->duration_months = $model->getDurationMonths();
+
+        if ($model->save(false)) {
+            // Close out the old lease so it stops counting as "active"
+            // (double-counted occupancy/dashboard stats, and blocked new
+            // leases on this property via the active-lease check).
+            $renewedStatusId = ListSource::find()
+                ->where(['list_Name' => 'Renewed', 'category' => 'Lease Status'])
+                ->select('id')
+                ->scalar();
+            if ($renewedStatusId) {
+                $oldLease->status = $renewedStatusId;
+                $oldLease->save(false);
+            }
+
+            // Auto-create the bill for the renewed term (actionCreateLease
+            // does this for a brand-new lease; renewal was skipping it).
+            $bill = new Bill();
+            $bill->uuid = Yii::$app->security->generateRandomString(12);
+            $bill->lease_id = $model->id;
+            $bill->amount = ($model->propertyPrice->unit_amount ?? 0) * ($model->duration_months ?? 1);
+            $bill->due_date = $model->lease_start_date;
+            $bill->created_by = Yii::$app->user->id ?? null;
+
+            $pending = ListSource::find()
+                ->where(['list_Name' => 'Pending', 'category' => 'Bill Status'])
+                ->one();
+            $bill->bill_status = $pending ? $pending->id : null;
+            $bill->save(false);
+
+            $propertyName = $model->property->property_name ?? 'a property';
+            Notification::notify(
+                $model->tenant_id,
+                'Lease renewed',
+                "Your lease for {$propertyName} has been renewed.",
+                ['custom/leases']
+            );
+            Notification::notifyRoles(
+                ['admin', 'manager'],
+                'Lease renewed',
+                "{$propertyName} lease renewed for " . ($model->tenant->full_name ?? 'a tenant') . '.',
+                ['custom/leases']
+            );
+
             Yii::$app->session->setFlash('success', 'Lease renewed successfully.');
             return $this->redirect(['leases', 'id' => $model->id]);
         }
