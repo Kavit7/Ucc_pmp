@@ -80,4 +80,3 @@ models/         model classes
 views/          view files
 web/            entry script, public web assets, and vendored front-end libraries (web/lib/)
 ```
-
