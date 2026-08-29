@@ -78,10 +78,15 @@ use yii\helpers\ArrayHelper;
                             <span class="label-text">Price</span>
                             <span class="price-text">' . number_format($priceValue) . ' Tsh</span>
                         </div>
-                        <div class="d-flex justify-content-between">
+                        <div class="d-flex justify-content-between mb-2">
                             <a href="' . Url::to(['property/document', 'id'=>$model->id]) . '" class="btn btn-outline-dark btn-sm w-50 me-1">View details</a>
                             <a href="' . Url::to(['property/update', 'id'=>$model->id]) . '" class="btn btn-outline-dark btn-sm w-50 ms-1">Edit</a>
                         </div>
+                        ' . Html::a('Delete', ['property/delete', 'id' => $model->id], [
+                            'class' => 'btn btn-outline-danger btn-sm w-100',
+                            'data-method' => 'post',
+                            'data-confirm' => 'Delete this property? This only works if it has no lease history.',
+                        ]) . '
                     </div>
                 </div>';
         },
@@ -157,4 +162,17 @@ use yii\helpers\ArrayHelper;
         --success: #10b981;
     }
 " );
+
+$this->registerCssFile(Yii::getAlias('@web/lib/sweetalert2/sweetalert2.min.css'));
+$this->registerJsFile(Yii::getAlias('@web/lib/sweetalert2/sweetalert2.min.js'));
+
+if (Yii::$app->session->hasFlash('success')) {
+    $msg = Yii::$app->session->getFlash('success');
+    $this->registerJs("Swal.fire({icon:'success', title:'Success!', text:" . json_encode($msg) . ", confirmButtonColor:'#4f46e5'});");
+}
+if (Yii::$app->session->hasFlash('error')) {
+    $msg = Yii::$app->session->getFlash('error');
+    $this->registerJs("Swal.fire({icon:'error', title:'Error!', text:" . json_encode($msg) . ", confirmButtonColor:'#dc2626'});");
+}
+?>
 

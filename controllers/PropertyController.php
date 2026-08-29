@@ -13,7 +13,9 @@ use yii\helpers\ArrayHelper;
 use yii\data\ActiveDataProvider;
 use app\models\PropertySearch;
 use app\models\Street;
+use app\models\Lease;
 use yii\filters\AccessControl;
+use yii\filters\VerbFilter;
 class PropertyController extends Controller
 {
     public $layout='custom';
@@ -35,11 +37,20 @@ class PropertyController extends Controller
                     ],
                     [
                         'allow' => true,
-                        'actions' => ['update'],
+                        'actions' => ['update', 'upload-photo', 'delete-photo'],
                         'roles' => ['@'],
                         'matchCallback' => function () {
                             $role = Yii::$app->user->identity->role ?? null;
                             return $role === 'admin' || Yii::$app->user->can('edit');
+                        },
+                    ],
+                    [
+                        'allow' => true,
+                        'actions' => ['delete'],
+                        'roles' => ['@'],
+                        'matchCallback' => function () {
+                            $role = Yii::$app->user->identity->role ?? null;
+                            return $role === 'admin' || Yii::$app->user->can('delete');
                         },
                     ],
                     [
@@ -54,6 +65,14 @@ class PropertyController extends Controller
                     }
                     throw new \yii\web\ForbiddenHttpException('You do not have permission to do that.');
                 },
+            ],
+            'verbs' => [
+                'class' => VerbFilter::class,
+                'actions' => [
+                    'delete' => ['post'],
+                    'upload-photo' => ['post'],
+                    'delete-photo' => ['post'],
+                ],
             ],
         ];
     }
@@ -160,16 +179,7 @@ class PropertyController extends Controller
 
         if ($model->load(Yii::$app->request->post())) {
 
-            // ✅ Get uploaded file instance
             $model->documentFile = UploadedFile::getInstance($model, 'documentFile');
-            
-            // ✅ Handle file upload
-            if ($model->documentFile) {
-                $filePath = 'uploads/' . Yii::$app->security->generateRandomString() . '.' . $model->documentFile->extension;
-                if ($model->documentFile->saveAs($filePath)) {
-                    $model->document_url = $filePath;
-                }
-            }
 
             if (empty($model->uuid)) {
                 $lastUuid = Property::find()
@@ -181,6 +191,31 @@ class PropertyController extends Controller
                 $model->uuid = $lastUuid
                     ? 'Prop_' . ((int)str_replace('Prop_', '', $lastUuid) + 1)
                     : 'Prop_1';
+            }
+
+            // Validate (including the file's extension/size) before writing
+            // anything to disk - previously this saved whatever was
+            // uploaded, extension included, with no check at all.
+            if (!$model->validate()) {
+                Yii::$app->session->setFlash('error', 'Please fix the highlighted fields.');
+                return $this->render('create', [
+                    'model' => $model,
+                    'childUsage' => $childUsage,
+                    'childProperty' => $childProperty,
+                    'childOwner' => $childOwner,
+                    'childStatus' => $childStatus,
+                ]);
+            }
+
+            if ($model->documentFile) {
+                $uploadDir = Yii::getAlias('@webroot/uploads/');
+                if (!is_dir($uploadDir)) {
+                    mkdir($uploadDir, 0777, true);
+                }
+                $filePath = 'uploads/' . Yii::$app->security->generateRandomString() . '.' . $model->documentFile->extension;
+                if ($model->documentFile->saveAs(Yii::getAlias('@webroot/' . $filePath))) {
+                    $model->document_url = $filePath;
+                }
             }
 
             if ($model->save(false)) {
@@ -274,16 +309,40 @@ class PropertyController extends Controller
         $model->documentFile = UploadedFile::getInstance($model, 'documentFile');
         $oldFile = $model->getOldAttribute('document_url');
 
+        if (!$model->documentFile) {
+            $model->document_url = $oldFile;
+        }
+
+        // Validate (including the file's extension/size, if a new one was
+        // provided) before writing anything to disk.
+        if (!$model->validate()) {
+            Yii::$app->session->setFlash('error', 'Please fix the highlighted fields.');
+            return $this->render('update', [
+                'model' => $model,
+                'childUsage' => $childUsage,
+                'childProperty' => $childProperty,
+                'childOwner' => $childOwner,
+                'childStatus' => $childStatus,
+                'existingAttributes' => array_map(function ($e) { return $e->attribute_answer_text; }, $extraMap),
+                'existingAnswers' => array_map(function ($e) { return $e->attribute_answer_id; }, $extraMap),
+            ]);
+        }
+
         if ($model->documentFile) {
+            $uploadDir = Yii::getAlias('@webroot/uploads/');
+            if (!is_dir($uploadDir)) {
+                mkdir($uploadDir, 0777, true);
+            }
             $filePath = 'uploads/' . Yii::$app->security->generateRandomString() . '.' . $model->documentFile->extension;
-            if ($model->documentFile->saveAs($filePath)) {
-                if ($oldFile && file_exists($oldFile)) {
-                    @unlink($oldFile);
+            if ($model->documentFile->saveAs(Yii::getAlias('@webroot/' . $filePath))) {
+                if ($oldFile) {
+                    $oldFullPath = Yii::getAlias('@webroot/' . $oldFile);
+                    if (file_exists($oldFullPath)) {
+                        @unlink($oldFullPath);
+                    }
                 }
                 $model->document_url = $filePath;
             }
-        } else {
-            $model->document_url = $oldFile;
         }
 
         if ($model->save(false)) {
@@ -447,6 +506,73 @@ public function actionDocument($id)
         'extraData' => $extraData,
     ]);
 }
+
+/**
+ * Adds a photo to a property's gallery.
+ */
+public function actionUploadPhoto($id)
+{
+    $this->findModel($id); // 404s if the property doesn't exist
+
+    $photo = new \app\models\PropertyPhoto();
+    $photo->property_id = $id;
+    $photo->created_by = Yii::$app->user->id;
+    $photo->photoFile = UploadedFile::getInstanceByName('photoFile');
+
+    if ($photo->upload()) {
+        Yii::$app->session->setFlash('success', 'Photo added.');
+    } else {
+        $errors = $photo->getFirstErrors();
+        Yii::$app->session->setFlash('error', $errors ? reset($errors) : 'Please choose a valid image (png, jpg, jpeg, max 5MB).');
+    }
+
+    return $this->redirect(['document', 'id' => $id]);
+}
+
+/**
+ * Removes a single photo from a property's gallery.
+ */
+public function actionDeletePhoto($photoId)
+{
+    $photo = \app\models\PropertyPhoto::findOne($photoId);
+    if (!$photo) {
+        throw new NotFoundHttpException('Photo not found.');
+    }
+    $propertyId = $photo->property_id;
+    $photo->delete();
+
+    Yii::$app->session->setFlash('success', 'Photo removed.');
+    return $this->redirect(['document', 'id' => $propertyId]);
+}
+
+/**
+ * Deletes a property, but only if it has no real business history
+ * attached - leases/bills would otherwise cascade-delete silently
+ * (the DB's FKs are set to CASCADE), wiping financial records with no
+ * warning. A property that's actually been leased should be marked
+ * inactive instead of deleted.
+ */
+public function actionDelete($id)
+{
+    $model = $this->findModel($id);
+
+    if (Lease::find()->where(['property_id' => $id])->exists()) {
+        Yii::$app->session->setFlash('error', 'This property has lease history and cannot be deleted. Mark it inactive instead.');
+        return $this->redirect(['index']);
+    }
+
+    if ($model->document_url) {
+        $fullPath = Yii::getAlias('@webroot/' . $model->document_url);
+        if (file_exists($fullPath)) {
+            @unlink($fullPath);
+        }
+    }
+
+    $model->delete();
+    Yii::$app->session->setFlash('success', 'Property deleted successfully.');
+    return $this->redirect(['index']);
+}
+
 protected function findModel($id)
 {
     if (($model = Property::findOne($id)) !== null) {

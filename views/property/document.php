@@ -197,7 +197,23 @@ $this->registerCss($css);
                     </span>
 </div>
             </div>
-            
+
+            <?php $currentLease = $model->getCurrentLease(); ?>
+            <div class="detail-row">
+                <div class="detail-label">Occupancy</div>
+                <div class="detail-value">
+                    <?php if ($currentLease): ?>
+                        <span class="status-badge" style="background-color:#f59e0b; color:white;">Occupied</span>
+                        <span style="margin-left:8px; color:#6b7280; font-size:14px;">
+                            by <?= Html::encode($currentLease->tenant->full_name ?? 'a tenant') ?>
+                            until <?= Html::encode($currentLease->lease_end_date) ?>
+                        </span>
+                    <?php else: ?>
+                        <span class="status-badge" style="background-color:#10b981; color:white;">Vacant</span>
+                    <?php endif; ?>
+                </div>
+            </div>
+
             <div class="detail-row">
                 <div class="detail-label">Identifier Code</div>
                 <div class="detail-value"><?= Html::encode($model->identifier_code) ?></div>
@@ -255,6 +271,37 @@ $this->registerCss($css);
         </div>
     </div>
     
+    <?php $canManage = in_array(Yii::$app->user->identity->role ?? null, ['admin', 'manager'], true); ?>
+    <div style="padding: 0 25px 25px;">
+        <div class="extra-header"><i class="fas fa-images"></i> Photo Gallery</div>
+        <div style="display:flex; gap:12px; flex-wrap:wrap; margin-bottom: <?= $canManage ? '15px' : '0' ?>;">
+            <?php foreach ($model->photos as $photo): ?>
+                <div style="position:relative; width:140px; height:140px;">
+                    <img src="<?= Html::encode(Yii::getAlias('@web/' . $photo->photo_url)) ?>" alt="Property photo"
+                         style="width:100%; height:100%; object-fit:cover; border-radius:8px; box-shadow:0 2px 6px rgba(0,0,0,0.1);">
+                    <?php if ($canManage): ?>
+                        <?= Html::a('<i class="fas fa-trash"></i>', ['delete-photo', 'photoId' => $photo->id], [
+                            'class' => 'text-decoration-none',
+                            'data-method' => 'post',
+                            'data-confirm' => 'Remove this photo?',
+                            'style' => 'position:absolute; top:4px; right:4px; background:#dc2626; color:#fff; width:26px; height:26px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:12px;',
+                        ]) ?>
+                    <?php endif; ?>
+                </div>
+            <?php endforeach; ?>
+            <?php if (empty($model->photos)): ?>
+                <p class="text-muted" style="margin:0;">No photos added yet.</p>
+            <?php endif; ?>
+        </div>
+
+        <?php if ($canManage): ?>
+            <?= Html::beginForm(['upload-photo', 'id' => $model->id], 'post', ['enctype' => 'multipart/form-data', 'style' => 'display:flex; gap:10px; align-items:center;']) ?>
+                <input type="file" name="photoFile" accept=".png,.jpg,.jpeg" required class="form-control" style="max-width:280px;">
+                <?= Html::submitButton('<i class="fas fa-plus"></i> Add Photo', ['class' => 'back-button', 'style' => 'background:#4f46e5; margin-top:0;']) ?>
+            <?= Html::endForm() ?>
+        <?php endif; ?>
+    </div>
+
     <div style="padding: 0 25px 25px; display:flex; gap:10px; flex-wrap:wrap;">
         <?= Html::a('<i class="fas fa-arrow-left"></i> Back to List', ['index'], ['class' => 'back-button']) ?>
         <?= Html::a('<i class="fas fa-edit"></i> Edit Property', ['update', 'id' => $model->id], ['class' => 'back-button']) ?>

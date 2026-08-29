@@ -32,7 +32,7 @@ class Property extends \yii\db\ActiveRecord
             [['property_status_id'], 'exist', 'skipOnError' => true, 'targetClass' => ListSource::class, 'targetAttribute' => ['property_status_id' => 'id']],
             [['ownership_type_id'], 'exist', 'skipOnError' => true, 'targetClass' => ListSource::class, 'targetAttribute' => ['ownership_type_id' => 'id']],
             [['usage_type_id'], 'exist', 'skipOnError' => true, 'targetClass' => ListSource::class, 'targetAttribute' => ['usage_type_id' => 'id']],
-            [['documentFile'], 'file', 'skipOnEmpty' => false, 'extensions' => 'png, jpg, jpeg, pdf'],
+            [['documentFile'], 'file', 'skipOnEmpty' => true, 'extensions' => 'png, jpg, jpeg, pdf', 'maxSize' => 5 * 1024 * 1024],
         ];
     }
 
@@ -65,11 +65,11 @@ class Property extends \yii\db\ActiveRecord
 
         if ($insert) {
             $this->created_at = date('Y-m-d H:i:s');
-            $this->created_by = Yii::$app->user->id ?? 15;
+            $this->created_by = Yii::$app->user->id ?? null;
         }
 
         $this->updated_at = date('Y-m-d H:i:s');
-        $this->updated_by = Yii::$app->user->id ?? 15;
+        $this->updated_by = Yii::$app->user->id ?? null;
 
         return true;
     }
@@ -104,5 +104,43 @@ class Property extends \yii\db\ActiveRecord
     }
     public function getStreet(){
         return $this->hasOne(Street::class,['street_id'=>'street_id']);
+    }
+
+    public function getLeases()
+    {
+        return $this->hasMany(Lease::class, ['property_id' => 'id']);
+    }
+
+    public function getPhotos()
+    {
+        return $this->hasMany(PropertyPhoto::class, ['property_id' => 'id'])->orderBy(['id' => SORT_ASC]);
+    }
+
+    /**
+     * The property's current active lease, if any - computed live from
+     * lease data rather than a manually-set field, so it can't go stale
+     * the way property_status_id/usage_type_id do (those are set once at
+     * creation and never touched by the lease lifecycle).
+     */
+    public function getCurrentLease()
+    {
+        $activeStatusId = ListSource::find()
+            ->where(['list_Name' => 'Active', 'parent_id' => ListSource::find()->select('id')->where(['list_Name' => 'Lease Status'])])
+            ->select('id')
+            ->scalar();
+
+        if (!$activeStatusId) {
+            return null;
+        }
+
+        return Lease::find()
+            ->with('tenant')
+            ->where(['property_id' => $this->id, 'status' => $activeStatusId])
+            ->one();
+    }
+
+    public function isCurrentlyOccupied()
+    {
+        return $this->getCurrentLease() !== null;
     }
 }
