@@ -883,6 +883,14 @@ document.addEventListener('DOMContentLoaded', function() {
 
     if (profileToggle && dropdownMenu) {
         profileToggle.addEventListener('click', function(e) {
+            // Only handle the toggle click itself. If the click is on
+            // something inside the already-open menu (e.g. Logout, which
+            // needs a real POST), let it bubble normally instead of
+            // stopping propagation - otherwise Yii's data-method="post"
+            // handler (bound on document) never sees the click.
+            if (dropdownMenu.contains(e.target)) {
+                return;
+            }
             e.stopPropagation();
             dropdownMenu.classList.toggle('show');
         });
@@ -909,6 +917,13 @@ document.addEventListener('DOMContentLoaded', function() {
 
     if (notifToggle && notifMenu) {
         notifToggle.addEventListener('click', function(e) {
+            // Same reasoning as the profile dropdown above: don't swallow
+            // clicks on links inside the menu (Mark all read, individual
+            // notifications) - they're POST-only and need to reach Yii's
+            // document-level data-method handler.
+            if (notifMenu.contains(e.target)) {
+                return;
+            }
             e.stopPropagation();
             notifMenu.classList.toggle('show');
         });
