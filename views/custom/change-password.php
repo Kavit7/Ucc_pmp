@@ -44,7 +44,7 @@ $this->title = 'Change Password';
         transition: border-color 0.3s ease;
     }
     #change-password-form .form-control:focus {
-        border-color: #4a90e2;
+        border-color: #4f46e5;
         box-shadow: none;
     }
 
@@ -57,7 +57,7 @@ $this->title = 'Change Password';
         font-style: italic;
     }
     .feedback-error {
-        color: #e74c3c !important; /* soft red */
+        color: #dc2626 !important; /* soft red */
         font-weight: 500;
     }
     .feedback-success {
@@ -67,7 +67,7 @@ $this->title = 'Change Password';
 
     /* Submit button */
     #change-password-form button[type="submit"] {
-        background-color: #4a90e2;
+        background-color: #4f46e5;
         border: none;
         font-weight: 600;
         border-radius: 0.5rem;
@@ -221,7 +221,7 @@ function confirmChangePassword() {
             icon: 'error',
             title: 'Error',
             text: 'All fields are required',
-            confirmButtonColor: '#e74c3c'
+            confirmButtonColor: '#dc2626'
         });
         return false;
     }
@@ -233,7 +233,7 @@ function confirmChangePassword() {
             icon: 'error',
             title: 'Error',
             text: 'New password and confirm password do not match',
-            confirmButtonColor: '#e74c3c'
+            confirmButtonColor: '#dc2626'
         });
         return false;
     }
@@ -243,8 +243,8 @@ function confirmChangePassword() {
         text: "Are you sure you want to change your password?",
         icon: 'warning',
         showCancelButton: true,
-        confirmButtonColor: '#4a90e2',
-        cancelButtonColor: '#e74c3c',
+        confirmButtonColor: '#4f46e5',
+        cancelButtonColor: '#dc2626',
         confirmButtonText: 'Yes, change it!',
         cancelButtonText: 'Cancel'
     }).then((result) => {
@@ -262,7 +262,7 @@ Swal.fire({
     icon: 'success',
     title: 'Success!',
     text: '<?= Yii::$app->session->getFlash('success') ?>',
-    confirmButtonColor: '#4a90e2'
+    confirmButtonColor: '#4f46e5'
 });
 <?php endif; ?>
 
@@ -271,7 +271,7 @@ Swal.fire({
     icon: 'error',
     title: 'Error!',
     text: '<?= Yii::$app->session->getFlash('error') ?>',
-    confirmButtonColor: '#e74c3c'
+    confirmButtonColor: '#dc2626'
 });
 <?php endif; ?>
 </script>

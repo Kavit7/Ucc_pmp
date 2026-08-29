@@ -146,7 +146,7 @@ foreach($prices as $p){
     transition: background-color 0.3s ease;
 }
 .btn-primary:hover { background-color: #0d6efdcc; }
-.btn-danger:hover { background-color: #c0392b; border-color: #c0392b; }
+.btn-danger:hover { background-color: #dc2626; border-color: #dc2626; }
 </style>
 
 <!-- JS Delete with SweetAlert2 -->

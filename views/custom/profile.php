@@ -184,11 +184,11 @@ JS;
 
 if (Yii::$app->session->hasFlash('success')) {
     $msg = Yii::$app->session->getFlash('success');
-    $js .= "\nSwal.fire({icon:'success', title:'Success!', text:" . json_encode($msg) . ", confirmButtonColor:'#4a90e2'});";
+    $js .= "\nSwal.fire({icon:'success', title:'Success!', text:" . json_encode($msg) . ", confirmButtonColor:'#4f46e5'});";
 }
 if (Yii::$app->session->hasFlash('error')) {
     $msg = Yii::$app->session->getFlash('error');
-    $js .= "\nSwal.fire({icon:'error', title:'Error!', text:" . json_encode($msg) . ", confirmButtonColor:'#e74c3c'});";
+    $js .= "\nSwal.fire({icon:'error', title:'Error!', text:" . json_encode($msg) . ", confirmButtonColor:'#dc2626'});";
 }
 $this->registerJs($js);
 ?>

@@ -116,8 +116,8 @@ $form = ActiveForm::begin([
 }
 
 .styled-input:focus, .styled-textarea:focus {
-    border-color: #3f51b5;
-    box-shadow: 0 0 0 3px rgba(63, 81, 181, 0.2);
+    border-color: #4f46e5;
+    box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.2);
     outline: none;
 }
 
@@ -149,13 +149,13 @@ $form = ActiveForm::begin([
 }
 
 .btn-primary {
-    background: linear-gradient(135deg, #0c0a7e, #3f51b5);
+    background: linear-gradient(135deg, #4338ca, #4f46e5);
     color: white;
 }
 
 .btn-primary:hover {
     transform: translateY(-2px);
-    box-shadow: 0 4px 12px rgba(63, 81, 181, 0.3);
+    box-shadow: 0 4px 12px rgba(79, 70, 229, 0.3);
 }
 
 .btn-cancel {

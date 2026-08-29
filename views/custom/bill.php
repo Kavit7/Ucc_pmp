@@ -40,17 +40,17 @@ $this->registerCss("
 .card .count { font-size: 24px; font-weight: bold; margin-bottom: 5px; }
 .text-success { color: #27ae60; }
 .text-warning { color: #f39c12; }
-.text-danger { color: #c0392b; }
+.text-danger { color: #dc2626; }
 .filters { text-align: center; margin-bottom: 30px; font-size: 16px; font-weight: bold; }
 .filters a { margin: 0 12px; color: black; text-decoration: none; font-weight: bold; cursor: pointer; }
-.filters a.active { color: #007bff; border-bottom: 2px solid #007bff; padding-bottom: 3px; }
+.filters a.active { color: #4f46e5; border-bottom: 2px solid #4f46e5; padding-bottom: 3px; }
 .bill-table { background: #fff; border-radius: 12px; padding: 15px; box-shadow: 0 2px 6px rgba(0,0,0,0.1); overflow-x: auto; }
 .bill-table table { width: 100%; border-collapse: collapse; }
 .bill-table th, .bill-table td { padding: 10px; border: 1px solid #ddd; color: black; vertical-align: middle; }
 .bill-table th { background: #f1f1f1; text-align: left; }
 .badge { font-weight: 600; border-radius: 0.25rem; padding: 0.25em 0.5em; border: 1px solid; }
 .btn-danger { transition: background-color 0.3s ease; }
-.btn-danger:hover { background-color: #c0392b; border-color: #c0392b; }
+.btn-danger:hover { background-color: #dc2626; border-color: #dc2626; }
 .no-bills { text-align: center; padding: 40px; font-size: 18px; color: #777; }
 ");
 

@@ -56,6 +56,6 @@ $this->registerJsFile(Yii::getAlias('@web/lib/sweetalert2/sweetalert2.min.js'));
 <?php
 if (Yii::$app->session->hasFlash('success')) {
     $msg = Yii::$app->session->getFlash('success');
-    $this->registerJs("Swal.fire({icon:'success', title:'Success!', text:" . json_encode($msg) . ", confirmButtonColor:'#4a90e2'});");
+    $this->registerJs("Swal.fire({icon:'success', title:'Success!', text:" . json_encode($msg) . ", confirmButtonColor:'#4f46e5'});");
 }
 ?>

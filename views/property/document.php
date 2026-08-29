@@ -150,7 +150,7 @@ $css = <<<CSS
     align-items: center;
     margin-top: 25px;
     padding: 10px 20px;
-    background: #1a8be2ff;
+    background: #4f46e5;
     color: white;
     text-decoration: none;
     border-radius: 6px;
@@ -159,7 +159,7 @@ $css = <<<CSS
 }
 
 .back-button:hover {
-    background: #1a8be2ff;
+    background: #4338ca;
     color: white;
 }
 
@@ -257,7 +257,7 @@ $this->registerCss($css);
     
     <div style="padding: 0 25px 25px; display:flex; gap:10px; flex-wrap:wrap;">
         <?= Html::a('<i class="fas fa-arrow-left"></i> Back to List', ['index'], ['class' => 'back-button']) ?>
-        <?= Html::a('<i class="fas fa-edit"></i> Edit Property', ['update', 'id' => $model->id], ['class' => 'back-button', 'style' => 'background:#4f46e5;']) ?>
+        <?= Html::a('<i class="fas fa-edit"></i> Edit Property', ['update', 'id' => $model->id], ['class' => 'back-button']) ?>
         <?= Html::a('<i class="fas fa-file-signature"></i> Create Lease for this Property', ['custom/create-lease', 'property_id' => $model->id], ['class' => 'back-button', 'style' => 'background:#10b981;']) ?>
     </div>
 </div>

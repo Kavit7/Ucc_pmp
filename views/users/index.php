@@ -9,16 +9,16 @@ $this->title = 'User Management';
 $this->registerCss("
     body { font-family: 'SF Pro Display', sans-serif; background: #f4f4f4; }
     .user-container { position: relative; padding: 20px; }
-    .add-user-btn { position: absolute; top: 20px; right: 20px; background: #007bff; color: #fff; padding: 10px 18px; border-radius: 8px; text-decoration: none; font-weight: 500; display: flex; align-items: center; gap: 8px; }
+    .add-user-btn { position: absolute; top: 20px; right: 20px; background: #4f46e5; color: #fff; padding: 10px 18px; border-radius: 8px; text-decoration: none; font-weight: 500; display: flex; align-items: center; gap: 8px; }
     .filters { text-align: center; margin-top: 80px; font-size: 16px; font-weight: bold; }
     .filters a { margin: 0 12px; color: black; text-decoration: none; font-weight: bold; }
-    .filters a.active { color: #007bff; border-bottom: 2px solid #007bff; padding-bottom: 3px; }
+    .filters a.active { color: #4f46e5; border-bottom: 2px solid #4f46e5; padding-bottom: 3px; }
     .user-table { margin-top: 30px; background: #fff; border-radius: 12px; padding: 15px; box-shadow: 0 2px 6px rgba(0,0,0,0.1); overflow-x: auto; }
     .user-table table { width: 100%; border-collapse: collapse; }
     .user-table th, .user-table td { padding: 10px; border-bottom: 1px solid #ddd; color: black; }
     .user-table th { background: #f1f1f1; text-align: left; }
     .btn-action { padding: 4px 12px; border-radius: 5px; border: none; font-weight: bold; cursor: pointer; text-decoration: none; display: inline-block; }
-    .btn-edit { background-color: #007bff; color: #fff; }
+    .btn-edit { background-color: #4f46e5; color: #fff; }
     .btn-delete { background-color: #dc3545; color: #fff; }
     .no-users { text-align: center; padding: 40px; font-size: 18px; color: #777; }
 ");

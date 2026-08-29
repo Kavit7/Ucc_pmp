@@ -72,8 +72,8 @@ use yii\helpers\Html;
 <?php
 $this->registerCss("
     :root {
-        --primary: #3f51b5;
-        --primary-dark: #4d4ae0ff;
+        --primary: #4f46e5;
+        --primary-dark: #4338ca;
         --secondary: #f8f9fa;
         --accent: #ff6b6b;
         --text: #2d3748;

@@ -39,13 +39,66 @@ $currentRoute = Yii::$app->controller->getRoute();
             --sidebar-width: 280px;
             --sidebar-bg: #120912ff;
             --sidebar-color: #ffffffff;
-            --sidebar-hover-bg: #3b82f6;
+            --sidebar-hover-bg: #4f46e5;
             --content-bg: #f1f5f9;
             --header-bg: #ffffff;
-            --primary-color: #3b82f6;
+            --primary-color: #4f46e5;
+            --primary-dark: #4338ca;
             --secondary-color: #64748b;
             --accent-color: #8b5cf6;
+            --success-color: #10b981;
+            --danger-color: #dc2626;
+            --warning-color: #f59e0b;
         }
+
+        /* System-wide button colors: override Bootstrap's default blue so every
+           .btn-primary / .btn-outline-primary across the app uses the same brand
+           indigo instead of Bootstrap's stock #0d6efd (or the various ad-hoc blues
+           that had crept into individual pages). */
+        .btn-primary {
+            background-color: var(--primary-color) !important;
+            border-color: var(--primary-color) !important;
+        }
+        .btn-primary:hover, .btn-primary:focus, .btn-primary:active {
+            background-color: var(--primary-dark) !important;
+            border-color: var(--primary-dark) !important;
+        }
+        .btn-outline-primary {
+            color: var(--primary-color) !important;
+            border-color: var(--primary-color) !important;
+        }
+        .btn-outline-primary:hover, .btn-outline-primary:focus, .btn-outline-primary:active {
+            background-color: var(--primary-color) !important;
+            border-color: var(--primary-color) !important;
+            color: #fff !important;
+        }
+        .btn-success {
+            background-color: var(--success-color) !important;
+            border-color: var(--success-color) !important;
+        }
+        .btn-success:hover, .btn-success:focus, .btn-success:active {
+            background-color: #059669 !important;
+            border-color: #059669 !important;
+        }
+        .btn-danger {
+            background-color: var(--danger-color) !important;
+            border-color: var(--danger-color) !important;
+        }
+        .btn-danger:hover, .btn-danger:focus, .btn-danger:active {
+            background-color: #b91c1c !important;
+            border-color: #b91c1c !important;
+        }
+        .btn-warning {
+            background-color: var(--warning-color) !important;
+            border-color: var(--warning-color) !important;
+            color: #fff !important;
+        }
+        .btn-warning:hover, .btn-warning:focus, .btn-warning:active {
+            background-color: #d97706 !important;
+            border-color: #d97706 !important;
+            color: #fff !important;
+        }
+        .btn-link { color: var(--primary-color) !important; }
 
         * {
             margin: 0;
@@ -748,7 +801,7 @@ $profileUrl = ($userProfilePic && file_exists(Yii::getAlias('@webroot/' . $userP
                 <?php if ($profileUrl): ?>
                     <img src="<?= $profileUrl ?>" alt="Profile" class="profile-icon" style="width:40px;height:40px;border-radius:50%;object-fit:cover;">
                 <?php else: ?>
-                    <div class="profile-icon" style="width:40px;height:40px;border-radius:50%;background:#007bff;color:#fff;display:flex;align-items:center;justify-content:center;font-weight:bold;">
+                    <div class="profile-icon" style="width:40px;height:40px;border-radius:50%;background:#4f46e5;color:#fff;display:flex;align-items:center;justify-content:center;font-weight:bold;">
                         <?= $userInitials ?>
                     </div>
                 <?php endif; ?>

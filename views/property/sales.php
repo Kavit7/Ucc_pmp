@@ -116,22 +116,22 @@ use yii\helpers\Html;
     justify-content: center;
 }
 .btn-view {
-    background: linear-gradient(45deg, #634dceff, #853fe7ff);
+    background: linear-gradient(45deg, #4f46e5, #6366f1);
     color: white;
     border: none;
 }
 .btn-view:hover {
-    background: linear-gradient(45deg, #4e0b9fff, #4e9af1);
+    background: linear-gradient(45deg, #4338ca, #4f46e5);
     color: white;
     text-decoration: none;
 }
 .btn-edit {
-    background: linear-gradient(45deg, #f1a94e, #a67a08ff);
+    background: linear-gradient(45deg, #4f46e5, #6366f1);
     color: white;
     border: none;
 }
 .btn-edit:hover {
-    background: linear-gradient(45deg, #f2b71c, #f1a94e);
+    background: linear-gradient(45deg, #4338ca, #4f46e5);
     color: white;
     text-decoration: none;
 }

@@ -97,19 +97,19 @@ use yii\helpers\ArrayHelper;
     ]) ?>
 </div>
 
-<?php $this->registerCss(" .custom-container { background-color: whitesmoke; padding: 25px; border-radius: 12px; } /* Card */ .property-card-sm { width: 360px; border-radius: 15px; background-color: #ffffff; overflow: hidden; } /* Image Wrapper */ .property-img-wrapper { height: 180px; border-radius: 15px; overflow: hidden; } /* Property Image */ .property-img-sm { width: 100%; height: 100%; object-fit: cover; transform: scale(1.1); /* zoom in effect */ } /* No Image Placeholder */ .no-image-sm { height: 180px; background-color: #e5e7eb; color: #9ca3af; font-weight: 600; font-size: 1rem; border-radius: 15px; } .property-title { color: #111827; } .property-location { color: #6b7280; } .divider { border-color: #d1d5db; opacity: 1; } .label-text { color: #374151; } .status-available { color: #16a34a; font-weight: 600; } .price-text { color: #111827; font-weight: 600; } .btn-sm { font-size: 0.8rem; border-radius: 8px; padding: 6px 0; } /* Add New Property Button */ .btn-add-property { background-color: #007bff; /* blue background */ color: #ffffff; border-radius: 8px; padding: 6px 12px; font-weight: 600; text-decoration: none; transition: background-color 0.3s; } .btn-add-property:hover { background-color: #0056b3; color: #ffffff; }
+<?php $this->registerCss(" .custom-container { background-color: whitesmoke; padding: 25px; border-radius: 12px; } /* Card */ .property-card-sm { width: 360px; border-radius: 15px; background-color: #ffffff; overflow: hidden; } /* Image Wrapper */ .property-img-wrapper { height: 180px; border-radius: 15px; overflow: hidden; } /* Property Image */ .property-img-sm { width: 100%; height: 100%; object-fit: cover; transform: scale(1.1); /* zoom in effect */ } /* No Image Placeholder */ .no-image-sm { height: 180px; background-color: #e5e7eb; color: #9ca3af; font-weight: 600; font-size: 1rem; border-radius: 15px; } .property-title { color: #111827; } .property-location { color: #6b7280; } .divider { border-color: #d1d5db; opacity: 1; } .label-text { color: #374151; } .status-available { color: #16a34a; font-weight: 600; } .price-text { color: #111827; font-weight: 600; } .btn-sm { font-size: 0.8rem; border-radius: 8px; padding: 6px 0; } /* Add New Property Button */ .btn-add-property { background-color: #4f46e5; /* blue background */ color: #ffffff; border-radius: 8px; padding: 6px 12px; font-weight: 600; text-decoration: none; transition: background-color 0.3s; } .btn-add-property:hover { background-color: #4338ca; color: #ffffff; }
 .pagination{
     gap:0.3rem
     }
 .pagination .page-link{
-   background-color:#007bff;
+   background-color:#4f46e5;
    color:white;
    border-radius:8px;
    padding:6px 12px;
    transition:all 0.3s;
     }
    .pagination .page-link:hover{
-    background-color:#0056b3;
+    background-color:#4338ca;
     color:white;
     }
     .pagination .active .page-link{

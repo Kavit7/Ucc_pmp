@@ -30,8 +30,8 @@ $(document).ready(function () {
     <link href="<?= Yii::getAlias('@web/lib/bootstrap-icons/bootstrap-icons.css') ?>" rel="stylesheet">
     <style>
         :root {
-            --primary: #3f51b5;
-            --primary-dark: #0c0a7e;
+            --primary: #4f46e5;
+            --primary-dark: #4338ca;
             --secondary: #f8f9fa;
             --accent: #ff6b6b;
             --text: #2d3748;
