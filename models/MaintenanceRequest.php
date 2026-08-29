@@ -65,6 +65,12 @@ class MaintenanceRequest extends ActiveRecord
             return true;
         }
 
+        $allowedExtensions = ['png', 'jpg', 'jpeg'];
+        if (!in_array(strtolower($this->photoFile->extension), $allowedExtensions, true)) {
+            $this->addError('photoFile', 'Photo must be a png, jpg, or jpeg file.');
+            return false;
+        }
+
         $folder = Yii::getAlias('@webroot/uploads/');
         if (!is_dir($folder)) {
             mkdir($folder, 0777, true);

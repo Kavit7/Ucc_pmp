@@ -53,9 +53,4 @@ $this->registerJsFile(Yii::getAlias('@web/lib/sweetalert2/sweetalert2.min.js'));
     </div>
 </div>
 
-<?php
-if (Yii::$app->session->hasFlash('success')) {
-    $msg = Yii::$app->session->getFlash('success');
-    $this->registerJs("Swal.fire({icon:'success', title:'Success!', text:" . json_encode($msg) . ", confirmButtonColor:'#4f46e5'});");
-}
-?>
+<?php // Flash messages are now rendered globally by the layout. ?>

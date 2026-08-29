@@ -11,6 +11,12 @@ $this->registerMetaTag(['name' => 'description', 'content' => $this->params['met
 $this->registerMetaTag(['name' => 'keywords', 'content' => $this->params['meta_keywords'] ?? '']);
 $this->registerLinkTag(['rel' => 'icon', 'type' => 'image/x-icon', 'href' => Yii::getAlias('@web/favicon.ico')]);
 
+// Loaded globally so every page can show flash messages consistently -
+// previously several pages set a flash (e.g. a blocked delete, a rejected
+// file upload) with nowhere to display it, so the message was silently lost.
+$this->registerCssFile(Yii::getAlias('@web/lib/sweetalert2/sweetalert2.min.css'));
+$this->registerJsFile(Yii::getAlias('@web/lib/sweetalert2/sweetalert2.min.js'));
+
 $userProfilePic = Yii::$app->user->identity->profile_pic ?? null;
 $userName = Yii::$app->user->identity->name ?? 'Guest';
 $userRole = Yii::$app->user->identity->role ?? 'User';
@@ -989,6 +995,19 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 });
 </script>
+
+<?php
+$flashJs = '';
+if (Yii::$app->session->hasFlash('success')) {
+    $flashJs .= "Swal.fire({icon:'success', title:'Success!', text:" . json_encode(Yii::$app->session->getFlash('success')) . ", confirmButtonColor:'#4f46e5'});\n";
+}
+if (Yii::$app->session->hasFlash('error')) {
+    $flashJs .= "Swal.fire({icon:'error', title:'Error!', text:" . json_encode(Yii::$app->session->getFlash('error')) . ", confirmButtonColor:'#dc2626'});\n";
+}
+if ($flashJs) {
+    echo "<script>document.addEventListener('DOMContentLoaded', function () {\n{$flashJs}});</script>\n";
+}
+?>
 
 <?php $this->endBody() ?>
 </body>

@@ -114,6 +114,12 @@ class Lease extends ActiveRecord
     public function uploadDocument()
     {
         if ($this->lease_doc_file instanceof UploadedFile) {
+            $allowedExtensions = ['pdf', 'doc', 'docx'];
+            if (!in_array(strtolower($this->lease_doc_file->extension), $allowedExtensions, true)) {
+                $this->addError('lease_doc_file', 'File must be a pdf, doc, or docx.');
+                return false;
+            }
+
             $folder = Yii::getAlias('@webroot/uploads/leases/');
             if (!is_dir($folder)) {
                 mkdir($folder, 0777, true);

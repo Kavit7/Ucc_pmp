@@ -584,6 +584,12 @@ if ($model !== null) {
             $receiptFile = UploadedFile::getInstanceByName('receiptFile');
 
             if ($receiptFile) {
+                $allowedExtensions = ['png', 'jpg', 'jpeg', 'pdf'];
+                if (!in_array(strtolower($receiptFile->extension), $allowedExtensions, true)) {
+                    Yii::$app->session->setFlash('error', 'Receipt must be a png, jpg, jpeg, or pdf file.');
+                    return $this->redirect(['custom/bill']);
+                }
+
                 $folder = Yii::getAlias('@webroot/uploads/');
                 if (!is_dir($folder)) {
                     mkdir($folder, 0777, true);

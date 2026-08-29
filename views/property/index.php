@@ -162,17 +162,5 @@ use yii\helpers\ArrayHelper;
         --success: #10b981;
     }
 " );
-
-$this->registerCssFile(Yii::getAlias('@web/lib/sweetalert2/sweetalert2.min.css'));
-$this->registerJsFile(Yii::getAlias('@web/lib/sweetalert2/sweetalert2.min.js'));
-
-if (Yii::$app->session->hasFlash('success')) {
-    $msg = Yii::$app->session->getFlash('success');
-    $this->registerJs("Swal.fire({icon:'success', title:'Success!', text:" . json_encode($msg) . ", confirmButtonColor:'#4f46e5'});");
-}
-if (Yii::$app->session->hasFlash('error')) {
-    $msg = Yii::$app->session->getFlash('error');
-    $this->registerJs("Swal.fire({icon:'error', title:'Error!', text:" . json_encode($msg) . ", confirmButtonColor:'#dc2626'});");
-}
-?>
+// Flash messages are now rendered globally by the layout.
 

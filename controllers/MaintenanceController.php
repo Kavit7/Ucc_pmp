@@ -118,8 +118,10 @@ class MaintenanceController extends Controller
 
             if ($model->save()) {
                 $model->photoFile = UploadedFile::getInstance($model, 'photoFile');
-                if ($model->photoFile) {
-                    $model->uploadPhoto();
+                $photoWarning = null;
+                if ($model->photoFile && !$model->uploadPhoto()) {
+                    $errors = $model->getFirstErrors();
+                    $photoWarning = $errors ? reset($errors) : 'Photo could not be attached.';
                 }
 
                 $propertyName = $model->property->property_name ?? 'a property';
@@ -130,7 +132,11 @@ class MaintenanceController extends Controller
                     ['maintenance/update', 'id' => $model->id]
                 );
 
-                Yii::$app->session->setFlash('success', 'Maintenance request submitted.');
+                if ($photoWarning) {
+                    Yii::$app->session->setFlash('error', "Request submitted, but the photo wasn't attached: {$photoWarning}");
+                } else {
+                    Yii::$app->session->setFlash('success', 'Maintenance request submitted.');
+                }
                 return $this->redirect(['index']);
             }
         }

@@ -256,22 +256,5 @@ function confirmChangePassword() {
     return false; // prevent normal submit
 }
 
-// Flash messages
-<?php if (Yii::$app->session->hasFlash('success')): ?>
-Swal.fire({
-    icon: 'success',
-    title: 'Success!',
-    text: '<?= Yii::$app->session->getFlash('success') ?>',
-    confirmButtonColor: '#4f46e5'
-});
-<?php endif; ?>
-
-<?php if (Yii::$app->session->hasFlash('error')): ?>
-Swal.fire({
-    icon: 'error',
-    title: 'Error!',
-    text: '<?= Yii::$app->session->getFlash('error') ?>',
-    confirmButtonColor: '#dc2626'
-});
-<?php endif; ?>
+// Flash messages (success/error) are now rendered globally by the layout.
 </script>

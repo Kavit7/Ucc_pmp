@@ -182,13 +182,6 @@ document.getElementById('profilePictureFile').addEventListener('change', functio
 });
 JS;
 
-if (Yii::$app->session->hasFlash('success')) {
-    $msg = Yii::$app->session->getFlash('success');
-    $js .= "\nSwal.fire({icon:'success', title:'Success!', text:" . json_encode($msg) . ", confirmButtonColor:'#4f46e5'});";
-}
-if (Yii::$app->session->hasFlash('error')) {
-    $msg = Yii::$app->session->getFlash('error');
-    $js .= "\nSwal.fire({icon:'error', title:'Error!', text:" . json_encode($msg) . ", confirmButtonColor:'#dc2626'});";
-}
+// Flash messages (success/error) are now rendered globally by the layout.
 $this->registerJs($js);
 ?>
