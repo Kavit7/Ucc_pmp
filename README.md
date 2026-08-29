@@ -81,6 +81,3 @@ views/          view files
 web/            entry script, public web assets, and vendored front-end libraries (web/lib/)
 ```
 
-## Known issue
-
-`users/create` is currently reachable without logging in — it's missing from `UsersController`'s access-control list, so anyone with the URL can create an account, including an admin one. This should be locked down (add `'create'` to the `AccessControl` `only` list, restricted to admin/manager) before this is used with real data.

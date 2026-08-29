@@ -5,6 +5,7 @@ namespace app\controllers;
 use Yii;
 use yii\web\Controller;
 use yii\web\NotFoundHttpException;
+use yii\web\ForbiddenHttpException;
 use app\models\Users;
 use app\models\Notification;
 use yii\data\ActiveDataProvider;
@@ -17,11 +18,15 @@ class UsersController extends Controller
     return [
         'access' => [
             'class' => \yii\filters\AccessControl::class,
-            'only' => ['index', 'view', 'update', 'delete'],
+            'only' => ['index', 'view', 'create', 'update', 'delete'],
             'rules' => [
                 [
                     'allow' => true,
                     'roles' => ['@'],
+                    'matchCallback' => function () {
+                        $role = Yii::$app->user->identity->role ?? null;
+                        return in_array($role, ['admin', 'manager'], true);
+                    },
                 ],
             ],
             'denyCallback' => function ($rule, $action) {
@@ -35,13 +40,20 @@ class UsersController extends Controller
 public function actionCreate()
 {
     $model = new Users();
+    $currentRole = Yii::$app->user->identity->role ?? null;
 
     if ($model->load(Yii::$app->request->post())) {
         // Debug raw POST
         Yii::debug(Yii::$app->request->post(), __METHOD__);
 
-        // --- Grab privileges ---
-        $model->privileges = Yii::$app->request->post('Users')['privileges'] ?? [];
+        // A manager may only ever create tenant accounts, regardless of what was posted.
+        if ($currentRole === 'manager') {
+            $model->role = 'tenant';
+            $model->privileges = [];
+        } else {
+            // --- Grab privileges ---
+            $model->privileges = Yii::$app->request->post('Users')['privileges'] ?? [];
+        }
 
         // --- UUID generation ---
         if (empty($model->uuid)) {
@@ -129,11 +141,22 @@ foreach ($dataProvider->getModels() as $user) {
 public function actionUpdate($id)
 {
     $model = $this->findModel($id);
+    $currentRole = Yii::$app->user->identity->role ?? null;
+
+    // A manager may only manage tenant accounts, and can't promote one to another role.
+    if ($currentRole === 'manager' && $model->role !== 'tenant') {
+        throw new ForbiddenHttpException('Managers can only manage tenant accounts.');
+    }
 
     if ($model->load(Yii::$app->request->post())) {
 
-        // --- Grab privileges from POST ---
-        $model->privileges = Yii::$app->request->post('Users')['privileges'] ?? [];
+        if ($currentRole === 'manager') {
+            $model->role = 'tenant';
+            $model->privileges = [];
+        } else {
+            // --- Grab privileges from POST ---
+            $model->privileges = Yii::$app->request->post('Users')['privileges'] ?? [];
+        }
 
         if ($model->save()) { // save with validation
             $auth = Yii::$app->authManager;
@@ -176,6 +199,10 @@ public function actionUpdate($id)
 
     public function actionDelete($id)
     {
+        if ((Yii::$app->user->identity->role ?? null) !== 'admin') {
+            throw new ForbiddenHttpException('Only admins can delete users.');
+        }
+
         $model = $this->findModel($id);
 
         // Remove RBAC roles/permissions

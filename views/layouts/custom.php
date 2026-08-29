@@ -582,10 +582,12 @@ $currentRoute = Yii::$app->controller->getRoute();
 
 
 
+    <?php if (Yii::$app->user->identity->role !== 'tenant'): ?>
         <a class="nav-link <?= $currentRoute == 'property/index' ? 'active' : '' ?>" href="<?= \yii\helpers\Url::to(['property/index']) ?>">
             <i class="fas fa-building"></i>
             <span>Properties</span>
         </a>
+    <?php endif; ?>
 
      <?php if(Yii::$app->user->identity->role==='admin'): ?>
        <a class="nav-link <?= strpos($currentRoute, 'property-price') !== false ? 'active' : '' ?>" href="<?= \yii\helpers\Url::to(['property-price/index']) ?>">
@@ -596,7 +598,7 @@ $currentRoute = Yii::$app->controller->getRoute();
       
         <a class="nav-link <?= strpos($currentRoute, '/leases') !== false || strpos($currentRoute, 'lease') !== false ? 'active' : '' ?>"  href="<?= \yii\helpers\Url::to(['custom/leases']) ?>">
             <i class="fas fa-file-contract"></i>
-            <span>Lease management</span>
+            <span><?= Yii::$app->user->identity->role === 'tenant' ? 'My Leases' : 'Lease management' ?></span>
         </a>
 
     <?php if(Yii::$app->user->identity->role==='admin'): ?>
@@ -615,13 +617,19 @@ $currentRoute = Yii::$app->controller->getRoute();
         <!-- Bills -->
         <a class="nav-link <?= strpos($currentRoute, 'custom/bill') !== false ? 'active' : '' ?>" href="<?= \yii\helpers\Url::to(['custom/bill']) ?>">
             <i class="fas fa-file-invoice"></i>
-            <span>Bills</span>
+            <span><?= Yii::$app->user->identity->role === 'tenant' ? 'My Bills' : 'Bills' ?></span>
+        </a>
+
+        <!-- Maintenance -->
+        <a class="nav-link <?= strpos($currentRoute, 'maintenance') !== false ? 'active' : '' ?>" href="<?= \yii\helpers\Url::to(['maintenance/index']) ?>">
+            <i class="fas fa-tools"></i>
+            <span>Maintenance</span>
         </a>
 
         <!-- Payments -->
         <a class="nav-link <?= strpos($currentRoute, 'custom/payment') !== false ? 'active' : '' ?>" href="<?= \yii\helpers\Url::to(['custom/payment']) ?>">
             <i class="fas fa-credit-card"></i>
-            <span>Payments</span>
+            <span><?= Yii::$app->user->identity->role === 'tenant' ? 'My Payments' : 'Payments' ?></span>
         </a>
 
        
@@ -632,10 +640,12 @@ $currentRoute = Yii::$app->controller->getRoute();
             </a>
            <?php endif; ?>
 
+    <?php if (Yii::$app->user->identity->role !== 'tenant'): ?>
         <a class="nav-link <?= strpos($currentRoute, 'report') !== false ? 'active' : '' ?>" href="<?= \yii\helpers\Url::to(['report/index']) ?>">
             <i class="fas fa-chart-bar"></i>
             <span>Reports</span>
         </a>
+    <?php endif; ?>
 
         <a class="nav-link <?= strpos($currentRoute, 'custom/profile') !== false ? 'active' : '' ?>" href="<?= \yii\helpers\Url::to(['custom/profile']) ?>">
             <i class="fas fa-user-circle"></i>

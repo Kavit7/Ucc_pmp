@@ -29,7 +29,16 @@ class CustomController extends Controller
                 'rules' => [
                     [
                         'allow' => true,
-                        'roles' => ['?','@'], // logged-in users
+                        'actions' => ['create-lease', 'delete-lease', 'record-payment'],
+                        'roles' => ['@'],
+                        'matchCallback' => function () {
+                            return in_array(Yii::$app->user->identity->role ?? null, ['admin', 'manager'], true);
+                        },
+                    ],
+                    [
+                        'allow' => true,
+                        'actions' => ['index', 'logout', 'leases', 'bill', 'payment', 'profile', 'upload-profile-picture', 'change-password', 'check-current-password', 'notifications', 'read-notification', 'mark-all-notifications-read', 'settings', 'update-settings'],
+                        'roles' => ['@'],
                     ],
                 ],
                 'denyCallback' => function($rule, $action) {
@@ -67,7 +76,11 @@ class CustomController extends Controller
 
 public function actionLeases()
 {
-    $leases = Lease::find()->with(['property','tenant','propertyPrice'])->all();
+    $query = Lease::find()->with(['property','tenant','propertyPrice']);
+    if ((Yii::$app->user->identity->role ?? null) === 'tenant') {
+        $query->andWhere(['tenant_id' => Yii::$app->user->id]);
+    }
+    $leases = $query->all();
     return $this->render('leases', [
         'leases' => $leases
     ]);
@@ -267,7 +280,13 @@ public function actionCreateLease()
      */
     public function actionBill()
     {
-        $bills = Bill::find()->with('lease')->all();
+        $query = Bill::find();
+        if ((Yii::$app->user->identity->role ?? null) === 'tenant') {
+            $query->joinWith('lease')->andWhere(['lease.tenant_id' => Yii::$app->user->id]);
+        } else {
+            $query->with('lease');
+        }
+        $bills = $query->all();
         return $this->render('bill', ['bills' => $bills]);
     }
     
@@ -470,11 +489,16 @@ if ($model !== null) {
     {
         $paidId = $this->billStatusId('Paid');
 
-        $payments = Bill::find()
+        $query = Bill::find()
             ->with(['lease.property', 'lease.tenant'])
             ->where(['bill_status' => $paidId])
-            ->orderBy(['paid_date' => SORT_DESC])
-            ->all();
+            ->orderBy(['paid_date' => SORT_DESC]);
+
+        if ((Yii::$app->user->identity->role ?? null) === 'tenant') {
+            $query->joinWith('lease')->andWhere(['lease.tenant_id' => Yii::$app->user->id]);
+        }
+
+        $payments = $query->all();
 
         return $this->render('payment', ['payments' => $payments]);
     }

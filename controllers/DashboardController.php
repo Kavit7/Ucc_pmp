@@ -8,6 +8,7 @@ use app\models\ListSource;
 use app\models\Bill;
 use app\models\Lease;
 use app\models\Notification;
+use app\models\MaintenanceRequest;
 
 class DashboardController extends Controller
 {
@@ -16,6 +17,10 @@ class DashboardController extends Controller
     public function actionAdminDash()
     {
         $user = Yii::$app->user->identity;
+
+        if (($user->role ?? null) === 'tenant') {
+            return $this->tenantDashboard($user);
+        }
 
         // Summary counts
         $totalProperties = (new Query())->from('property')->count();
@@ -134,6 +139,71 @@ class DashboardController extends Controller
             'activeLeases' => $activeLeases,
             'totalTenants' => $totalTenants,
             'recentLeases' => $recentLeases,
+            'recentActivity' => $recentActivity,
+        ]);
+    }
+
+    /**
+     * Tenant-scoped dashboard: only this tenant's own leases, bills, and
+     * maintenance requests - never other tenants' data or staff-level
+     * property/revenue aggregates.
+     */
+    private function tenantDashboard($user)
+    {
+        $leases = Lease::find()
+            ->with(['property', 'propertyPrice', 'statusLabel'])
+            ->where(['tenant_id' => $user->user_id])
+            ->orderBy(['created_at' => SORT_DESC])
+            ->all();
+
+        $leaseIds = array_map(fn($l) => $l->id, $leases);
+
+        $bills = empty($leaseIds) ? [] : Bill::find()
+            ->with(['lease.property', 'billStatus'])
+            ->where(['lease_id' => $leaseIds])
+            ->orderBy(['due_date' => SORT_DESC])
+            ->all();
+
+        $billStatusParentId = ListSource::find()->select('id')->where(['list_Name' => 'Bill Status'])->scalar();
+        $pendingId = ListSource::find()->where(['list_Name' => 'Pending', 'parent_id' => $billStatusParentId])->select('id')->scalar();
+
+        $totalDue = 0.0;
+        $overdueCount = 0;
+        foreach ($bills as $bill) {
+            if ($bill->bill_status == $pendingId) {
+                $totalDue += (float) $bill->amount;
+                if ($bill->due_date < date('Y-m-d')) {
+                    $overdueCount++;
+                }
+            }
+        }
+
+        $leaseStatusParentId = ListSource::find()->select('id')->where(['list_Name' => 'Lease Status'])->scalar();
+        $activeLeaseId = ListSource::find()->where(['list_Name' => 'Active', 'parent_id' => $leaseStatusParentId])->select('id')->scalar();
+        $activeLeases = count(array_filter($leases, fn($l) => $l->status == $activeLeaseId));
+
+        $maintenanceRequests = MaintenanceRequest::find()
+            ->with(['property', 'status'])
+            ->where(['reported_by' => $user->user_id])
+            ->orderBy(['created_at' => SORT_DESC])
+            ->limit(5)
+            ->all();
+
+        Notification::syncOverdueBillNotifications();
+        $recentActivity = Notification::find()
+            ->where(['user_id' => $user->user_id])
+            ->orderBy(['created_at' => SORT_DESC])
+            ->limit(6)
+            ->all();
+
+        return $this->render('@app/views/dashboard/tenant_dash', [
+            'user' => $user,
+            'leases' => $leases,
+            'bills' => $bills,
+            'totalDue' => $totalDue,
+            'overdueCount' => $overdueCount,
+            'activeLeases' => $activeLeases,
+            'maintenanceRequests' => $maintenanceRequests,
             'recentActivity' => $recentActivity,
         ]);
     }
