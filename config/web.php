@@ -6,6 +6,7 @@ $db = require __DIR__ . '/db.php';
 $config = [
     'id' => 'basic',
     'basePath' => dirname(__DIR__),
+    'timeZone' => 'Africa/Nairobi',
     'defaultRoute'=>'dashboard/admin-dash',
     'bootstrap' => ['log'],
     'aliases' => [
