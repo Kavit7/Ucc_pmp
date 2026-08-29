@@ -116,6 +116,76 @@ class DashboardController extends Controller
         $activeLeases = (int) Lease::find()->where(['status' => $activeLeaseId])->count();
         $totalTenants = (int) (new Query())->from('users')->where(['role' => 'tenant'])->count();
 
+        // --- Occupancy rate: properties with an active lease / total properties ---
+        $occupiedProperties = (int) Lease::find()->where(['status' => $activeLeaseId])->select('property_id')->distinct()->count();
+        $occupancyRate = $totalProperties > 0 ? round(($occupiedProperties / $totalProperties) * 100) : 0;
+
+        // --- Leases expiring in the next 30 days ---
+        $expiringLeases = (new Query())
+            ->select([
+                'l.id', 'p.property_name', 't.full_name AS tenant_name', 'l.lease_end_date',
+            ])
+            ->from('lease l')
+            ->leftJoin('property p', 'p.id = l.property_id')
+            ->leftJoin('users t', 't.user_id = l.tenant_id')
+            ->where(['l.status' => $activeLeaseId])
+            ->andWhere(['between', 'l.lease_end_date', date('Y-m-d'), date('Y-m-d', strtotime('+30 days'))])
+            ->orderBy(['l.lease_end_date' => SORT_ASC])
+            ->all();
+
+        // --- Revenue trend: this month vs last month (collected) ---
+        $collectedThisMonth = (float) Bill::find()
+            ->where(['bill_status' => $paidId])
+            ->andWhere(['>=', 'paid_date', date('Y-m-01')])
+            ->sum('amount') ?: 0;
+        $lastMonthStart = date('Y-m-01', strtotime('first day of last month'));
+        $lastMonthEnd = date('Y-m-t', strtotime('last day of last month'));
+        $collectedLastMonth = (float) Bill::find()
+            ->where(['bill_status' => $paidId])
+            ->andWhere(['between', 'paid_date', $lastMonthStart, $lastMonthEnd])
+            ->sum('amount') ?: 0;
+        $revenueChangePct = $collectedLastMonth > 0
+            ? round((($collectedThisMonth - $collectedLastMonth) / $collectedLastMonth) * 100)
+            : ($collectedThisMonth > 0 ? 100 : 0);
+
+        // --- Revenue over the last 6 months, for the trend chart ---
+        $revenueTrend = [];
+        for ($i = 5; $i >= 0; $i--) {
+            $monthStart = date('Y-m-01', strtotime("-$i months"));
+            $monthEnd = date('Y-m-t', strtotime("-$i months"));
+            $revenueTrend[] = [
+                'label' => date('M', strtotime($monthStart)),
+                'collected' => (float) Bill::find()
+                    ->where(['bill_status' => $paidId])
+                    ->andWhere(['between', 'paid_date', $monthStart, $monthEnd])
+                    ->sum('amount') ?: 0,
+                'pending' => (float) Bill::find()
+                    ->where(['bill_status' => $pendingId])
+                    ->andWhere(['between', 'due_date', $monthStart, $monthEnd])
+                    ->sum('amount') ?: 0,
+            ];
+        }
+
+        // --- Maintenance summary ---
+        $maintStatusParentId = ListSource::find()->select('id')->where(['list_Name' => 'Maintenance Status'])->scalar();
+        $maintOpenId = ListSource::find()->where(['list_Name' => 'Open', 'parent_id' => $maintStatusParentId])->select('id')->scalar();
+        $maintResolvedId = ListSource::find()->where(['list_Name' => 'Resolved', 'parent_id' => $maintStatusParentId])->select('id')->scalar();
+        $maintClosedId = ListSource::find()->where(['list_Name' => 'Closed', 'parent_id' => $maintStatusParentId])->select('id')->scalar();
+        $maintPriorityParentId = ListSource::find()->select('id')->where(['list_Name' => 'Maintenance Priority'])->scalar();
+        $maintUrgentId = ListSource::find()->where(['list_Name' => 'Urgent', 'parent_id' => $maintPriorityParentId])->select('id')->scalar();
+
+        $openMaintenanceCount = (int) MaintenanceRequest::find()->where(['status_id' => $maintOpenId])->count();
+        $urgentMaintenanceCount = (int) MaintenanceRequest::find()
+            ->where(['priority_id' => $maintUrgentId])
+            ->andWhere(['not in', 'status_id', array_filter([$maintResolvedId, $maintClosedId])])
+            ->count();
+        $myMaintenanceCount = $user->role === 'technician'
+            ? (int) MaintenanceRequest::find()
+                ->where(['assigned_to' => $user->user_id])
+                ->andWhere(['not in', 'status_id', array_filter([$maintResolvedId, $maintClosedId])])
+                ->count()
+            : null;
+
         // Recent leases (replaces the old "Translation Report")
         $recentLeases = (new Query())
             ->select([
@@ -159,6 +229,15 @@ class DashboardController extends Controller
             'totalTenants' => $totalTenants,
             'recentLeases' => $recentLeases,
             'recentActivity' => $recentActivity,
+            'occupancyRate' => $occupancyRate,
+            'occupiedProperties' => $occupiedProperties,
+            'expiringLeases' => $expiringLeases,
+            'collectedThisMonth' => $collectedThisMonth,
+            'revenueChangePct' => $revenueChangePct,
+            'revenueTrend' => $revenueTrend,
+            'openMaintenanceCount' => $openMaintenanceCount,
+            'urgentMaintenanceCount' => $urgentMaintenanceCount,
+            'myMaintenanceCount' => $myMaintenanceCount,
         ]);
     }
 

@@ -575,7 +575,7 @@ $currentRoute = Yii::$app->controller->getRoute();
     </div>
             
       <nav class="sidebar-nav">
-       <a class="nav-link <?= $currentRoute == 'dashboard/admin_dash' ? 'active' : '' ?>" href="<?= \yii\helpers\Url::to(['dashboard/admin-dash']) ?>">
+       <a class="nav-link <?= $currentRoute == 'dashboard/admin-dash' ? 'active' : '' ?>" href="<?= \yii\helpers\Url::to(['dashboard/admin-dash']) ?>">
         <i class="fas fa-tachometer-alt"></i>
           <span>Dashboard</span>
       </a>
