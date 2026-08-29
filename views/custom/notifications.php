@@ -22,6 +22,7 @@ $this->title = 'Notifications';
         <div class="list-group list-group-flush">
             <?php foreach ($dataProvider->getModels() as $notif): ?>
                 <a href="<?= \yii\helpers\Url::to(['custom/read-notification', 'id' => $notif->id]) ?>"
+                   data-method="post"
                    class="list-group-item list-group-item-action d-flex justify-content-between align-items-start"
                    style="<?= $notif->is_read ? '' : 'background:#eef2ff;' ?>">
                     <div>

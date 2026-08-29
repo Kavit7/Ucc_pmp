@@ -185,15 +185,15 @@ $this->registerCss($css);
         <div class="property-info">
             <div class="detail-row ">
                 <div class="detail-label">Property Type</div>
-                 <span class="detail-value "><?= $model->propertyType->list_Name ?? '-' ?></span>
+                 <span class="detail-value "><?= Html::encode($model->propertyType->list_Name ?? '-') ?></span>
                 
             </div>
             
             <div class="detail-row ">
                 <div class="detail-label">Status</div>
                 <div class="detail-value">
-                    <span class="status-badge status-<?= strtolower($model->propertyStatus->list_Name ?? 'unknown') ?>">
-                        <?= $model->propertyStatus->list_Name ?? '-' ?>
+                    <span class="status-badge status-<?= Html::encode(strtolower($model->propertyStatus->list_Name ?? 'unknown')) ?>">
+                        <?= Html::encode($model->propertyStatus->list_Name ?? '-') ?>
                     </span>
 </div>
             </div>
@@ -205,7 +205,7 @@ $this->registerCss($css);
             
             <div class="detail-row">
                 <div class="detail-label">Ownership Type</div>
-                <div class="detail-value"><?= $model->propertyOwnerShip->list_Name ?? '-' ?></div>
+                <div class="detail-value"><?= Html::encode($model->propertyOwnerShip->list_Name ?? '-') ?></div>
             </div>
             
             <div class="detail-row">

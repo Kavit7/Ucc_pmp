@@ -8,6 +8,7 @@ use yii\web\Controller;
 use yii\web\NotFoundHttpException;
 use yii\web\Response;
 use yii\filters\VerbFilter;
+use yii\filters\AccessControl;
 
 class PropertyPriceController extends Controller
 {
@@ -19,6 +20,21 @@ class PropertyPriceController extends Controller
             'verbs' => [
                 'class' => VerbFilter::class,
                 'actions' => ['delete' => ['POST']],
+            ],
+            'access' => [
+                'class' => AccessControl::class,
+                'rules' => [
+                    [
+                        'allow' => true,
+                        'roles' => ['@'],
+                        'matchCallback' => function () {
+                            return (Yii::$app->user->identity->role ?? null) === 'admin';
+                        },
+                    ],
+                ],
+                'denyCallback' => function () {
+                    return Yii::$app->response->redirect(['login/login']);
+                },
             ],
         ];
     }

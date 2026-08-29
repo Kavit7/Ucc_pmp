@@ -7,6 +7,7 @@ use app\models\DistrictSearch;
 use yii\web\Controller;
 use yii\web\NotFoundHttpException;
 use yii\filters\VerbFilter;
+use yii\filters\AccessControl;
 
 /**
  * DistrictController implements the CRUD actions for District model.
@@ -27,6 +28,21 @@ class DistrictController extends Controller
                     'actions' => [
                         'delete' => ['POST'],
                     ],
+                ],
+                'access' => [
+                    'class' => AccessControl::class,
+                    'rules' => [
+                        [
+                            'allow' => true,
+                            'roles' => ['@'],
+                            'matchCallback' => function () {
+                                return (\Yii::$app->user->identity->role ?? null) === 'admin';
+                            },
+                        ],
+                    ],
+                    'denyCallback' => function () {
+                        return \Yii::$app->response->redirect(['login/login']);
+                    },
                 ],
             ]
         );

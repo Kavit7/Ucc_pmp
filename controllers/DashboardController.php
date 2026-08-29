@@ -9,10 +9,29 @@ use app\models\Bill;
 use app\models\Lease;
 use app\models\Notification;
 use app\models\MaintenanceRequest;
+use yii\filters\AccessControl;
 
 class DashboardController extends Controller
 {
     public $layout = 'custom'; // Layout yako ya sidebar + content
+
+    public function behaviors()
+    {
+        return [
+            'access' => [
+                'class' => AccessControl::class,
+                'rules' => [
+                    [
+                        'allow' => true,
+                        'roles' => ['@'],
+                    ],
+                ],
+                'denyCallback' => function () {
+                    return Yii::$app->response->redirect(['login/login']);
+                },
+            ],
+        ];
+    }
 
     public function actionAdminDash()
     {

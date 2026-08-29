@@ -6,10 +6,32 @@ use app\models\PropertyAttribute;
 use app\models\ListSource;
 use Yii;
 use yii\helpers\ArrayHelper;
+use yii\filters\AccessControl;
 
 class PropertyAttributeController extends Controller
 {
     public $layout = 'custom';
+
+    public function behaviors()
+    {
+        return [
+            'access' => [
+                'class' => AccessControl::class,
+                'rules' => [
+                    [
+                        'allow' => true,
+                        'roles' => ['@'],
+                        'matchCallback' => function () {
+                            return (Yii::$app->user->identity->role ?? null) === 'admin';
+                        },
+                    ],
+                ],
+                'denyCallback' => function () {
+                    return Yii::$app->response->redirect(['login/login']);
+                },
+            ],
+        ];
+    }
 
     public function actionCreate()
     {

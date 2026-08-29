@@ -7,6 +7,7 @@ use app\models\CountrySearch;
 use yii\web\Controller;
 use yii\web\NotFoundHttpException;
 use yii\filters\VerbFilter;
+use yii\filters\AccessControl;
 
 /**
  * CountryController implements the CRUD actions for Country model.
@@ -27,6 +28,21 @@ class CountryController extends Controller
                     'actions' => [
                         'delete' => ['POST'],
                     ],
+                ],
+                'access' => [
+                    'class' => AccessControl::class,
+                    'rules' => [
+                        [
+                            'allow' => true,
+                            'roles' => ['@'],
+                            'matchCallback' => function () {
+                                return (\Yii::$app->user->identity->role ?? null) === 'admin';
+                            },
+                        ],
+                    ],
+                    'denyCallback' => function () {
+                        return \Yii::$app->response->redirect(['login/login']);
+                    },
                 ],
             ]
         );

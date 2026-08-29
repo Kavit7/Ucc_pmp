@@ -6,10 +6,36 @@ use yii\web\Controller;
 use yii\data\ActiveDataProvider;
 use yii\helpers\ArrayHelper;
 use app\models\ListSource;
+use yii\filters\AccessControl;
+use yii\web\ForbiddenHttpException;
 
 class ListSourceController extends Controller
 {
     public $layout = 'custom';
+
+    public function behaviors()
+    {
+        return [
+            'access' => [
+                'class' => AccessControl::class,
+                'rules' => [
+                    [
+                        'allow' => true,
+                        'roles' => ['@'],
+                        'matchCallback' => function () {
+                            return (Yii::$app->user->identity->role ?? null) === 'admin';
+                        },
+                    ],
+                ],
+                'denyCallback' => function () {
+                    if (Yii::$app->user->isGuest) {
+                        return Yii::$app->response->redirect(['login/login']);
+                    }
+                    throw new ForbiddenHttpException('Only admins can manage system configuration.');
+                },
+            ],
+        ];
+    }
 
     public function actionCreate()
     {

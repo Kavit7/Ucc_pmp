@@ -25,7 +25,7 @@ class UsersController extends Controller
                     'roles' => ['@'],
                     'matchCallback' => function () {
                         $role = Yii::$app->user->identity->role ?? null;
-                        return in_array($role, ['admin', 'manager'], true);
+                        return in_array($role, ['admin', 'manager'], true) || Yii::$app->user->can('manage');
                     },
                 ],
             ],
@@ -46,8 +46,9 @@ public function actionCreate()
         // Debug raw POST
         Yii::debug(Yii::$app->request->post(), __METHOD__);
 
-        // A manager may only ever create tenant accounts, regardless of what was posted.
-        if ($currentRole === 'manager') {
+        // Only a full admin may create non-tenant accounts or grant privileges;
+        // managers and permission-only holders are restricted to tenant accounts.
+        if ($currentRole !== 'admin') {
             $model->role = 'tenant';
             $model->privileges = [];
         } else {
@@ -143,14 +144,14 @@ public function actionUpdate($id)
     $model = $this->findModel($id);
     $currentRole = Yii::$app->user->identity->role ?? null;
 
-    // A manager may only manage tenant accounts, and can't promote one to another role.
-    if ($currentRole === 'manager' && $model->role !== 'tenant') {
-        throw new ForbiddenHttpException('Managers can only manage tenant accounts.');
+    // Only a full admin may manage non-tenant accounts.
+    if ($currentRole !== 'admin' && $model->role !== 'tenant') {
+        throw new ForbiddenHttpException('You can only manage tenant accounts.');
     }
 
     if ($model->load(Yii::$app->request->post())) {
 
-        if ($currentRole === 'manager') {
+        if ($currentRole !== 'admin') {
             $model->role = 'tenant';
             $model->privileges = [];
         } else {

@@ -24,10 +24,17 @@ class ReportController extends Controller
                     [
                         'allow' => true,
                         'roles' => ['@'],
+                        'matchCallback' => function () {
+                            $role = Yii::$app->user->identity->role ?? null;
+                            return $role === 'admin' || Yii::$app->user->can('view');
+                        },
                     ],
                 ],
                 'denyCallback' => function () {
-                    return Yii::$app->response->redirect(['login/login']);
+                    if (Yii::$app->user->isGuest) {
+                        return Yii::$app->response->redirect(['login/login']);
+                    }
+                    throw new \yii\web\ForbiddenHttpException('You do not have permission to view reports.');
                 },
             ],
         ];

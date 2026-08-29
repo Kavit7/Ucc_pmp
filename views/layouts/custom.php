@@ -724,6 +724,7 @@ $profileUrl = ($userProfilePic && file_exists(Yii::getAlias('@webroot/' . $userP
                 <?php else: ?>
                     <?php foreach ($recentNotifications as $notif): ?>
                         <a href="<?= \yii\helpers\Url::to(['custom/read-notification', 'id' => $notif->id]) ?>"
+                           data-method="post"
                            class="dropdown-item" style="align-items:flex-start; white-space:normal; <?= $notif->is_read ? '' : 'background:#f5f6ff;' ?>">
                             <i class="fas fa-circle" style="font-size:6px; margin-top:6px; <?= $notif->is_read ? 'visibility:hidden;' : 'color:#4f46e5;' ?>"></i>
                             <div>

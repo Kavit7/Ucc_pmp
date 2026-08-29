@@ -13,9 +13,50 @@ use yii\helpers\ArrayHelper;
 use yii\data\ActiveDataProvider;
 use app\models\PropertySearch;
 use app\models\Street;
+use yii\filters\AccessControl;
 class PropertyController extends Controller
 {
     public $layout='custom';
+
+    public function behaviors()
+    {
+        return [
+            'access' => [
+                'class' => AccessControl::class,
+                'rules' => [
+                    [
+                        'allow' => true,
+                        'actions' => ['create'],
+                        'roles' => ['@'],
+                        'matchCallback' => function () {
+                            $role = Yii::$app->user->identity->role ?? null;
+                            return $role === 'admin' || Yii::$app->user->can('create');
+                        },
+                    ],
+                    [
+                        'allow' => true,
+                        'actions' => ['update'],
+                        'roles' => ['@'],
+                        'matchCallback' => function () {
+                            $role = Yii::$app->user->identity->role ?? null;
+                            return $role === 'admin' || Yii::$app->user->can('edit');
+                        },
+                    ],
+                    [
+                        'allow' => true,
+                        'actions' => ['search-street', 'index', 'document', 'rented', 'stores', 'sales'],
+                        'roles' => ['@'], // just needs to be logged in - browsing/searching, not mutating anything
+                    ],
+                ],
+                'denyCallback' => function () {
+                    if (Yii::$app->user->isGuest) {
+                        return Yii::$app->response->redirect(['login/login']);
+                    }
+                    throw new \yii\web\ForbiddenHttpException('You do not have permission to do that.');
+                },
+            ],
+        ];
+    }
 
     /**
      * Searchable street lookup for the location Select2 field: type any

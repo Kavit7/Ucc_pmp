@@ -5,6 +5,7 @@ use Yii;
 use yii\web\Controller;
 use yii\web\UploadedFile;
 use yii\filters\AccessControl;
+use yii\filters\VerbFilter;
 use yii\web\Response;
 use app\models\Lease;
 use app\models\Bill;
@@ -29,7 +30,16 @@ class CustomController extends Controller
                 'rules' => [
                     [
                         'allow' => true,
-                        'actions' => ['create-lease', 'delete-lease', 'record-payment'],
+                        'actions' => ['create-lease'],
+                        'roles' => ['@'],
+                        'matchCallback' => function () {
+                            $role = Yii::$app->user->identity->role ?? null;
+                            return in_array($role, ['admin', 'manager'], true) || Yii::$app->user->can('assign');
+                        },
+                    ],
+                    [
+                        'allow' => true,
+                        'actions' => ['delete-lease', 'record-payment'],
                         'roles' => ['@'],
                         'matchCallback' => function () {
                             return in_array(Yii::$app->user->identity->role ?? null, ['admin', 'manager'], true);
@@ -44,6 +54,16 @@ class CustomController extends Controller
                 'denyCallback' => function($rule, $action) {
                     return $this->redirect(['login/index']);
                 },
+            ],
+            'verbs' => [
+                'class' => VerbFilter::class,
+                'actions' => [
+                    'read-notification' => ['post'],
+                    'mark-all-notifications-read' => ['post'],
+                    'delete-lease' => ['post'],
+                    'record-payment' => ['get', 'post'], // GET shows the form, POST submits it
+                    'upload-profile-picture' => ['post'],
+                ],
             ],
         ];
     }
