@@ -30,6 +30,15 @@ $config = [
             ],
         ],
         'db' => $db,
+        // Notification::notify() builds links via Url::to(), which needs a
+        // configured UrlManager even in console context (e.g. when this
+        // runs from a scheduled billing command).
+        'urlManager' => [
+            'enablePrettyUrl' => true,
+            'showScriptName' => false,
+            'scriptUrl' => '',
+            'baseUrl' => '',
+        ],
     ],
     'params' => $params,
     /*
