@@ -678,6 +678,18 @@ $currentRoute = Yii::$app->controller->getRoute();
         </a>
 
  <?php endif; ?>
+
+    <?php if (in_array(Yii::$app->user->identity->role ?? null, ['admin', 'manager'], true)): ?>
+        <a class="nav-link <?= $currentRoute == 'custom/inquiries' ? 'active' : '' ?>" href="<?= \yii\helpers\Url::to(['custom/inquiries']) ?>">
+            <i class="fas fa-envelope-open-text"></i>
+            <span>Inquiries</span>
+        </a>
+
+        <a class="nav-link" href="<?= \yii\helpers\Url::to(['public-listing/index']) ?>" target="_blank">
+            <i class="fas fa-globe"></i>
+            <span>Public Listing</span>
+        </a>
+    <?php endif; ?>
         <!-- Bills -->
         <a class="nav-link <?= strpos($currentRoute, 'custom/bill') !== false ? 'active' : '' ?>" href="<?= \yii\helpers\Url::to(['custom/bill']) ?>">
             <i class="fas fa-file-invoice"></i>

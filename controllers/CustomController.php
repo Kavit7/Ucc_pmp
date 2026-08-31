@@ -26,7 +26,7 @@ class CustomController extends Controller
         return [
             'access' => [
                 'class' => AccessControl::class,
-                'only' => ['index','logout','leases','create-lease','delete-lease','bill','payment','record-payment','manage-deposit','profile','upload-profile-picture','change-password','check-current-password','notifications','read-notification','mark-all-notifications-read','settings','update-settings'],
+                'only' => ['index','logout','leases','create-lease','delete-lease','bill','payment','record-payment','manage-deposit','profile','upload-profile-picture','change-password','check-current-password','notifications','read-notification','mark-all-notifications-read','settings','update-settings','inquiries'],
                 'rules' => [
                     [
                         'allow' => true,
@@ -39,7 +39,7 @@ class CustomController extends Controller
                     ],
                     [
                         'allow' => true,
-                        'actions' => ['delete-lease', 'record-payment', 'manage-deposit'],
+                        'actions' => ['delete-lease', 'record-payment', 'manage-deposit', 'inquiries'],
                         'roles' => ['@'],
                         'matchCallback' => function () {
                             return in_array(Yii::$app->user->identity->role ?? null, ['admin', 'manager'], true);
@@ -479,6 +479,21 @@ if ($model !== null) {
         }
 
         return $this->redirect(['custom/profile']);
+    }
+
+    /**
+     * Inquiries submitted through the public property listing.
+     */
+    public function actionInquiries()
+    {
+        $dataProvider = new ActiveDataProvider([
+            'query' => \app\models\PropertyInquiry::find()->with('property')->orderBy(['created_at' => SORT_DESC]),
+            'pagination' => ['pageSize' => 30],
+        ]);
+
+        return $this->render('inquiries', [
+            'dataProvider' => $dataProvider,
+        ]);
     }
 
     /**
