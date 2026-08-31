@@ -6,6 +6,7 @@ use Yii;
 use yii\db\ActiveRecord;
 use yii\web\IdentityInterface;
 use yii\web\UploadedFile;
+use app\components\AuditLogBehavior;
 
 class Users extends ActiveRecord implements IdentityInterface
 {
@@ -37,6 +38,13 @@ class Users extends ActiveRecord implements IdentityInterface
     public static function tableName()
     {
         return 'users';
+    }
+
+    public function behaviors()
+    {
+        return [
+            'audit' => ['class' => AuditLogBehavior::class],
+        ];
     }
 
     public function rules()

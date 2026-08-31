@@ -665,7 +665,12 @@ $currentRoute = Yii::$app->controller->getRoute();
             <i class="fas fa-building"></i>
             <span>Configuration</span>
         </a>
-       
+
+        <a class="nav-link <?= $currentRoute == 'audit-log/index' ? 'active' : '' ?>" href="<?= \yii\helpers\Url::to(['audit-log/index']) ?>">
+            <i class="fas fa-clipboard-list"></i>
+            <span>Audit Log</span>
+        </a>
+
 
         <a class="nav-link <?= $currentRoute == 'property-attribute/create' ? 'active' : '' ?>" href="<?= \yii\helpers\Url::to(['property-attribute/create']) ?>">
             <i class="fas fa-building"></i>

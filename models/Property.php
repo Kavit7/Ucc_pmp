@@ -4,6 +4,7 @@ namespace app\models;
 
 use Yii;
 use yii\web\UploadedFile;
+use app\components\AuditLogBehavior;
 
 class Property extends \yii\db\ActiveRecord
 {
@@ -13,6 +14,13 @@ class Property extends \yii\db\ActiveRecord
     public static function tableName()
     {
         return 'property';
+    }
+
+    public function behaviors()
+    {
+        return [
+            'audit' => ['class' => AuditLogBehavior::class],
+        ];
     }
 
     public function rules()

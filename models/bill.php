@@ -3,12 +3,20 @@ namespace app\models;
 
 use Yii;
 use yii\db\ActiveRecord;
+use app\components\AuditLogBehavior;
 
 class Bill extends ActiveRecord
 {
     public static function tableName()
     {
         return 'bill';
+    }
+
+    public function behaviors()
+    {
+        return [
+            'audit' => ['class' => AuditLogBehavior::class],
+        ];
     }
 
     public function rules()

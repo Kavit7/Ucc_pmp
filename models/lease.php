@@ -5,6 +5,7 @@ use Yii;
 use yii\db\ActiveRecord;
 use yii\behaviors\TimestampBehavior;
 use yii\web\UploadedFile;
+use app\components\AuditLogBehavior;
 
 class Lease extends ActiveRecord
 {
@@ -24,6 +25,7 @@ class Lease extends ActiveRecord
                 'updatedAtAttribute' => 'updated_at',
                 'value' => function () { return date('Y-m-d H:i:s'); },
             ],
+            'audit' => ['class' => AuditLogBehavior::class],
         ];
     }
 
