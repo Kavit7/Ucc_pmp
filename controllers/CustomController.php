@@ -26,7 +26,7 @@ class CustomController extends Controller
         return [
             'access' => [
                 'class' => AccessControl::class,
-                'only' => ['index','logout','leases','create-lease','delete-lease','bill','payment','record-payment','profile','upload-profile-picture','change-password','check-current-password','notifications','read-notification','mark-all-notifications-read','settings','update-settings'],
+                'only' => ['index','logout','leases','create-lease','delete-lease','bill','payment','record-payment','manage-deposit','profile','upload-profile-picture','change-password','check-current-password','notifications','read-notification','mark-all-notifications-read','settings','update-settings'],
                 'rules' => [
                     [
                         'allow' => true,
@@ -39,7 +39,7 @@ class CustomController extends Controller
                     ],
                     [
                         'allow' => true,
-                        'actions' => ['delete-lease', 'record-payment'],
+                        'actions' => ['delete-lease', 'record-payment', 'manage-deposit'],
                         'roles' => ['@'],
                         'matchCallback' => function () {
                             return in_array(Yii::$app->user->identity->role ?? null, ['admin', 'manager'], true);
@@ -62,6 +62,7 @@ class CustomController extends Controller
                     'mark-all-notifications-read' => ['post'],
                     'delete-lease' => ['post'],
                     'record-payment' => ['get', 'post'], // GET shows the form, POST submits it
+                    'manage-deposit' => ['get', 'post'],
                     'upload-profile-picture' => ['post'],
                 ],
             ],
@@ -175,6 +176,20 @@ public function actionCreateLease()
             $lease->updated_by = Yii::$app->user->id;
         }
 
+        // Empty deposit field posts as '' - normalize to null instead of
+        // letting an empty string hit the decimal column, and default the
+        // status to "Held" whenever a deposit amount was actually entered.
+        $lease->security_deposit_amount = $lease->security_deposit_amount !== '' && $lease->security_deposit_amount !== null
+            ? $lease->security_deposit_amount
+            : null;
+        if ($lease->security_deposit_amount !== null) {
+            $heldStatus = ListSource::find()
+                ->where(['list_Name' => 'Held', 'category' => 'Security Deposit Status'])
+                ->select('id')
+                ->scalar();
+            $lease->security_deposit_status = $heldStatus ?: null;
+        }
+
         // Save lease
         if ($lease->save(false)) {
 
@@ -253,6 +268,35 @@ public function actionCreateLease()
         }
         return $this->redirect(['leases']);
     }
+ public function actionManageDeposit($id)
+ {
+    $lease = Lease::findOne($id);
+    if (!$lease) {
+        throw new \yii\web\NotFoundHttpException('Lease not found.');
+    }
+
+    if (Yii::$app->request->isPost) {
+        $lease->security_deposit_amount = Yii::$app->request->post('security_deposit_amount');
+        $lease->security_deposit_amount = $lease->security_deposit_amount !== '' ? $lease->security_deposit_amount : null;
+        $lease->security_deposit_status = Yii::$app->request->post('security_deposit_status') ?: null;
+        $returnedAt = Yii::$app->request->post('security_deposit_returned_at');
+        $lease->security_deposit_returned_at = $returnedAt !== '' ? $returnedAt : null;
+        $lease->security_deposit_notes = Yii::$app->request->post('security_deposit_notes');
+        $lease->updated_by = Yii::$app->user->id ?? null;
+
+        if ($lease->save(false, ['security_deposit_amount', 'security_deposit_status', 'security_deposit_returned_at', 'security_deposit_notes', 'updated_by', 'updated_at'])) {
+            Yii::$app->session->setFlash('success', 'Security deposit updated.');
+        } else {
+            Yii::$app->session->setFlash('error', 'Could not update the security deposit.');
+        }
+        return $this->redirect(['leases']);
+    }
+
+    return $this->render('manage-deposit', [
+        'lease' => $lease,
+    ]);
+ }
+
  public function actionViewLease($tenant){
     $leases=Lease::find()->where(['tenant_id'=>$tenant])->all();
     $tname=\app\models\Users::find()->where(['user_id'=>$tenant])->one();

@@ -33,11 +33,14 @@ class Lease extends ActiveRecord
     {
         return [
             [['property_id', 'tenant_id', 'property_price_id', 'status', 'lease_start_date', 'lease_end_date'], 'required'],
-            [['property_id', 'tenant_id', 'property_price_id', 'status', 'created_by', 'updated_by'], 'integer'],
-            [['lease_start_date', 'lease_end_date'], 'date', 'format' => 'php:Y-m-d'],
+            [['property_id', 'tenant_id', 'property_price_id', 'status', 'created_by', 'updated_by', 'security_deposit_status'], 'integer'],
+            [['lease_start_date', 'lease_end_date', 'security_deposit_returned_at'], 'date', 'format' => 'php:Y-m-d'],
             [['lease_doc_url'], 'string', 'max' => 255],
             [['uuid'], 'string', 'max' => 100],
             [['lease_doc_file'], 'file', 'skipOnEmpty' => true, 'extensions' => 'pdf,doc,docx', 'maxSize' => 5 * 1024 * 1024],
+            [['security_deposit_amount'], 'number', 'min' => 0],
+            [['security_deposit_notes'], 'string'],
+            [['security_deposit_status'], 'exist', 'skipOnError' => true, 'targetClass' => ListSource::class, 'targetAttribute' => ['security_deposit_status' => 'id']],
         ];
     }
 
@@ -54,11 +57,20 @@ class Lease extends ActiveRecord
             'lease_start_date' => 'Lease Start Date',
             'lease_end_date' => 'Lease End Date',
             'duration_months' => 'Duration (Months)',
+            'security_deposit_amount' => 'Security Deposit Amount',
+            'security_deposit_status' => 'Security Deposit Status',
+            'security_deposit_returned_at' => 'Deposit Returned Date',
+            'security_deposit_notes' => 'Deposit Notes',
             'created_at' => 'Created At',
             'updated_at' => 'Updated At',
             'created_by' => 'Created By',
             'updated_by' => 'Updated By',
         ];
+    }
+
+    public function getSecurityDepositStatusInfo()
+    {
+        return $this->hasOne(ListSource::class, ['id' => 'security_deposit_status']);
     }
 
     /*public function beforeValidate()

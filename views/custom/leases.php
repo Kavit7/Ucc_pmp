@@ -84,6 +84,7 @@ foreach ($flashMessages as $type => $message) {
                     <th>Status</th>
                     <th>Lease Period</th>
                     <th>Duration (Months)</th>
+                    <th>Deposit</th>
                     <th>Document</th>
                     <th>Actions</th>
                 </tr>
@@ -129,6 +130,14 @@ foreach ($flashMessages as $type => $message) {
                         </td>
                         <td class="text-center"><?= $duration ?></td>
                         <td>
+                            <?php if ($lease->security_deposit_amount !== null): ?>
+                                <div>TZS <?= number_format($lease->security_deposit_amount, 2) ?></div>
+                                <div class="small text-muted"><?= Html::encode($lease->securityDepositStatusInfo->list_Name ?? 'Not set') ?></div>
+                            <?php else: ?>
+                                <span class="text-muted">-</span>
+                            <?php endif; ?>
+                        </td>
+                        <td>
                             <?php
                             if ($lease->lease_doc_url) {
                                 $filePath = Yii::getAlias('@webroot/' . $lease->lease_doc_url);
@@ -157,6 +166,15 @@ foreach ($flashMessages as $type => $message) {
                                 'data-bs-placement' => 'top',
                                 'title' => 'Terminate'
                             ]) ?>
+
+                            <?php if (in_array(Yii::$app->user->identity->role ?? null, ['admin', 'manager'], true)): ?>
+                                <?= Html::a('<i class="bi bi-cash-coin text-primary" style="font-size:20px;"></i>', ['custom/manage-deposit', 'id' => $lease->id], [
+                                    'class' => 'text-decoration-none fw-semibold',
+                                    'data-bs-toggle' => 'tooltip',
+                                    'data-bs-placement' => 'top',
+                                    'title' => 'Manage deposit'
+                                ]) ?>
+                            <?php endif; ?>
 
                             <?= Html::a('<i class="bi bi-trash text-danger"  style="font-size:20px;"></i>', '#', [
                                 'class' => 'delete-lease text-decoration-none fw-semibold',

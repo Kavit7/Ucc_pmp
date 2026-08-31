@@ -76,6 +76,14 @@ $pricesJson = json_encode($pricesData);
                         </div>
                         <div>
                     </div>
+                    <!-- Security Deposit -->
+                    <?= $form->field($lease, 'security_deposit_amount')->input('number', [
+                        'class' => 'form-control w-100 styled-input',
+                        'step' => '0.01',
+                        'min' => '0',
+                        'placeholder' => 'Optional',
+                    ])->hint('Leave blank if no deposit is being collected') ?>
+
                     <!-- Lease Document Upload -->
                     <?= $form->field($lease, 'lease_doc_file')->fileInput(['class' => 'form-control w-100 styled-input']) ?>
 
