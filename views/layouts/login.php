@@ -11,6 +11,7 @@ use yii\helpers\Html;
     
     <link href="<?= Yii::getAlias('@web/lib/bootstrap/css/bootstrap.min.css') ?>" rel="stylesheet">
     <link href="<?= Yii::getAlias('@web/lib/fontawesome/css/all.min.css') ?>" rel="stylesheet">
+    <link href="<?= Yii::getAlias('@web/lib/sweetalert2/sweetalert2.min.css') ?>" rel="stylesheet">
     
     <style>
         * {
@@ -218,6 +219,19 @@ use yii\helpers\Html;
     </footer>
 
     <script src="<?= Yii::getAlias('@web/lib/bootstrap/js/bootstrap.bundle.min.js') ?>"></script>
+    <script src="<?= Yii::getAlias('@web/lib/sweetalert2/sweetalert2.min.js') ?>"></script>
+    <?php
+    $flashJs = '';
+    if (Yii::$app->session->hasFlash('success')) {
+        $flashJs .= "Swal.fire({icon:'success', title:'Success!', text:" . json_encode(Yii::$app->session->getFlash('success')) . ", confirmButtonColor:'#4f46e5'});\n";
+    }
+    if (Yii::$app->session->hasFlash('error')) {
+        $flashJs .= "Swal.fire({icon:'error', title:'Error!', text:" . json_encode(Yii::$app->session->getFlash('error')) . ", confirmButtonColor:'#dc2626'});\n";
+    }
+    if ($flashJs) {
+        echo "<script>document.addEventListener('DOMContentLoaded', function () {\n{$flashJs}});</script>\n";
+    }
+    ?>
     <script>
         document.querySelectorAll('input').forEach(input => {
             input.addEventListener('focus', function() {

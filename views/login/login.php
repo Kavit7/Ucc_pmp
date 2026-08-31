@@ -55,7 +55,7 @@ $this->title = 'Login';
     <?php ActiveForm::end(); ?>
 
     <div class="help-note">
-        Forgot your password? Contact your system administrator.
+        <?= Html::a('Forgot your password?', ['login/request-password-reset']) ?>
     </div>
 </div>
 
