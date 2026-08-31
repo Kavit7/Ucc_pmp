@@ -30,6 +30,10 @@ $this->params['breadcrumbs'][] = $this->title;
                     <?php endforeach; ?>
                 </select>
             </form>
+            <?= Html::a('<i class="fas fa-file-csv"></i> Export CSV', Url::to(['report/export-leases', 'status' => $statusId]), [
+                'class' => 'btn',
+                'style' => 'background-color:#e2dedeff; color:#000; border:1px solid #ccc;',
+            ]) ?>
             <button id="printBtn" class="btn" style="background-color:#e2dedeff; color:#000; border:1px solid #ccc;">
                 <i class="fas fa-print"></i> Print
             </button>

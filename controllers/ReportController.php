@@ -177,6 +177,109 @@ class ReportController extends Controller
         ]);
     }
 
+    /**
+     * Full (non-paginated) CSV export of the revenue report, respecting
+     * the same filters as actionRevenue().
+     */
+    public function actionExportRevenue()
+    {
+        $from = Yii::$app->request->get('from');
+        $to = Yii::$app->request->get('to');
+        $statusId = Yii::$app->request->get('status');
+
+        $query = Bill::find()->joinWith(['lease.property', 'lease.tenant', 'billStatus']);
+        if ($from) {
+            $query->andWhere(['>=', 'bill.due_date', $from]);
+        }
+        if ($to) {
+            $query->andWhere(['<=', 'bill.due_date', $to]);
+        }
+        if ($statusId) {
+            $query->andWhere(['bill.bill_status' => $statusId]);
+        }
+
+        $rows = [['Bill UUID', 'Tenant', 'Property', 'Amount (TZS)', 'Due Date', 'Paid Date', 'Status']];
+        foreach ($query->each() as $bill) {
+            $rows[] = [
+                $bill->uuid,
+                $bill->lease->tenant->full_name ?? '-',
+                $bill->lease->property->property_name ?? '-',
+                $bill->amount,
+                $bill->due_date,
+                $bill->paid_date ?? '-',
+                $bill->billStatus->list_Name ?? '-',
+            ];
+        }
+
+        return $this->streamCsv($rows, 'revenue-report.csv');
+    }
+
+    /**
+     * Full (non-paginated) CSV export of the lease report, respecting the
+     * same filters as actionLeases().
+     */
+    public function actionExportLeases()
+    {
+        $statusId = Yii::$app->request->get('status');
+
+        $query = Lease::find()->joinWith(['property', 'tenant', 'propertyPrice', 'statusLabel']);
+        if ($statusId) {
+            $query->andWhere(['lease.status' => $statusId]);
+        }
+
+        $rows = [['Lease UUID', 'Tenant', 'Property', 'Rent (TZS)', 'Start', 'End', 'Status']];
+        foreach ($query->each() as $lease) {
+            $rows[] = [
+                $lease->uuid,
+                $lease->tenant->full_name ?? '-',
+                $lease->property->property_name ?? '-',
+                $lease->propertyPrice->unit_amount ?? '-',
+                $lease->lease_start_date,
+                $lease->lease_end_date,
+                $lease->statusLabel->list_Name ?? '-',
+            ];
+        }
+
+        return $this->streamCsv($rows, 'lease-report.csv');
+    }
+
+    /**
+     * Full CSV export of the occupancy report (one row per property).
+     */
+    public function actionExportOccupancy()
+    {
+        $rows = [['Property', 'Status', 'Usage Type', 'Currently Occupied']];
+        foreach (Property::find()->joinWith(['propertyStatus', 'usageType'])->each() as $property) {
+            $rows[] = [
+                $property->property_name,
+                $property->propertyStatus->list_Name ?? '-',
+                $property->usageType->list_Name ?? '-',
+                $property->isCurrentlyOccupied() ? 'Yes' : 'No',
+            ];
+        }
+
+        return $this->streamCsv($rows, 'occupancy-report.csv');
+    }
+
+    /**
+     * Streams an array of rows as a downloadable CSV response.
+     */
+    private function streamCsv(array $rows, string $filename)
+    {
+        $out = fopen('php://temp', 'w+');
+        foreach ($rows as $row) {
+            fputcsv($out, $row);
+        }
+        rewind($out);
+        $csv = stream_get_contents($out);
+        fclose($out);
+
+        Yii::$app->response->format = \yii\web\Response::FORMAT_RAW;
+        Yii::$app->response->headers->set('Content-Type', 'text/csv; charset=utf-8');
+        Yii::$app->response->headers->set('Content-Disposition', 'attachment; filename="' . $filename . '"');
+        return $csv;
+    }
+
     private function listSourceParentId($name)
     {
         return ListSource::find()->select('id')->where(['list_Name' => $name])->scalar();

@@ -25,9 +25,10 @@ $this->params['breadcrumbs'][] = $this->title;
                 <i class="bi bi-search position-absolute" style="left: 12px; top: 50%; transform: translateY(-50%); color:#939292;"></i>
                 <input type="text" id="searchInput" class="form-control ps-5" placeholder="Search...">
             </div>
-            <button id="exportBtn" class="btn" style="background-color:#e2dedeff; color:#000; border:1px solid #ccc;">
-                <i class="fas fa-file-export"></i> Export
-            </button>
+            <?= Html::a('<i class="fas fa-file-csv"></i> Export CSV', Url::to(['report/export-revenue', 'from' => $from, 'to' => $to, 'status' => $statusId]), [
+                'class' => 'btn',
+                'style' => 'background-color:#e2dedeff; color:#000; border:1px solid #ccc;',
+            ]) ?>
             <button id="printBtn" class="btn" style="background-color:#e2dedeff; color:#000; border:1px solid #ccc;">
                 <i class="fas fa-print"></i> Print
             </button>
@@ -108,16 +109,6 @@ document.getElementById('searchInput').addEventListener('input', function () {
 
 document.getElementById('printBtn').addEventListener('click', function () {
     window.print();
-});
-
-document.getElementById('exportBtn').addEventListener('click', function () {
-    const rows = [...document.querySelectorAll('#reportTable tr')].filter(r => r.style.display !== 'none');
-    const csv = rows.map(row => [...row.querySelectorAll('th,td')].map(cell => '"' + cell.textContent.trim().replace(/"/g, '""') + '"').join(',')).join('\\n');
-    const blob = new Blob([csv], { type: 'text/csv' });
-    const link = document.createElement('a');
-    link.href = URL.createObjectURL(blob);
-    link.download = 'revenue-report.csv';
-    link.click();
 });
 JS
 );

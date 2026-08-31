@@ -49,9 +49,15 @@ $this->params['breadcrumbs'][] = $this->title;
     <div class="d-flex justify-content-between align-items-center mb-3 mt-4 p-3"
         style="gap:10px; background-color:#ffffff; border-radius:8px; flex-wrap:wrap;">
         <h3 class="mb-0">Properties</h3>
-        <div class="position-relative" style="max-width: 220px;">
-            <i class="bi bi-search position-absolute" style="left: 12px; top: 50%; transform: translateY(-50%); color:#939292;"></i>
-            <input type="text" id="searchInput" class="form-control ps-5" placeholder="Search...">
+        <div class="d-flex align-items-center gap-2">
+            <div class="position-relative" style="max-width: 220px;">
+                <i class="bi bi-search position-absolute" style="left: 12px; top: 50%; transform: translateY(-50%); color:#939292;"></i>
+                <input type="text" id="searchInput" class="form-control ps-5" placeholder="Search...">
+            </div>
+            <?= Html::a('<i class="fas fa-file-csv"></i> Export CSV', ['report/export-occupancy'], [
+                'class' => 'btn',
+                'style' => 'background-color:#e2dedeff; color:#000; border:1px solid #ccc;',
+            ]) ?>
         </div>
     </div>
 
