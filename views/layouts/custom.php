@@ -183,7 +183,8 @@ $currentRoute = Yii::$app->controller->getRoute();
             width: 24px;
             text-align: center;
             margin-right: 12px;
-            font-size: 1.1rem;
+            font-size: 1.15rem;
+            filter: drop-shadow(0 0 4px rgba(0, 0, 0, 0.35));
         }
 
         .nav-link:hover {
@@ -196,6 +197,14 @@ $currentRoute = Yii::$app->controller->getRoute();
             background-color: var(--sidebar-hover-bg);
             color: #fff;
             box-shadow: 0 4px 12px rgba(59, 130, 246, 0.4);
+        }
+
+        /* Icons carry their own accent color at rest (set inline per icon)
+           so the sidebar is easier to visually scan; on hover/active they
+           unify to plain white to match the highlighted background. */
+        .nav-link:hover i,
+        .nav-link.active i {
+            color: #fff !important;
         }
 
        
@@ -635,7 +644,7 @@ $currentRoute = Yii::$app->controller->getRoute();
             
       <nav class="sidebar-nav">
        <a class="nav-link <?= $currentRoute == 'dashboard/admin-dash' ? 'active' : '' ?>" href="<?= \yii\helpers\Url::to(['dashboard/admin-dash']) ?>">
-        <i class="fas fa-tachometer-alt"></i>
+        <i class="fas fa-tachometer-alt" style="color:#60a5fa;"></i>
           <span>Dashboard</span>
       </a>
 
@@ -643,37 +652,37 @@ $currentRoute = Yii::$app->controller->getRoute();
 
     <?php if (Yii::$app->user->identity->role !== 'tenant'): ?>
         <a class="nav-link <?= $currentRoute == 'property/index' ? 'active' : '' ?>" href="<?= \yii\helpers\Url::to(['property/index']) ?>">
-            <i class="fas fa-building"></i>
+            <i class="fas fa-building" style="color:#34d399;"></i>
             <span>Properties</span>
         </a>
     <?php endif; ?>
 
      <?php if(Yii::$app->user->identity->role==='admin'): ?>
        <a class="nav-link <?= strpos($currentRoute, 'property-price') !== false ? 'active' : '' ?>" href="<?= \yii\helpers\Url::to(['property-price/index']) ?>">
-            <i class="fas fa-dollar-sign"></i>
+            <i class="fas fa-dollar-sign" style="color:#fbbf24;"></i>
             <span>Properties Prices</span>
         </a>
      <?php endif; ?>
-      
+
         <a class="nav-link <?= strpos($currentRoute, '/leases') !== false || strpos($currentRoute, 'lease') !== false ? 'active' : '' ?>"  href="<?= \yii\helpers\Url::to(['custom/leases']) ?>">
-            <i class="fas fa-file-contract"></i>
+            <i class="fas fa-file-contract" style="color:#a78bfa;"></i>
             <span><?= Yii::$app->user->identity->role === 'tenant' ? 'My Leases' : 'Lease management' ?></span>
         </a>
 
     <?php if(Yii::$app->user->identity->role==='admin'): ?>
         <a class="nav-link <?= $currentRoute == 'list-source/create' ? 'active' : '' ?>" href="<?= \yii\helpers\Url::to(['list-source/create']) ?>">
-            <i class="fas fa-building"></i>
+            <i class="fas fa-building" style="color:#f472b6;"></i>
             <span>Configuration</span>
         </a>
 
         <a class="nav-link <?= $currentRoute == 'audit-log/index' ? 'active' : '' ?>" href="<?= \yii\helpers\Url::to(['audit-log/index']) ?>">
-            <i class="fas fa-clipboard-list"></i>
+            <i class="fas fa-clipboard-list" style="color:#22d3ee;"></i>
             <span>Audit Log</span>
         </a>
 
 
         <a class="nav-link <?= $currentRoute == 'property-attribute/create' ? 'active' : '' ?>" href="<?= \yii\helpers\Url::to(['property-attribute/create']) ?>">
-            <i class="fas fa-building"></i>
+            <i class="fas fa-building" style="color:#fb923c;"></i>
             <span>Property Extra data</span>
         </a>
 
@@ -681,50 +690,50 @@ $currentRoute = Yii::$app->controller->getRoute();
 
     <?php if (in_array(Yii::$app->user->identity->role ?? null, ['admin', 'manager'], true)): ?>
         <a class="nav-link <?= $currentRoute == 'custom/inquiries' ? 'active' : '' ?>" href="<?= \yii\helpers\Url::to(['custom/inquiries']) ?>">
-            <i class="fas fa-envelope-open-text"></i>
+            <i class="fas fa-envelope-open-text" style="color:#4ade80;"></i>
             <span>Inquiries</span>
         </a>
 
         <a class="nav-link" href="<?= \yii\helpers\Url::to(['public-listing/index']) ?>" target="_blank">
-            <i class="fas fa-globe"></i>
+            <i class="fas fa-globe" style="color:#38bdf8;"></i>
             <span>Public Listing</span>
         </a>
     <?php endif; ?>
         <!-- Bills -->
         <a class="nav-link <?= strpos($currentRoute, 'custom/bill') !== false ? 'active' : '' ?>" href="<?= \yii\helpers\Url::to(['custom/bill']) ?>">
-            <i class="fas fa-file-invoice"></i>
+            <i class="fas fa-file-invoice" style="color:#facc15;"></i>
             <span><?= Yii::$app->user->identity->role === 'tenant' ? 'My Bills' : 'Bills' ?></span>
         </a>
 
         <!-- Maintenance -->
         <a class="nav-link <?= strpos($currentRoute, 'maintenance') !== false ? 'active' : '' ?>" href="<?= \yii\helpers\Url::to(['maintenance/index']) ?>">
-            <i class="fas fa-tools"></i>
+            <i class="fas fa-tools" style="color:#f87171;"></i>
             <span>Maintenance</span>
         </a>
 
         <!-- Payments -->
         <a class="nav-link <?= strpos($currentRoute, 'custom/payment') !== false ? 'active' : '' ?>" href="<?= \yii\helpers\Url::to(['custom/payment']) ?>">
-            <i class="fas fa-credit-card"></i>
+            <i class="fas fa-credit-card" style="color:#c084fc;"></i>
             <span><?= Yii::$app->user->identity->role === 'tenant' ? 'My Payments' : 'Payments' ?></span>
         </a>
 
-       
+
        <?php if (Yii::$app->user->identity->role === 'admin'||Yii::$app->user->identity->role === 'manager' ): ?>
        <a class="nav-link <?= Yii::$app->controller->id === 'users' ? 'active' : '' ?>"
                 href="<?= \yii\helpers\Url::to(['users/index']) ?>">
-                    <i class="fas fa-users"></i><span>User management</span>
+                    <i class="fas fa-users" style="color:#2dd4bf;"></i><span>User management</span>
             </a>
            <?php endif; ?>
 
     <?php if (Yii::$app->user->identity->role !== 'tenant'): ?>
         <a class="nav-link <?= strpos($currentRoute, 'report') !== false ? 'active' : '' ?>" href="<?= \yii\helpers\Url::to(['report/index']) ?>">
-            <i class="fas fa-chart-bar"></i>
+            <i class="fas fa-chart-bar" style="color:#fb7185;"></i>
             <span>Reports</span>
         </a>
     <?php endif; ?>
 
         <a class="nav-link <?= strpos($currentRoute, 'custom/profile') !== false ? 'active' : '' ?>" href="<?= \yii\helpers\Url::to(['custom/profile']) ?>">
-            <i class="fas fa-user-circle"></i>
+            <i class="fas fa-user-circle" style="color:#cbd5e1;"></i>
             <span>Profile</span>
         </a>
 
