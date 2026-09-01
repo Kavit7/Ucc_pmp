@@ -228,23 +228,16 @@ public function actionCreateLease()
         // Save lease
         if ($lease->validate() && $lease->save(false)) {
 
-    // Automatically create related bill
-    $bill = new Bill();
-    $bill->uuid = Yii::$app->security->generateRandomString(12);
-    $bill->lease_id = $lease->id;
-    $bill->amount = ($lease->propertyPrice->unit_amount ?? 0) * ($lease->duration_months ?? 1);
-    $bill->due_date = $lease->lease_start_date;
-    $bill->created_by = Yii::$app->user->id ?? null;
-
-    // Assign default "Pending" status before saving
-    $pending = ListSource::find()
-        ->where(['list_Name' => 'Pending', 'category' => 'Bill Status'])
-        ->one();
-    $bill->bill_status = $pending ? $pending->id : null;
-
-    if ($bill->save(false)) {
-        // Bill saved successfully
-    }
+    // Automatically create the bill for the full lease term (this is the
+    // one-time upfront bill at lease start, distinct from the per-period
+    // top-up bills BillingController::actionGenerateRecurring() creates
+    // later for an ongoing lease).
+    Bill::createPending(
+        $lease->id,
+        ($lease->propertyPrice->unit_amount ?? 0) * ($lease->duration_months ?? 1),
+        $lease->lease_start_date,
+        Yii::$app->user->id ?? null
+    );
 
     $propertyName = $lease->property->property_name ?? 'a property';
     Notification::notify(
@@ -380,18 +373,12 @@ public function actionCreateLease()
 
             // Auto-create the bill for the renewed term (actionCreateLease
             // does this for a brand-new lease; renewal was skipping it).
-            $bill = new Bill();
-            $bill->uuid = Yii::$app->security->generateRandomString(12);
-            $bill->lease_id = $model->id;
-            $bill->amount = ($model->propertyPrice->unit_amount ?? 0) * ($model->duration_months ?? 1);
-            $bill->due_date = $model->lease_start_date;
-            $bill->created_by = Yii::$app->user->id ?? null;
-
-            $pending = ListSource::find()
-                ->where(['list_Name' => 'Pending', 'category' => 'Bill Status'])
-                ->one();
-            $bill->bill_status = $pending ? $pending->id : null;
-            $bill->save(false);
+            Bill::createPending(
+                $model->id,
+                ($model->propertyPrice->unit_amount ?? 0) * ($model->duration_months ?? 1),
+                $model->lease_start_date,
+                Yii::$app->user->id ?? null
+            );
 
             $propertyName = $model->property->property_name ?? 'a property';
             Notification::notify(
