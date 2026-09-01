@@ -22,6 +22,11 @@ foreach ($propertyPrices as $price) {
     ];
 }
 $pricesJson = json_encode($pricesData);
+
+$priceTypeParent = ListSource::find()->where(['list_Name' => 'Usage Type', 'category' => 'Usage Type'])->one();
+$priceTypeOptions = $priceTypeParent
+    ? ArrayHelper::map(ListSource::find()->where(['parent_id' => $priceTypeParent->id])->all(), 'id', 'list_Name')
+    : [];
 ?>
 
 <div class="container mt-5 .body">
@@ -75,6 +80,27 @@ $pricesJson = json_encode($pricesData);
                     ) ?>
                         </div>
                         <div>
+                    </div>
+
+                    <!-- Shown only when the selected property has no price set up yet -->
+                    <div id="new-price-box" class="row bg-light rounded-3 p-3 mx-0 mb-3" style="display:none;">
+                        <div class="col-12 mb-2">
+                            <strong><i class="fas fa-circle-info me-1"></i> This property has no price set yet.</strong>
+                            <span class="text-muted">Enter one below and it will be used for this lease.</span>
+                        </div>
+                        <div class="col-lg-6 col-sm-12 mb-2">
+                            <label class="form-label">New price amount</label>
+                            <input type="number" step="0.01" min="0" id="new_price_amount" name="new_price_amount" class="form-control w-100 styled-input" placeholder="e.g. 500000">
+                        </div>
+                        <div class="col-lg-6 col-sm-12 mb-2">
+                            <label class="form-label">Price type</label>
+                            <select id="new_price_type" name="new_price_type" class="form-select w-100 styled-select">
+                                <option value="">Select type</option>
+                                <?php foreach ($priceTypeOptions as $id => $name): ?>
+                                    <option value="<?= $id ?>"><?= Html::encode($name) ?></option>
+                                <?php endforeach; ?>
+                            </select>
+                        </div>
                     </div>
                     <!-- Security Deposit -->
                     <?= $form->field($lease, 'security_deposit_amount')->input('number', [
@@ -182,18 +208,31 @@ document.addEventListener('DOMContentLoaded', function () {
     const propertyPrices = <?= $pricesJson ?>;
     const propertySelect = document.getElementById('lease-property_id');
     const priceSelect = document.getElementById('lease-property_price_id');
+    const newPriceBox = document.getElementById('new-price-box');
+    const newPriceAmount = document.getElementById('new_price_amount');
+    const newPriceType = document.getElementById('new_price_type');
 
     propertySelect.addEventListener('change', function () {
         const propertyId = this.value;
         priceSelect.innerHTML = '<option value="">Select Price</option>';
 
-        if (propertyId && propertyPrices[propertyId] !== undefined) {
+        const hasPrices = propertyId && propertyPrices[propertyId] !== undefined && propertyPrices[propertyId].length > 0;
+
+        if (hasPrices) {
             propertyPrices[propertyId].forEach(price => {
                 const option = document.createElement('option');
                 option.value = price.id;
                 option.text = price.unit_amount;
                 priceSelect.appendChild(option);
             });
+        }
+
+        // No price on record for this property yet - let the user add one inline.
+        const showNewPrice = propertyId && !hasPrices;
+        newPriceBox.style.display = showNewPrice ? 'flex' : 'none';
+        if (!showNewPrice) {
+            newPriceAmount.value = '';
+            newPriceType.value = '';
         }
     });
 

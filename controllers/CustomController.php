@@ -9,6 +9,7 @@ use yii\filters\VerbFilter;
 use yii\web\Response;
 use app\models\Lease;
 use app\models\Bill;
+use app\models\PropertyPrice;
 use app\models\ListSource;
 use app\models\ChangePasswordForm;
 use app\models\Notification;
@@ -117,6 +118,25 @@ public function actionCreateLease()
     }
 
     if ($lease->load(Yii::$app->request->post())) {
+
+        // If the selected property has no price on record yet, the form lets
+        // the user enter one inline instead of leaving to the (admin-only)
+        // property prices page first.
+        $newPriceAmount = Yii::$app->request->post('new_price_amount');
+        if (empty($lease->property_price_id) && $newPriceAmount !== null && $newPriceAmount !== '') {
+            $newPrice = new PropertyPrice();
+            $newPrice->property_id = $lease->property_id;
+            $newPrice->unit_amount = $newPriceAmount;
+            $newPrice->price_type = Yii::$app->request->post('new_price_type') ?: null;
+            $newPrice->created_by = Yii::$app->user->id ?? null;
+
+            if ($newPrice->save()) {
+                $lease->property_price_id = $newPrice->id;
+            } else {
+                Yii::$app->session->setFlash('error', 'Could not save the new price: ' . implode(' ', $newPrice->getFirstErrors()));
+                return $this->render('create-lease', ['lease' => $lease]);
+            }
+        }
 
         // ✅ Check if the property is already under an active lease
         $activeLease = Lease::find()
