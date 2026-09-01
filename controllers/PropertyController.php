@@ -141,11 +141,21 @@ class PropertyController extends Controller
     $dataProvider = $searchModel->search(Yii::$app->request->queryParams);
     $dataProvider->pagination->pageSize = 12;
 
+    $totalProperties = Property::find()->count();
+    $activeLeaseStatusId = ListSource::find()
+        ->where(['list_Name' => 'Active', 'category' => 'Lease Status'])
+        ->select('id')->scalar();
+    $occupiedCount = $activeLeaseStatusId
+        ? Lease::find()->select('property_id')->distinct()->where(['status' => $activeLeaseStatusId])->count()
+        : 0;
+
     return $this->render('index', [
         'searchModel'  => $searchModel,
         'dataProvider' => $dataProvider,
         'childOwner'   => $childOwner,
         'childStatus' =>$childStatus,
+        'totalProperties' => (int) $totalProperties,
+        'occupiedCount' => (int) $occupiedCount,
     ]);
 }
 
