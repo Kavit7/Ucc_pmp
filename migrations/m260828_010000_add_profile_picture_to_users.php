@@ -3,19 +3,20 @@
 use yii\db\Migration;
 
 /**
- * Adds `users`.`profile_picture` — referenced already by the header avatar
- * and profile page (views/layouts/custom.php, views/custom/profile.php)
- * but never had a backing column.
+ * No-op. `users.profile_picture` is now created directly by
+ * m260827_000000_create_base_schema. Left in place, unchanged in name, only so the
+ * `migration` table's existing "applied" record for this class stays
+ * valid on databases that already ran it.
  */
 class m260828_010000_add_profile_picture_to_users extends Migration
 {
     public function safeUp()
     {
-        $this->addColumn('{{%users}}', 'profile_picture', $this->string(255)->null()->after('phone'));
+        return true;
     }
 
     public function safeDown()
     {
-        $this->dropColumn('{{%users}}', 'profile_picture');
+        return true;
     }
 }

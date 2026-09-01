@@ -2,24 +2,18 @@
 
 use yii\db\Migration;
 
+/**
+ * The lease.security_deposit_* columns and their FK are now created
+ * directly by m260827_000000_create_base_schema. This migration now only seeds the
+ * "Security Deposit Status" list_source taxonomy those columns rely on -
+ * kept under its original name so the `migration` table's existing
+ * "applied" record for this class stays valid on databases that already
+ * ran it.
+ */
 class m260830_020000_add_security_deposit extends Migration
 {
     public function safeUp()
     {
-        $this->addColumn('lease', 'security_deposit_amount', $this->decimal(15, 2)->null()->after('duration_months'));
-        $this->addColumn('lease', 'security_deposit_status', $this->integer()->null()->after('security_deposit_amount'));
-        $this->addColumn('lease', 'security_deposit_returned_at', $this->date()->null()->after('security_deposit_status'));
-        $this->addColumn('lease', 'security_deposit_notes', $this->text()->null()->after('security_deposit_returned_at'));
-
-        $this->addForeignKey(
-            'fk-lease-security_deposit_status',
-            'lease',
-            'security_deposit_status',
-            'list_source',
-            'id',
-            'SET NULL'
-        );
-
         // Seed the "Security Deposit Status" taxonomy the same way every
         // other status field in this app is driven off list_source.
         $this->insert('list_source', [
@@ -49,11 +43,6 @@ class m260830_020000_add_security_deposit extends Migration
 
     public function safeDown()
     {
-        $this->dropForeignKey('fk-lease-security_deposit_status', 'lease');
         $this->delete('list_source', ['category' => 'Security Deposit Status']);
-        $this->dropColumn('lease', 'security_deposit_notes');
-        $this->dropColumn('lease', 'security_deposit_returned_at');
-        $this->dropColumn('lease', 'security_deposit_status');
-        $this->dropColumn('lease', 'security_deposit_amount');
     }
 }

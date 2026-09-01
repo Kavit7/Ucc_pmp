@@ -3,25 +3,20 @@
 use yii\db\Migration;
 
 /**
- * property_location.id was created as a plain INT primary key with no
- * AUTO_INCREMENT, which forced the model to treat it as a required,
- * user-supplied attribute. Since the Gii-generated create/update forms
- * never render an id field, every create silently failed validation.
- * This aligns the column with every other table in the app (auto-increment
- * PK, server-assigned).
+ * No-op. `property_location.id` is now created with AUTO_INCREMENT
+ * directly by m260827_000000_create_base_schema. Left in place, unchanged in name,
+ * only so the `migration` table's existing "applied" record for this
+ * class stays valid on databases that already ran it.
  */
 class m260829_030000_fix_property_location_autoincrement extends Migration
 {
     public function safeUp()
     {
-        // The column is already the PRIMARY KEY, so we only need to add
-        // AUTO_INCREMENT - re-declaring PRIMARY KEY via alterColumn() would
-        // conflict with the existing constraint.
-        $this->execute('ALTER TABLE `property_location` MODIFY `id` INT(11) NOT NULL AUTO_INCREMENT');
+        return true;
     }
 
     public function safeDown()
     {
-        $this->execute('ALTER TABLE `property_location` MODIFY `id` INT(11) NOT NULL');
+        return true;
     }
 }

@@ -66,15 +66,32 @@ class m260829_000000_create_maintenance_request extends Migration
     private function nextListUuid()
     {
         if ($this->nextListUuidNumber === null) {
-            $last = (new \yii\db\Query())
-                ->select('uuid')
-                ->from('list_source')
-                ->where(['like', 'uuid', 'List_%', false])
-                ->orderBy(['id' => SORT_DESC])
-                ->scalar();
-            $this->nextListUuidNumber = $last ? ((int) str_replace('List_', '', $last)) + 1 : 1;
+            // The highest *numeric suffix* in use, not the row with the
+            // highest auto-increment id - seed data inserted out of
+            // numeric order (e.g. reconstructed historical uuids with
+            // gaps) would otherwise make this pick a stale/lower number
+            // and collide with an existing uuid.
+            $max = 0;
+            foreach ((new \yii\db\Query())->select('uuid')->from('list_source')->where(['like', 'uuid', 'List_%', false])->column() as $uuid) {
+                $max = max($max, (int) str_replace('List_', '', $uuid));
+            }
+            $this->nextListUuidNumber = $max + 1;
         }
         return 'List_' . $this->nextListUuidNumber++;
+    }
+
+    /**
+     * A random 'LIST'+3-digits code has a real chance of colliding with
+     * one already in use (code is unique) - loop until a free one is found,
+     * matching the safer pattern already used elsewhere in this app's
+     * migrations (see m260829_010000_add_renewed_lease_status).
+     */
+    private function nextListCode()
+    {
+        do {
+            $code = 'LIST' . rand(100, 999);
+        } while ((new \yii\db\Query())->from('list_source')->where(['code' => $code])->exists());
+        return $code;
     }
 
     private function seedListParent($name)
@@ -87,7 +104,7 @@ class m260829_000000_create_maintenance_request extends Migration
         $this->insert('list_source', [
             'uuid' => $this->nextListUuid(),
             'list_Name' => $name,
-            'code' => 'LIST' . rand(100, 999),
+            'code' => $this->nextListCode(),
             'category' => $name,
             'sort_by' => '1',
             'parent_id' => null,
@@ -107,7 +124,7 @@ class m260829_000000_create_maintenance_request extends Migration
         $this->insert('list_source', [
             'uuid' => $this->nextListUuid(),
             'list_Name' => $name,
-            'code' => 'LIST' . rand(100, 999),
+            'code' => $this->nextListCode(),
             'category' => $name,
             'sort_by' => '1',
             'parent_id' => $parentId,

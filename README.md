@@ -33,27 +33,28 @@ A web-based property management system built on [Yii 2](https://www.yiiframework
    composer install
    ```
 
-2. **Create a database** (e.g. `pmp_db_1`) and point `config/db.php` at it:
+2. **Create a database** (e.g. `pmp_db_1`) and set your credentials in `config/db-local.php` (gitignored - copy it from `config/db-local.php.example`; falls back to `root`/no password on `localhost` if you skip this):
 
    ```php
    return [
-       'class' => 'yii\db\Connection',
        'dsn' => 'mysql:host=localhost;dbname=pmp_db_1',
        'username' => 'root',
        'password' => '',
-       'charset' => 'utf8',
    ];
    ```
 
-3. **Run migrations** — this creates the schema and seeds RBAC's own tables plus the Tanzania location dataset (regions/districts/wards/streets, ~20,000 rows, bundled under `data/tanzania-locations/`):
+   Also copy `config/secret-local.php.example` to `config/secret-local.php` and generate a real key (see the comment in that file) - the app will boot without this, but sessions/CSRF/signed cookies aren't safe until you do.
+
+3. **Run migrations** — this creates the app's own schema (properties, leases, bills, users, the Tanzania location hierarchy, etc.) and seeds the Tanzania location dataset (regions/districts/wards/streets, ~20,000 rows, bundled under `data/tanzania-locations/`):
 
    ```
    php yii migrate
    ```
 
-4. **Initialize RBAC roles/permissions:**
+4. **Create the RBAC tables**, which live in a separate migration path bundled with Yii itself, then seed the actual roles/permissions:
 
    ```
+   php yii migrate --migrationPath=@yii/rbac/migrations/
    php yii rbac/init
    ```
 

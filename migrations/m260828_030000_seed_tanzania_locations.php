@@ -27,6 +27,17 @@ class m260828_030000_seed_tanzania_locations extends Migration
             $countryId = (new \yii\db\Query())->from('country')->select('country_id')->scalar();
         }
 
+        // Nothing seeds `country` on a fresh database - this data is
+        // specifically Tanzania locations, so create that row here rather
+        // than leaving $countryId as 0 (which fails the region FK).
+        if (!$countryId) {
+            $this->insert('country', [
+                'uuid' => 'Country_1',
+                'country_name' => 'Tanzania',
+            ]);
+            $countryId = $this->db->getLastInsertID();
+        }
+
         // --- Load existing rows so we reuse ids instead of duplicating ---
         $regionMap = [];   // upper(name) => region_id
         foreach ((new \yii\db\Query())->select(['region_id', 'name'])->from('region')->all() as $r) {

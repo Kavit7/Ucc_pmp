@@ -4,8 +4,9 @@ use yii\db\Migration;
 
 /**
  * Adds a real notification system: a `notification` table (one row per
- * recipient) and a per-user `notifications_enabled` preference that the
- * Settings page controls and Notification::notify() respects.
+ * recipient). `users.notifications_enabled` - the per-user preference the
+ * Settings page controls and Notification::notify() respects - is now
+ * created directly by m260827_000000_create_base_schema instead of here.
  */
 class m260828_020000_create_notification_and_user_prefs extends Migration
 {
@@ -41,13 +42,10 @@ class m260828_020000_create_notification_and_user_prefs extends Migration
             'user_id',
             'CASCADE'
         );
-
-        $this->addColumn('{{%users}}', 'notifications_enabled', $this->boolean()->notNull()->defaultValue(1)->after('profile_picture'));
     }
 
     public function safeDown()
     {
-        $this->dropColumn('{{%users}}', 'notifications_enabled');
         $this->dropForeignKey('fk-notification-user', '{{%notification}}');
         $this->dropTable('{{%notification}}');
     }
