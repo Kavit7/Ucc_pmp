@@ -10,6 +10,11 @@ use yii\widgets\ListView;
 /** @var int $totalOwned */
 /** @var array $typeBreakdown */
 /** @var string[] $regionNames */
+/** @var array $typeOptions */
+/** @var int|string|null $selectedType */
+/** @var string|null $selectedRegion */
+/** @var string|null $minPrice */
+/** @var string|null $maxPrice */
 
 $this->title = 'Available Properties';
 
@@ -53,14 +58,25 @@ $welcomeLine .= '.';
 // here so the modal can be populated client-side without extra requests.
 $propertyDetails = [];
 foreach ($dataProvider->getModels() as $model) {
-    $photo = $model->photos[0]->photo_url ?? null;
+    $images = array_values(array_filter(array_map(function ($photo) {
+        return $photo->photo_url ? Url::to('@web/' . $photo->photo_url) : null;
+    }, $model->photos)));
+
     $priceModel = $model->propertyPrice[0] ?? null;
+    $priceText = null;
+    if ($priceModel) {
+        $priceText = 'TZS ' . number_format($priceModel->unit_amount, 0);
+        if ($priceModel->period) {
+            $priceText .= ' / ' . $priceModel->period;
+        }
+    }
+
     $propertyDetails[$model->id] = [
         'name' => $model->property_name,
-        'image' => $photo ? Url::to('@web/' . $photo) : null,
+        'images' => $images,
         'type' => $model->propertyType->list_Name ?? $model->usageType->list_Name ?? null,
         'location' => $model->street->street_name ?? null,
-        'price' => $priceModel ? 'TZS ' . number_format($priceModel->unit_amount, 0) : null,
+        'price' => $priceText,
         'description' => $model->description ?: 'No further description has been provided for this property yet - send an inquiry and we\'ll fill you in.',
     ];
 }
@@ -145,6 +161,26 @@ foreach ($dataProvider->getModels() as $model) {
     .listing-wrap { max-width: 1180px; margin: 0 auto; padding: 2.5rem 1.5rem 2rem; }
     .listing-heading { font-weight: 800; color: #0f172a; margin-bottom: 1.5rem; }
 
+    /* ---------- Filter bar ---------- */
+    .filter-bar {
+        background: #fff;
+        border: 1px solid #eef0f4;
+        border-radius: 14px;
+        padding: 0.9rem 1rem;
+        box-shadow: 0 1px 3px rgba(15, 23, 42, 0.05);
+    }
+    .filter-input {
+        border-radius: 10px;
+        border: 1px solid #e5e7eb;
+        padding: 0.6rem 0.9rem;
+        font-size: 0.9rem;
+    }
+    .filter-input:focus {
+        outline: none;
+        border-color: #4f46e5;
+        box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.12);
+    }
+
     .property-card {
         background: #fff;
         border-radius: 16px;
@@ -225,6 +261,15 @@ foreach ($dataProvider->getModels() as $model) {
     }
     #detailsModal .details-photo img { width: 100%; height: 100%; object-fit: cover; }
     #detailsModal .details-photo i { font-size: 3rem; color: #818cf8; }
+    #detailsModal .details-photo .carousel,
+    #detailsModal .details-photo .carousel-inner,
+    #detailsModal .details-photo .carousel-item { height: 100%; }
+    #detailsModal .details-photo .carousel-indicators { margin-bottom: 0.5rem; }
+    #detailsModal .details-photo .carousel-indicators [data-bs-target] {
+        width: 7px; height: 7px; border-radius: 50%; background: rgba(255,255,255,0.6); border: none;
+    }
+    #detailsModal .details-photo .carousel-control-prev,
+    #detailsModal .details-photo .carousel-control-next { width: 8%; }
 </style>
 
 <!-- Hero slideshow -->
@@ -284,6 +329,40 @@ foreach ($dataProvider->getModels() as $model) {
 
 <div class="listing-wrap">
     <h4 class="listing-heading">Available Now</h4>
+
+    <form method="get" action="<?= Url::to(['public-listing/index']) ?>" class="filter-bar mb-4">
+        <div class="row g-2 align-items-center">
+            <div class="col-6 col-md-3">
+                <select name="type" class="form-select filter-input" onchange="this.form.submit()">
+                    <option value="">All types</option>
+                    <?php foreach ($typeOptions as $id => $name): ?>
+                        <option value="<?= $id ?>" <?= (string) $selectedType === (string) $id ? 'selected' : '' ?>><?= Html::encode($name) ?></option>
+                    <?php endforeach; ?>
+                </select>
+            </div>
+            <div class="col-6 col-md-3">
+                <select name="region" class="form-select filter-input" onchange="this.form.submit()">
+                    <option value="">All locations</option>
+                    <?php foreach ($regionNames as $name): ?>
+                        <option value="<?= Html::encode($name) ?>" <?= $selectedRegion === $name ? 'selected' : '' ?>><?= Html::encode(ucwords(str_replace('-', ' ', $name))) ?></option>
+                    <?php endforeach; ?>
+                </select>
+            </div>
+            <div class="col-6 col-md-2">
+                <input type="number" name="min_price" value="<?= Html::encode($minPrice) ?>" class="form-control filter-input" placeholder="Min price" min="0">
+            </div>
+            <div class="col-6 col-md-2">
+                <input type="number" name="max_price" value="<?= Html::encode($maxPrice) ?>" class="form-control filter-input" placeholder="Max price" min="0">
+            </div>
+            <div class="col-12 col-md-2 d-flex gap-2">
+                <button type="submit" class="btn btn-inquire flex-fill" style="margin-top:0;"><i class="fas fa-filter me-1"></i> Filter</button>
+                <?php if ($selectedType || $selectedRegion || $minPrice !== null && $minPrice !== '' || $maxPrice !== null && $maxPrice !== ''): ?>
+                    <?= Html::a('<i class="fas fa-xmark"></i>', ['public-listing/index'], ['class' => 'btn btn-details', 'title' => 'Clear filters']) ?>
+                <?php endif; ?>
+            </div>
+        </div>
+    </form>
+
     <?= ListView::widget([
         'dataProvider' => $dataProvider,
         'options' => ['tag' => 'div', 'class' => 'row g-4'],
@@ -298,7 +377,7 @@ foreach ($dataProvider->getModels() as $model) {
 
             $priceModel = $model->propertyPrice[0] ?? null;
             $price = $priceModel
-                ? 'TZS ' . number_format($priceModel->unit_amount, 0) . ' <span>/ term</span>'
+                ? 'TZS ' . number_format($priceModel->unit_amount, 0) . ' <span>/ ' . Html::encode($priceModel->period ?: 'term') . '</span>'
                 : '<span>Contact for price</span>';
 
             $location = $model->street->street_name ?? null;
@@ -425,13 +504,31 @@ document.getElementById('detailsModal').addEventListener('show.bs.modal', functi
     document.getElementById('details-name').textContent = data.name;
     document.getElementById('details-type').textContent = data.type || 'Property';
     document.getElementById('details-location').innerHTML = '<i class="fas fa-location-dot me-1"></i>' + (data.location || 'Location on request');
-    document.getElementById('details-price').textContent = data.price ? (data.price + ' / term') : 'Contact for price';
+    document.getElementById('details-price').textContent = data.price || 'Contact for price';
     document.getElementById('details-description').textContent = data.description;
 
     var photoEl = document.getElementById('details-photo');
-    photoEl.innerHTML = data.image
-        ? '<img src="' + data.image + '" alt="">'
-        : '<i class="fas fa-image"></i>';
+    var images = data.images || [];
+    if (images.length === 0) {
+        photoEl.innerHTML = '<i class="fas fa-image"></i>';
+    } else if (images.length === 1) {
+        photoEl.innerHTML = '<img src="' + images[0] + '" alt="">';
+    } else {
+        var carouselId = 'detailsPhotoCarousel';
+        var slides = images.map(function (src, i) {
+            return '<div class="carousel-item' + (i === 0 ? ' active' : '') + '"><img src="' + src + '" alt=""></div>';
+        }).join('');
+        var indicators = images.map(function (src, i) {
+            return '<button type="button" data-bs-target="#' + carouselId + '" data-bs-slide-to="' + i + '"' + (i === 0 ? ' class="active"' : '') + '></button>';
+        }).join('');
+        photoEl.innerHTML =
+            '<div id="' + carouselId + '" class="carousel slide" data-bs-ride="false">' +
+                '<div class="carousel-inner">' + slides + '</div>' +
+                '<button class="carousel-control-prev" type="button" data-bs-target="#' + carouselId + '" data-bs-slide="prev"><span class="carousel-control-prev-icon"></span></button>' +
+                '<button class="carousel-control-next" type="button" data-bs-target="#' + carouselId + '" data-bs-slide="next"><span class="carousel-control-next-icon"></span></button>' +
+                '<div class="carousel-indicators position-relative mb-0" style="bottom:auto;">' + indicators + '</div>' +
+            '</div>';
+    }
 });
 
 // Hand off from Details modal straight into the Inquiry modal

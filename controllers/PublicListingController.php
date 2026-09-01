@@ -40,20 +40,9 @@ class PublicListingController extends Controller
                 ->where(['list_Name' => 'Active', 'category' => 'Lease Status']),
             ]);
 
-        $query = Property::find()
-            ->with(['propertyType', 'photos', 'propertyPrice', 'usageType', 'street'])
-            ->andWhere(['not in', 'id', $occupiedLeaseSubquery])
-            ->orderBy(['id' => SORT_DESC]);
-
-        $totalAvailable = (clone $query)->count();
-
-        $dataProvider = new ActiveDataProvider([
-            'query' => $query,
-            'pagination' => ['pageSize' => 12],
-        ]);
-
         // Portfolio summary for the welcome slide - describes everything we
-        // own, not just what's currently vacant.
+        // own, not just what's currently vacant. Computed before filters are
+        // applied so the counts always reflect the whole portfolio.
         $totalOwned = Property::find()->count();
         $typeBreakdown = Property::find()
             ->select(['list_source.list_Name AS type_name', 'COUNT(*) AS total'])
@@ -67,13 +56,63 @@ class PublicListingController extends Controller
             ->joinWith('street.region', false)
             ->distinct()
             ->column();
+        $regionNames = array_values(array_filter($regionNames));
+
+        // Filters - all optional, applied on top of the "currently vacant" base query.
+        $typeId = Yii::$app->request->get('type');
+        $region = Yii::$app->request->get('region');
+        $minPrice = Yii::$app->request->get('min_price');
+        $maxPrice = Yii::$app->request->get('max_price');
+
+        $query = Property::find()
+            ->with(['propertyType', 'photos', 'propertyPrice', 'usageType', 'street'])
+            ->andWhere(['not in', 'id', $occupiedLeaseSubquery])
+            ->orderBy(['id' => SORT_DESC]);
+
+        if ($typeId) {
+            $query->andWhere(['property_type_id' => $typeId]);
+        }
+        if ($region) {
+            $query->joinWith('street.region', false)
+                ->andWhere(['region.name' => $region]);
+        }
+        if (($minPrice !== null && $minPrice !== '') || ($maxPrice !== null && $maxPrice !== '')) {
+            $priceQuery = \app\models\PropertyPrice::find()->select('property_id');
+            if ($minPrice !== null && $minPrice !== '') {
+                $priceQuery->andWhere(['>=', 'unit_amount', $minPrice]);
+            }
+            if ($maxPrice !== null && $maxPrice !== '') {
+                $priceQuery->andWhere(['<=', 'unit_amount', $maxPrice]);
+            }
+            $query->andWhere(['in', 'id', $priceQuery]);
+        }
+
+        $totalAvailable = (clone $query)->count();
+
+        $dataProvider = new ActiveDataProvider([
+            'query' => $query,
+            'pagination' => ['pageSize' => 12],
+        ]);
+
+        $typeOptions = \yii\helpers\ArrayHelper::map(
+            \app\models\ListSource::find()
+                ->where(['id' => Property::find()->select('property_type_id')->distinct()])
+                ->all(),
+            'id',
+            'list_Name'
+        );
 
         return $this->render('index', [
             'dataProvider' => $dataProvider,
             'totalAvailable' => $totalAvailable,
             'totalOwned' => $totalOwned,
             'typeBreakdown' => $typeBreakdown,
-            'regionNames' => array_values(array_filter($regionNames)),
+            'regionNames' => $regionNames,
+            'typeOptions' => $typeOptions,
+            'selectedType' => $typeId,
+            'selectedRegion' => $region,
+            'minPrice' => $minPrice,
+            'maxPrice' => $maxPrice,
         ]);
     }
 
