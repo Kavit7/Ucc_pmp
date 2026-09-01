@@ -1,5 +1,6 @@
 <?php
 use yii\helpers\Html;
+$this->beginPage();
 ?>
 <!DOCTYPE html>
 <html lang="<?= Yii::$app->language ?>">
@@ -208,8 +209,10 @@ use yii\helpers\Html;
             }
         }
     </style>
+    <?php $this->head() ?>
 </head>
 <body>
+    <?php $this->beginBody() ?>
     <div class="login-container">
         <?= $content ?>
     </div>
@@ -242,5 +245,7 @@ use yii\helpers\Html;
             });
         });
     </script>
+    <?php $this->endBody() ?>
 </body>
 </html>
+<?php $this->endPage() ?>
