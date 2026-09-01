@@ -15,7 +15,7 @@ class PropertySearch extends Property
 
     public function search($params)
     {
-        $query = Property::find();
+        $query = Property::find()->with(['street', 'propertyStatus', 'propertyPrice']);
 
         $dataProvider = new ActiveDataProvider([
             'query' => $query,

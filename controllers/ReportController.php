@@ -248,13 +248,20 @@ class ReportController extends Controller
      */
     public function actionExportOccupancy()
     {
+        // Computed once up front instead of calling isCurrentlyOccupied()
+        // (2 fresh queries each) per row.
+        $activeStatusId = $this->leaseStatusId('Active');
+        $occupiedPropertyIds = $activeStatusId
+            ? array_flip(\app\models\Lease::find()->select('property_id')->where(['status' => $activeStatusId])->column())
+            : [];
+
         $rows = [['Property', 'Status', 'Usage Type', 'Currently Occupied']];
         foreach (Property::find()->joinWith(['propertyStatus', 'usageType'])->each() as $property) {
             $rows[] = [
                 $property->property_name,
                 $property->propertyStatus->list_Name ?? '-',
                 $property->usageType->list_Name ?? '-',
-                $property->isCurrentlyOccupied() ? 'Yes' : 'No',
+                isset($occupiedPropertyIds[$property->id]) ? 'Yes' : 'No',
             ];
         }
 

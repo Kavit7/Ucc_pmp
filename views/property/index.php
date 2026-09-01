@@ -2,7 +2,6 @@
 use yii\helpers\Html;
 use yii\helpers\Url;
 use yii\widgets\ActiveForm;
-use app\models\PropertyPrice;
 use yii\widgets\ListView;
 use yii\helpers\ArrayHelper;
 
@@ -97,7 +96,7 @@ $vacantCount = max(0, $totalProperties - $occupiedCount);
         'options' => ['class' => 'row'],
         'itemOptions' => ['class' => 'col-lg-4 col-md-6 col-sm-12 mb-4'],
         'itemView' => function ($model) {
-            $priceModel = PropertyPrice::find()->where(['property_id' => $model->id])->one();
+            $priceModel = $model->propertyPrice[0] ?? null;
             $priceValue = $priceModel ? $priceModel->unit_amount : null;
 
             $image = $model->document_url
