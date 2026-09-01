@@ -3,6 +3,15 @@
 $params = require __DIR__ . '/params.php';
 $db = require __DIR__ . '/db.php';
 
+// Real key lives in secret-local.php, gitignored and never committed. Falls
+// back to a placeholder so the app still boots on a fresh clone, but you
+// MUST set a real one before relying on sessions/CSRF/signed cookies.
+$secrets = ['cookieValidationKey' => 'CHANGE-ME-see-config/secret-local.php.example'];
+$secretsFile = __DIR__ . '/secret-local.php';
+if (is_file($secretsFile)) {
+    $secrets = array_merge($secrets, require $secretsFile);
+}
+
 $config = [
     'id' => 'basic',
     'name' => 'UCC Property Management Portal',
@@ -16,8 +25,7 @@ $config = [
     ],
     'components' => [
         'request' => [
-            'cookieValidationKey' => '220sE_-yG6ktrNmPk6TAlvQm2C6GBrsa',
-            
+            'cookieValidationKey' => $secrets['cookieValidationKey'],
         ],
         'authManager' => [
         'class' => 'yii\rbac\DbManager', // stores RBAC data in database

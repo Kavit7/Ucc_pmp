@@ -31,3 +31,8 @@ tests/_support/_generated
 
 #vagrant folder
 /.vagrant
+
+# Local secrets - never commit real credentials/keys. See the .example
+# files in config/ for the template each of these is copied from.
+/config/db-local.php
+/config/secret-local.php

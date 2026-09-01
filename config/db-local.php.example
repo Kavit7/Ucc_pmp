@@ -1,0 +1,13 @@
+<?php
+
+/**
+ * Copy this file to db-local.php (gitignored) and fill in real values for
+ * this machine. db.php falls back to generic XAMPP dev defaults if
+ * db-local.php doesn't exist, so this step is only needed when your DB
+ * credentials differ from the default root/no-password local setup.
+ */
+return [
+    'dsn' => 'mysql:host=localhost;dbname=pmp_db_1',
+    'username' => 'root',
+    'password' => '',
+];
