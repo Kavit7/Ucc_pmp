@@ -27,7 +27,7 @@ class CustomController extends Controller
         return [
             'access' => [
                 'class' => AccessControl::class,
-                'only' => ['index','logout','leases','create-lease','delete-lease','bill','payment','record-payment','manage-deposit','profile','upload-profile-picture','change-password','check-current-password','notifications','read-notification','mark-all-notifications-read','settings','update-settings','inquiries'],
+                'only' => ['index','logout','leases','create-lease','delete-lease','bill','payment','record-payment','manage-deposit','profile','upload-profile-picture','change-password','check-current-password','notifications','read-notification','mark-all-notifications-read','settings','update-settings','inquiries','view-lease','renew','get-prices','terminate','delete-bill'],
                 'rules' => [
                     [
                         'allow' => true,
@@ -40,10 +40,23 @@ class CustomController extends Controller
                     ],
                     [
                         'allow' => true,
-                        'actions' => ['delete-lease', 'record-payment', 'manage-deposit', 'inquiries'],
+                        'actions' => ['delete-lease', 'record-payment', 'manage-deposit', 'inquiries', 'renew', 'get-prices', 'terminate', 'delete-bill'],
                         'roles' => ['@'],
                         'matchCallback' => function () {
                             return in_array(Yii::$app->user->identity->role ?? null, ['admin', 'manager'], true);
+                        },
+                    ],
+                    [
+                        'allow' => true,
+                        'actions' => ['view-lease'],
+                        'roles' => ['@'],
+                        'matchCallback' => function () {
+                            $role = Yii::$app->user->identity->role ?? null;
+                            if (in_array($role, ['admin', 'manager'], true)) {
+                                return true;
+                            }
+                            // Tenants may only view their own leases.
+                            return (int) Yii::$app->request->get('tenant') === (int) Yii::$app->user->id;
                         },
                     ],
                     [
@@ -65,6 +78,8 @@ class CustomController extends Controller
                     'record-payment' => ['get', 'post'], // GET shows the form, POST submits it
                     'manage-deposit' => ['get', 'post'],
                     'upload-profile-picture' => ['post'],
+                    'terminate' => ['post'],
+                    'delete-bill' => ['post'],
                 ],
             ],
         ];

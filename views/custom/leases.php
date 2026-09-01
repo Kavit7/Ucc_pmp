@@ -162,6 +162,8 @@ foreach ($flashMessages as $type => $message) {
 
                             <?= Html::a('<i class="bi bi-x-circle text-success" style="font-size:20px;"></i>', ['custom/terminate', 'id' => $lease->id], [
                                 'class' => 'text-decoration-none fw-semibold',
+                                'data-method' => 'post',
+                                'data-confirm' => 'Terminate this lease?',
                                 'data-bs-toggle' => 'tooltip',
                                 'data-bs-placement' => 'top',
                                 'title' => 'Terminate'
