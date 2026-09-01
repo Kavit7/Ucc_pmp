@@ -52,9 +52,28 @@ class PublicListingController extends Controller
             'pagination' => ['pageSize' => 12],
         ]);
 
+        // Portfolio summary for the welcome slide - describes everything we
+        // own, not just what's currently vacant.
+        $totalOwned = Property::find()->count();
+        $typeBreakdown = Property::find()
+            ->select(['list_source.list_Name AS type_name', 'COUNT(*) AS total'])
+            ->joinWith('propertyType', false)
+            ->groupBy('list_source.list_Name')
+            ->orderBy(['total' => SORT_DESC])
+            ->asArray()
+            ->all();
+        $regionNames = Property::find()
+            ->select('region.name')
+            ->joinWith('street.region', false)
+            ->distinct()
+            ->column();
+
         return $this->render('index', [
             'dataProvider' => $dataProvider,
             'totalAvailable' => $totalAvailable,
+            'totalOwned' => $totalOwned,
+            'typeBreakdown' => $typeBreakdown,
+            'regionNames' => array_values(array_filter($regionNames)),
         ]);
     }
 

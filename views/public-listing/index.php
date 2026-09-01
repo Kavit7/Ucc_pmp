@@ -7,8 +7,47 @@ use yii\widgets\ListView;
 /** @var yii\web\View $this */
 /** @var yii\data\ActiveDataProvider $dataProvider */
 /** @var int $totalAvailable */
+/** @var int $totalOwned */
+/** @var array $typeBreakdown */
+/** @var string[] $regionNames */
 
 $this->title = 'Available Properties';
+
+// Build a friendly, data-driven welcome line describing the portfolio,
+// e.g. "8 cars and 4 houses across Dodoma and Dar es Salaam."
+$typeParts = [];
+foreach ($typeBreakdown as $row) {
+    $label = strtolower($row['type_name']);
+    $label = (int) $row['total'] === 1 ? $label : $label . 's';
+    $typeParts[] = (int) $row['total'] . ' ' . $label;
+}
+$typesSentence = '';
+if (count($typeParts) === 1) {
+    $typesSentence = $typeParts[0];
+} elseif (count($typeParts) > 1) {
+    $last = array_pop($typeParts);
+    $typesSentence = implode(', ', $typeParts) . ' and ' . $last;
+}
+
+$prettyRegions = array_map(function ($name) {
+    return Html::encode(ucwords(str_replace('-', ' ', $name)));
+}, $regionNames);
+$regionsSentence = '';
+if (count($prettyRegions) === 1) {
+    $regionsSentence = $prettyRegions[0];
+} elseif (count($prettyRegions) > 1) {
+    $lastRegion = array_pop($prettyRegions);
+    $regionsSentence = implode(', ', $prettyRegions) . ' and ' . $lastRegion;
+}
+
+$welcomeLine = "We're proud to own and manage {$totalOwned} properties";
+if ($typesSentence) {
+    $welcomeLine .= " - {$typesSentence}";
+}
+if ($regionsSentence) {
+    $welcomeLine .= ", across {$regionsSentence}";
+}
+$welcomeLine .= '.';
 
 // Property details, keyed by id, for the "View Details" popup - built once
 // here so the modal can be populated client-side without extra requests.
@@ -194,9 +233,9 @@ foreach ($dataProvider->getModels() as $model) {
         <div class="carousel-item active">
             <div class="hero-slide-1 w-100">
                 <div class="hero-content mx-auto">
-                    <div class="hero-icon"><i class="fas fa-key"></i></div>
-                    <h2>Find Your Next Home</h2>
-                    <p>Browse our current selection of available properties and send an inquiry directly - no account or sign-up needed.</p>
+                    <div class="hero-icon"><i class="fas fa-hand-sparkles"></i></div>
+                    <h2>Welcome! We're glad you're here</h2>
+                    <p><?= Html::encode($welcomeLine) ?> Have a look around - we'd love to help you find the right fit.</p>
                     <div class="stat-pill"><i class="fas fa-house-circle-check"></i> <?= (int) $totalAvailable ?> <?= $totalAvailable === 1 ? 'property' : 'properties' ?> available now</div>
                 </div>
             </div>
