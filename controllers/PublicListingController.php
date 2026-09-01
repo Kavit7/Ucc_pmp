@@ -41,9 +41,11 @@ class PublicListingController extends Controller
             ]);
 
         $query = Property::find()
-            ->with(['propertyType', 'photos', 'propertyPrice'])
+            ->with(['propertyType', 'photos', 'propertyPrice', 'usageType', 'street'])
             ->andWhere(['not in', 'id', $occupiedLeaseSubquery])
             ->orderBy(['id' => SORT_DESC]);
+
+        $totalAvailable = (clone $query)->count();
 
         $dataProvider = new ActiveDataProvider([
             'query' => $query,
@@ -52,6 +54,7 @@ class PublicListingController extends Controller
 
         return $this->render('index', [
             'dataProvider' => $dataProvider,
+            'totalAvailable' => $totalAvailable,
         ]);
     }
 

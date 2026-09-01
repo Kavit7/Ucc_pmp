@@ -1,5 +1,6 @@
 <?php
 use yii\helpers\Html;
+use yii\helpers\Url;
 $this->beginPage();
 ?>
 <!DOCTYPE html>
@@ -16,21 +17,94 @@ $this->beginPage();
     <?php $this->head() ?>
 
     <style>
-        body { font-family: 'Inter', 'Roboto', sans-serif; background: #f8fafc; }
+        :root {
+            --brand: #4f46e5;
+            --brand-dark: #3730a3;
+            --brand-light: #eef2ff;
+            --ink: #0f172a;
+            --muted: #64748b;
+        }
+
+        * { box-sizing: border-box; }
+
+        body {
+            font-family: -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            background: #f6f7fb;
+            color: var(--ink);
+            margin: 0;
+        }
+
+        /* Header */
         .public-header {
-            background: #120912;
+            background: linear-gradient(135deg, #14091c 0%, #1e1030 100%);
             color: #fff;
-            padding: 1rem 1.5rem;
+            padding: 0.9rem 1.75rem;
             display: flex;
             align-items: center;
             justify-content: space-between;
+            box-shadow: 0 2px 12px rgba(0, 0, 0, 0.15);
+            position: sticky;
+            top: 0;
+            z-index: 50;
         }
-        .public-header h1 { font-size: 1.25rem; margin: 0; }
+
+        .public-header .brand {
+            display: flex;
+            align-items: center;
+            gap: 0.65rem;
+            font-weight: 700;
+            font-size: 1.15rem;
+            letter-spacing: 0.01em;
+        }
+
+        .public-header .brand-icon {
+            width: 38px;
+            height: 38px;
+            border-radius: 10px;
+            background: linear-gradient(135deg, var(--brand), #8b5cf6);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.1rem;
+            flex-shrink: 0;
+        }
+
+        .public-header .login-btn {
+            border: 1px solid rgba(255, 255, 255, 0.25);
+            color: #fff;
+            padding: 0.5rem 1.15rem;
+            border-radius: 999px;
+            font-size: 0.88rem;
+            font-weight: 500;
+            transition: all 0.2s ease;
+            text-decoration: none;
+            white-space: nowrap;
+        }
+
+        .public-header .login-btn:hover {
+            background: #fff;
+            color: var(--brand-dark);
+        }
+
+        /* Footer */
         .public-footer {
+            background: #14091c;
+            color: #a1a1aa;
             text-align: center;
-            padding: 2rem 1rem;
-            color: #6b7280;
-            font-size: 0.85rem;
+            padding: 2.25rem 1rem 1.75rem;
+            margin-top: 3.5rem;
+        }
+
+        .public-footer .footer-brand {
+            color: #fff;
+            font-weight: 600;
+            margin-bottom: 0.35rem;
+        }
+
+        .public-footer small {
+            display: block;
+            margin-top: 0.75rem;
+            color: #71717a;
         }
     </style>
 </head>
@@ -38,14 +112,19 @@ $this->beginPage();
 <?php $this->beginBody() ?>
 
 <div class="public-header">
-    <h1><i class="fas fa-building me-2"></i><?= Html::encode(Yii::$app->name) ?></h1>
-    <a href="<?= \yii\helpers\Url::to(['login/login']) ?>" class="btn btn-outline-light btn-sm">Staff / Tenant Login</a>
+    <div class="brand">
+        <span class="brand-icon"><i class="fas fa-building"></i></span>
+        <span><?= Html::encode(Yii::$app->name) ?></span>
+    </div>
+    <a href="<?= Url::to(['login/login']) ?>" class="login-btn"><i class="fas fa-user me-1"></i> Staff / Tenant Login</a>
 </div>
 
 <?= $content ?>
 
 <div class="public-footer">
-    &copy; <?= date('Y') ?> <?= Html::encode(Yii::$app->name) ?>. All rights reserved.
+    <div class="footer-brand"><?= Html::encode(Yii::$app->name) ?></div>
+    <div>Helping you find a place, made simple.</div>
+    <small>&copy; <?= date('Y') ?> <?= Html::encode(Yii::$app->name) ?>. All rights reserved.</small>
 </div>
 
 <script src="<?= Yii::getAlias('@web/lib/bootstrap/js/bootstrap.bundle.min.js') ?>"></script>
