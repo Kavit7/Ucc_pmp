@@ -14,7 +14,7 @@ use app\models\ListSource;
 use app\models\ChangePasswordForm;
 use app\models\Notification;
 use yii\data\ActiveDataProvider;
-use app\controllers\NotFoundHttpException;
+use yii\web\NotFoundHttpException;
 class CustomController extends Controller
 {
     public $layout = 'custom';
@@ -226,7 +226,7 @@ public function actionCreateLease()
         }
 
         // Save lease
-        if ($lease->save(false)) {
+        if ($lease->validate() && $lease->save(false)) {
 
     // Automatically create related bill
     $bill = new Bill();
@@ -365,7 +365,7 @@ public function actionCreateLease()
         // the same way, but this action was missing it entirely.
         $model->duration_months = $model->getDurationMonths();
 
-        if ($model->save(false)) {
+        if ($model->validate() && $model->save(false)) {
             // Close out the old lease so it stops counting as "active"
             // (double-counted occupancy/dashboard stats, and blocked new
             // leases on this property via the active-lease check).
@@ -735,6 +735,8 @@ protected function findModel($id)
         if (($model = Lease::findOne($id)) !== null) {
             return $model;
         }
+
+        throw new NotFoundHttpException('The requested lease does not exist.');
     }
 
 }
