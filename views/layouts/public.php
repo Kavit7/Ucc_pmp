@@ -86,6 +86,57 @@ $this->beginPage();
             color: var(--brand-dark);
         }
 
+        .public-nav {
+            display: flex;
+            align-items: center;
+            gap: 1.75rem;
+        }
+        .public-nav a {
+            color: rgba(255, 255, 255, 0.75);
+            text-decoration: none;
+            font-size: 0.9rem;
+            font-weight: 500;
+            transition: color 0.15s ease;
+        }
+        .public-nav a:hover { color: #fff; }
+
+        .public-header .account-icon {
+            width: 34px;
+            height: 34px;
+            border-radius: 50%;
+            border: 1px solid rgba(255, 255, 255, 0.25);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: rgba(255, 255, 255, 0.8);
+            text-decoration: none;
+            transition: all 0.15s ease;
+        }
+        .public-header .account-icon:hover {
+            background: #fff;
+            color: var(--brand-dark);
+        }
+
+        /* Breadcrumb */
+        .public-breadcrumb {
+            background: #fff;
+            border-bottom: 1px solid #eef0f4;
+        }
+        .public-breadcrumb .breadcrumb-inner {
+            max-width: 1180px;
+            margin: 0 auto;
+            padding: 0.65rem 1.5rem;
+            display: flex;
+            align-items: center;
+            gap: 0.55rem;
+            font-size: 0.82rem;
+            color: #64748b;
+        }
+        .public-breadcrumb a { color: #64748b; text-decoration: none; }
+        .public-breadcrumb a:hover { color: var(--brand); }
+        .public-breadcrumb i { font-size: 0.65rem; color: #cbd5e1; }
+        .public-breadcrumb span { color: #0f172a; font-weight: 600; }
+
         /* Footer */
         .public-footer {
             background: #14091c;
@@ -112,11 +163,26 @@ $this->beginPage();
 <?php $this->beginBody() ?>
 
 <div class="public-header">
-    <div class="brand">
+    <a href="<?= Url::to(['public-listing/index']) ?>" class="brand" style="text-decoration:none;">
         <span class="brand-icon"><i class="fas fa-building"></i></span>
         <span><?= Html::encode(Yii::$app->name) ?></span>
+    </a>
+    <nav class="public-nav d-none d-md-flex">
+        <a href="<?= Url::to(['public-listing/index']) ?>">Home</a>
+        <a href="<?= Url::to(['public-listing/index']) ?>#available">Browse Properties</a>
+    </nav>
+    <div class="d-flex align-items-center gap-3">
+        <a href="<?= Url::to(['login/login']) ?>" class="account-icon d-none d-sm-flex" title="Staff / Tenant Login"><i class="fas fa-user"></i></a>
+        <a href="<?= Url::to(['login/login']) ?>" class="login-btn"><i class="fas fa-user me-1 d-sm-none"></i> Staff / Tenant Login</a>
     </div>
-    <a href="<?= Url::to(['login/login']) ?>" class="login-btn"><i class="fas fa-user me-1"></i> Staff / Tenant Login</a>
+</div>
+
+<div class="public-breadcrumb">
+    <div class="breadcrumb-inner">
+        <a href="<?= Url::to(['public-listing/index']) ?>">Home</a>
+        <i class="fas fa-chevron-right"></i>
+        <span><?= Html::encode($this->title) ?></span>
+    </div>
 </div>
 
 <?= $content ?>

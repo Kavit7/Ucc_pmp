@@ -11,6 +11,7 @@ use yii\widgets\ListView;
 /** @var array $typeBreakdown */
 /** @var string[] $regionNames */
 /** @var array $typeOptions */
+/** @var string $q */
 /** @var int|string|null $selectedType */
 /** @var string|null $selectedRegion */
 /** @var string|null $minPrice */
@@ -135,6 +136,47 @@ foreach ($dataProvider->getModels() as $model) {
         from { opacity: 0; transform: translateY(18px); }
         to { opacity: 1; transform: translateY(0); }
     }
+
+    /* ---------- Sticky quick-search bar ---------- */
+    .quick-search-bar {
+        position: sticky;
+        top: 65px;
+        z-index: 40;
+        background: #fff;
+        border-bottom: 1px solid #eef0f4;
+        box-shadow: 0 2px 10px rgba(15, 23, 42, 0.05);
+    }
+    .quick-search-inner {
+        max-width: 1180px;
+        margin: 0 auto;
+        padding: 0.7rem 1.5rem;
+    }
+    .quick-search-inner form {
+        background: #f6f7fb;
+        border-radius: 12px;
+        padding: 0.35rem 0.35rem 0.35rem 1rem;
+    }
+    .quick-search-inner i.fa-magnifying-glass { color: #94a3b8; }
+    .quick-search-input {
+        border: none;
+        background: transparent;
+        flex: 1;
+        font-size: 0.92rem;
+        padding: 0.45rem 0.5rem;
+    }
+    .quick-search-input:focus { outline: none; box-shadow: none; }
+    .quick-search-btn {
+        border: none;
+        background: #4f46e5;
+        color: #fff;
+        font-weight: 600;
+        font-size: 0.85rem;
+        border-radius: 9px;
+        padding: 0.5rem 1.15rem;
+        white-space: nowrap;
+        transition: background 0.2s ease;
+    }
+    .quick-search-btn:hover { background: #4338ca; }
 
     /* ---------- Trust strip ---------- */
     .trust-strip {
@@ -317,6 +359,21 @@ foreach ($dataProvider->getModels() as $model) {
     </div>
 </div>
 
+<!-- Sticky quick-search bar -->
+<div class="quick-search-bar">
+    <div class="quick-search-inner">
+        <form method="get" action="<?= Url::to(['public-listing/index']) ?>" class="d-flex align-items-center gap-2">
+            <i class="fas fa-magnifying-glass"></i>
+            <input type="text" name="q" value="<?= Html::encode($q) ?>" class="quick-search-input" placeholder="Search properties by name...">
+            <?php if ($selectedType): ?><input type="hidden" name="type" value="<?= Html::encode($selectedType) ?>"><?php endif; ?>
+            <?php if ($selectedRegion): ?><input type="hidden" name="region" value="<?= Html::encode($selectedRegion) ?>"><?php endif; ?>
+            <?php if ($minPrice !== null && $minPrice !== ''): ?><input type="hidden" name="min_price" value="<?= Html::encode($minPrice) ?>"><?php endif; ?>
+            <?php if ($maxPrice !== null && $maxPrice !== ''): ?><input type="hidden" name="max_price" value="<?= Html::encode($maxPrice) ?>"><?php endif; ?>
+            <button type="submit" class="quick-search-btn"><i class="fas fa-search me-1"></i> Search</button>
+        </form>
+    </div>
+</div>
+
 <!-- Trust strip -->
 <div class="trust-strip">
     <div class="row g-2 text-center">
@@ -327,10 +384,11 @@ foreach ($dataProvider->getModels() as $model) {
     </div>
 </div>
 
-<div class="listing-wrap">
+<div class="listing-wrap" id="available">
     <h4 class="listing-heading">Available Now</h4>
 
     <form method="get" action="<?= Url::to(['public-listing/index']) ?>" class="filter-bar mb-4">
+        <?php if ($q !== ''): ?><input type="hidden" name="q" value="<?= Html::encode($q) ?>"><?php endif; ?>
         <div class="row g-2 align-items-center">
             <div class="col-6 col-md-3">
                 <select name="type" class="form-select filter-input" onchange="this.form.submit()">
@@ -356,7 +414,7 @@ foreach ($dataProvider->getModels() as $model) {
             </div>
             <div class="col-12 col-md-2 d-flex gap-2">
                 <button type="submit" class="btn btn-inquire flex-fill" style="margin-top:0;"><i class="fas fa-filter me-1"></i> Filter</button>
-                <?php if ($selectedType || $selectedRegion || $minPrice !== null && $minPrice !== '' || $maxPrice !== null && $maxPrice !== ''): ?>
+                <?php if ($q !== '' || $selectedType || $selectedRegion || $minPrice !== null && $minPrice !== '' || $maxPrice !== null && $maxPrice !== ''): ?>
                     <?= Html::a('<i class="fas fa-xmark"></i>', ['public-listing/index'], ['class' => 'btn btn-details', 'title' => 'Clear filters']) ?>
                 <?php endif; ?>
             </div>

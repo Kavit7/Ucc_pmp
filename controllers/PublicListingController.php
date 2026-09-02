@@ -59,6 +59,7 @@ class PublicListingController extends Controller
         $regionNames = array_values(array_filter($regionNames));
 
         // Filters - all optional, applied on top of the "currently vacant" base query.
+        $q = trim((string) Yii::$app->request->get('q'));
         $typeId = Yii::$app->request->get('type');
         $region = Yii::$app->request->get('region');
         $minPrice = Yii::$app->request->get('min_price');
@@ -69,6 +70,9 @@ class PublicListingController extends Controller
             ->andWhere(['not in', 'id', $occupiedLeaseSubquery])
             ->orderBy(['id' => SORT_DESC]);
 
+        if ($q !== '') {
+            $query->andWhere(['like', 'property.property_name', $q]);
+        }
         if ($typeId) {
             $query->andWhere(['property_type_id' => $typeId]);
         }
@@ -109,6 +113,7 @@ class PublicListingController extends Controller
             'typeBreakdown' => $typeBreakdown,
             'regionNames' => $regionNames,
             'typeOptions' => $typeOptions,
+            'q' => $q,
             'selectedType' => $typeId,
             'selectedRegion' => $region,
             'minPrice' => $minPrice,
