@@ -172,7 +172,11 @@ class MaintenanceController extends Controller
         if (Yii::$app->request->isPost) {
             $oldStatus = $model->status_id;
             $model->status_id = Yii::$app->request->post('status_id', $model->status_id);
-            $model->assigned_to = Yii::$app->request->post('assigned_to') ?: null;
+            $assignedTo = Yii::$app->request->post('assigned_to') ?: null;
+            if ($assignedTo !== null && !array_key_exists($assignedTo, $technicians)) {
+                throw new ForbiddenHttpException('Requests can only be assigned to a technician.');
+            }
+            $model->assigned_to = $assignedTo;
 
             $resolvedStatusId = ListSource::find()->where(['list_Name' => 'Resolved', 'parent_id' => $statusParentId])->select('id')->scalar();
             if ($model->status_id == $resolvedStatusId && $oldStatus != $resolvedStatusId) {

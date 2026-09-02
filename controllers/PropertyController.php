@@ -571,6 +571,11 @@ public function actionDelete($id)
         return $this->redirect(['index']);
     }
 
+    if (\app\models\MaintenanceRequest::find()->where(['property_id' => $id])->exists()) {
+        Yii::$app->session->setFlash('error', 'This property has maintenance request history and cannot be deleted. Mark it inactive instead.');
+        return $this->redirect(['index']);
+    }
+
     if ($model->document_url) {
         $fullPath = Yii::getAlias('@webroot/' . $model->document_url);
         if (file_exists($fullPath)) {
