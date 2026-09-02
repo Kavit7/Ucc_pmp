@@ -18,26 +18,28 @@ $showPropertyMix = in_array($role, ['admin', 'manager']);
 $showLeaseTable = in_array($role, ['admin', 'manager', 'accountant']);
 $showMaintenance = in_array($role, ['admin', 'manager', 'technician']);
 $showExpiryAlert = in_array($role, ['admin', 'manager', 'accountant']);
+$roleLabel = $role ? ucfirst($role) : null;
 ?>
 
 <div class="container-fluid mt-4 body dash">
     <!-- Header -->
-    <div class="dash-header d-flex justify-content-between align-items-center flex-wrap mb-4">
+    <div class="dash-hero mb-4">
         <div>
-            <h2 class="mb-1"><?= $greeting ?>, <?= Html::encode(explode(' ', $user->full_name)[0] ?? 'there') ?> 👋</h2>
-            <p class="text-muted mb-0"><?= date('l, F j, Y') ?> &middot; here's what's happening today.</p>
+            <span class="dash-hero-eyebrow"><?= Html::encode(date('l, F j, Y')) ?><?= $roleLabel ? ' &middot; ' . Html::encode($roleLabel) . ' view' : '' ?></span>
+            <h2 class="mb-1"><?= $greeting ?>, <?= Html::encode(explode(' ', $user->full_name)[0] ?? 'there') ?> <span class="wave">👋</span></h2>
+            <p class="mb-0">Here's what's happening across your portfolio today.</p>
         </div>
-        <div class="d-flex gap-2 flex-wrap mt-3 mt-md-0">
+        <div class="d-flex gap-2 flex-wrap mt-3 mt-lg-0">
             <?php if (in_array($role, ['admin', 'manager'])): ?>
-                <?= Html::a('<i class="fas fa-plus me-1"></i> Add Property', ['property/create'], ['class' => 'btn btn-sm btn-primary']) ?>
-                <?= Html::a('<i class="fas fa-file-signature me-1"></i> New Lease', ['custom/create-lease'], ['class' => 'btn btn-sm btn-outline-primary']) ?>
-                <?= Html::a('<i class="fas fa-user-plus me-1"></i> Add User', ['users/create'], ['class' => 'btn btn-sm btn-outline-secondary']) ?>
+                <?= Html::a('<i class="fas fa-plus me-1"></i> Add Property', ['property/create'], ['class' => 'btn btn-sm btn-hero-primary']) ?>
+                <?= Html::a('<i class="fas fa-file-signature me-1"></i> New Lease', ['custom/create-lease'], ['class' => 'btn btn-sm btn-hero-outline']) ?>
+                <?= Html::a('<i class="fas fa-user-plus me-1"></i> Add User', ['users/create'], ['class' => 'btn btn-sm btn-hero-outline']) ?>
             <?php endif; ?>
             <?php if ($showMaintenance): ?>
-                <?= Html::a('<i class="fas fa-tools me-1"></i> Maintenance', ['maintenance/index'], ['class' => 'btn btn-sm btn-outline-secondary']) ?>
+                <?= Html::a('<i class="fas fa-tools me-1"></i> Maintenance', ['maintenance/index'], ['class' => 'btn btn-sm btn-hero-outline']) ?>
             <?php endif; ?>
             <?php if ($showRevenue): ?>
-                <?= Html::a('<i class="fas fa-chart-bar me-1"></i> Reports', ['report/index'], ['class' => 'btn btn-sm btn-outline-secondary']) ?>
+                <?= Html::a('<i class="fas fa-chart-bar me-1"></i> Reports', ['report/index'], ['class' => 'btn btn-sm btn-hero-outline']) ?>
             <?php endif; ?>
         </div>
     </div>
@@ -143,9 +145,9 @@ $showExpiryAlert = in_array($role, ['admin', 'manager', 'accountant']);
     <div class="row mt-4 g-3">
         <?php if ($showRevenue): ?>
             <div class="col-lg-<?= $showPropertyMix ? '6' : '12' ?>">
-                <div class="card shadow-sm border-0 h-100">
+                <div class="card shadow-sm border-0 h-100 chart-card">
                     <div class="card-body">
-                        <h6 class="card-title">Revenue Trend (last 6 months)</h6>
+                        <h6 class="card-title"><i class="fas fa-chart-line"></i> Revenue Trend (last 6 months)</h6>
                         <canvas id="revenueChart" style="max-height:240px;"></canvas>
                     </div>
                 </div>
@@ -153,26 +155,26 @@ $showExpiryAlert = in_array($role, ['admin', 'manager', 'accountant']);
         <?php endif; ?>
         <?php if ($showPropertyMix): ?>
             <div class="col-lg-<?= $showRevenue ? '6' : '6' ?>">
-                <div class="card shadow-sm border-0 h-100">
+                <div class="card shadow-sm border-0 h-100 chart-card">
                     <div class="card-body">
-                        <h6 class="card-title">Properties by Type</h6>
+                        <h6 class="card-title"><i class="fas fa-layer-group"></i> Properties by Type</h6>
                         <canvas id="propertyChart1" style="max-height:220px;"></canvas>
                     </div>
                 </div>
             </div>
             <div class="col-lg-6">
-                <div class="card shadow-sm border-0 h-100">
+                <div class="card shadow-sm border-0 h-100 chart-card">
                     <div class="card-body">
-                        <h6 class="card-title">Properties by Status</h6>
+                        <h6 class="card-title"><i class="fas fa-chart-simple"></i> Properties by Status</h6>
                         <canvas id="propertyChart2" style="max-height:220px;"></canvas>
                     </div>
                 </div>
             </div>
         <?php elseif ($showMaintenance): ?>
             <div class="col-lg-6">
-                <div class="card shadow-sm border-0 h-100">
+                <div class="card shadow-sm border-0 h-100 chart-card">
                     <div class="card-body">
-                        <h6 class="card-title">Properties by Status</h6>
+                        <h6 class="card-title"><i class="fas fa-chart-simple"></i> Properties by Status</h6>
                         <canvas id="propertyChart2" style="max-height:220px;"></canvas>
                     </div>
                 </div>
@@ -187,7 +189,7 @@ $showExpiryAlert = in_array($role, ['admin', 'manager', 'accountant']);
             <div class="card shadow-sm border-0">
                 <div class="card-body">
                     <div class="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-2">
-                        <h6 class="card-title mb-0">Recent Leases</h6>
+                        <h6 class="card-title mb-0"><i class="fas fa-file-signature"></i> Recent Leases</h6>
                         <div class="d-flex align-items-center gap-2">
                             <div class="position-relative" style="max-width: 200px;">
                                 <i class="bi bi-search position-absolute" style="left: 10px; top: 50%; transform: translateY(-50%); color:#939292; font-size:0.85rem;"></i>
@@ -219,7 +221,7 @@ $showExpiryAlert = in_array($role, ['admin', 'manager', 'accountant']);
                                         <td>TZS <?= number_format($row['price'], 2) ?></td>
                                         <td><?= Html::encode($row['start_date']) ?></td>
                                         <td><?= Html::encode($row['end_date']) ?></td>
-                                        <td><span class="badge bg-light text-dark border"><?= Html::encode($row['status_name'] ?? '-') ?></span></td>
+                                        <td><span class="status-pill status-pill-<?= Html::encode(strtolower(preg_replace('/[^a-z0-9]+/i', '-', $row['status_name'] ?? 'unknown'))) ?>"><?= Html::encode($row['status_name'] ?? '-') ?></span></td>
                                     </tr>
                                 <?php endforeach; ?>
                                 <?php if (empty($recentLeases)): ?>
@@ -237,7 +239,7 @@ $showExpiryAlert = in_array($role, ['admin', 'manager', 'accountant']);
             <div class="card shadow-sm border-0 h-100">
                 <div class="card-body">
                     <div class="d-flex justify-content-between align-items-center mb-3">
-                        <h6 class="card-title mb-0">Recent Activity</h6>
+                        <h6 class="card-title mb-0"><i class="fas fa-bell"></i> Recent Activity</h6>
                         <?= Html::a('View all', ['custom/notifications'], ['class' => 'btn btn-sm btn-link text-decoration-none']) ?>
                     </div>
                     <div class="activity-feed">
@@ -266,7 +268,43 @@ $showExpiryAlert = in_array($role, ['admin', 'manager', 'accountant']);
 
 <style>
     .dash { font-family: 'Inter', 'Roboto', sans-serif; }
-    .dash-header h2 { color: #111827; font-weight: 700; }
+
+    /* Hero header */
+    .dash-hero {
+        background: linear-gradient(135deg, #14091c 0%, #1e1030 55%, #3730a3 100%);
+        border-radius: 18px;
+        padding: 1.75rem 2rem;
+        color: #fff;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        flex-wrap: wrap;
+        gap: 1rem;
+        box-shadow: 0 12px 30px rgba(30, 16, 48, 0.22);
+    }
+    .dash-hero-eyebrow {
+        display: block;
+        text-transform: uppercase;
+        letter-spacing: 0.08em;
+        font-size: 0.7rem;
+        font-weight: 700;
+        color: #c4b5fd;
+        margin-bottom: 0.35rem;
+    }
+    .dash-hero h2 { color: #fff; font-weight: 700; margin: 0 0 0.3rem; }
+    .dash-hero p { color: rgba(255, 255, 255, 0.72); margin: 0; font-size: 0.9rem; }
+    .dash-hero .wave { display: inline-block; animation: dash-wave 2.2s ease-in-out infinite; transform-origin: 70% 70%; }
+    @keyframes dash-wave {
+        0%, 60%, 100% { transform: rotate(0deg); }
+        10% { transform: rotate(14deg); }
+        20% { transform: rotate(-8deg); }
+        30% { transform: rotate(14deg); }
+        40% { transform: rotate(-4deg); }
+    }
+    .btn-hero-primary { background: #fff; color: #3730a3; border: none; border-radius: 999px; font-weight: 600; }
+    .btn-hero-primary:hover { background: #eef2ff; color: #3730a3; }
+    .btn-hero-outline { background: rgba(255, 255, 255, 0.08); color: #fff; border: 1px solid rgba(255, 255, 255, 0.35); border-radius: 999px; }
+    .btn-hero-outline:hover { background: rgba(255, 255, 255, 0.18); color: #fff; border-color: rgba(255, 255, 255, 0.55); }
 
     .stat-card {
         background: #fff;
@@ -277,7 +315,9 @@ $showExpiryAlert = in_array($role, ['admin', 'manager', 'accountant']);
         align-items: center;
         gap: 0.9rem;
         height: 100%;
+        transition: transform 0.18s ease, box-shadow 0.18s ease;
     }
+    .stat-card:hover { transform: translateY(-3px); box-shadow: 0 10px 24px rgba(15, 23, 42, 0.10); }
     .stat-icon {
         width: 46px;
         height: 46px;
@@ -302,6 +342,26 @@ $showExpiryAlert = in_array($role, ['admin', 'manager', 'accountant']);
     }
     .expiry-list { display: flex; flex-direction: column; gap: 4px; }
     .expiry-row { display: flex; justify-content: space-between; font-size: 0.85rem; padding: 3px 0; }
+
+    .chart-card .card-title, .card-title { color: #111827; font-weight: 700; font-size: 0.95rem; }
+    .chart-card .card-title i { color: #4f46e5; margin-right: 0.4rem; }
+
+    .status-pill {
+        display: inline-block;
+        font-size: 0.7rem;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.03em;
+        padding: 0.28rem 0.65rem;
+        border-radius: 999px;
+        color: #fff;
+        background: #64748b;
+    }
+    .status-pill-active { background: #16a34a; }
+    .status-pill-paid { background: #16a34a; }
+    .status-pill-pending { background: #f59e0b; }
+    .status-pill-terminated { background: #dc2626; }
+    .status-pill-renewed { background: #4f46e5; }
 
     .activity-feed { max-height: 340px; overflow-y: auto; }
     .activity-item { display: flex; gap: 0.7rem; padding: 0.6rem 0; border-bottom: 1px solid #f1f5f9; }
