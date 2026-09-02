@@ -117,26 +117,6 @@ $this->beginPage();
             color: var(--brand-dark);
         }
 
-        /* Breadcrumb */
-        .public-breadcrumb {
-            background: #fff;
-            border-bottom: 1px solid #eef0f4;
-        }
-        .public-breadcrumb .breadcrumb-inner {
-            max-width: 1180px;
-            margin: 0 auto;
-            padding: 0.65rem 1.5rem;
-            display: flex;
-            align-items: center;
-            gap: 0.55rem;
-            font-size: 0.82rem;
-            color: #64748b;
-        }
-        .public-breadcrumb a { color: #64748b; text-decoration: none; }
-        .public-breadcrumb a:hover { color: var(--brand); }
-        .public-breadcrumb i { font-size: 0.65rem; color: #cbd5e1; }
-        .public-breadcrumb span { color: #0f172a; font-weight: 600; }
-
         /* Footer */
         .public-footer {
             background: #14091c;
@@ -174,14 +154,6 @@ $this->beginPage();
     <div class="d-flex align-items-center gap-3">
         <a href="<?= Url::to(['login/login']) ?>" class="account-icon d-none d-sm-flex" title="Staff / Tenant Login"><i class="fas fa-user"></i></a>
         <a href="<?= Url::to(['login/login']) ?>" class="login-btn"><i class="fas fa-user me-1 d-sm-none"></i> Staff / Tenant Login</a>
-    </div>
-</div>
-
-<div class="public-breadcrumb">
-    <div class="breadcrumb-inner">
-        <a href="<?= Url::to(['public-listing/index']) ?>">Home</a>
-        <i class="fas fa-chevron-right"></i>
-        <span><?= Html::encode($this->title) ?></span>
     </div>
 </div>
 
