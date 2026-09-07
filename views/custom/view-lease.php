@@ -87,7 +87,16 @@ $this->title = 'Tenant Leases';
                         <div class="col-2">
                             <span class="badge rounded-pill px-3 py-2 <?= $statusClass ?>"><?= Html::encode($statusName) ?></span>
                         </div>
-                        <div class="col-2 d-flex gap-2">
+                        <div class="col-2 d-flex flex-column gap-1">
+                            <?php if ((int) $lease->tenant_id === (int) (Yii::$app->user->id ?? 0)): ?>
+                                <?php if ($lease->tenant_signed_at): ?>
+                                    <span class="badge rounded-pill bg-success-subtle text-success border border-success-subtle align-self-start">
+                                        <i class="fas fa-signature me-1"></i>Signed <?= Html::encode(Yii::$app->formatter->asDate($lease->tenant_signed_at, 'php:M j, Y')) ?>
+                                    </span>
+                                <?php else: ?>
+                                    <?= Html::a('<i class="fas fa-signature me-1"></i>Sign Lease', ['sign-lease', 'id' => $lease->id], ['class' => 'btn btn-primary btn-sm px-3']) ?>
+                                <?php endif; ?>
+                            <?php endif; ?>
                             <?= Html::a('Re-new', ['renew', 'id' => $lease->id], ['class' => 'btn btn-outline-primary btn-sm px-3']) ?>
                         </div>
                     </div>

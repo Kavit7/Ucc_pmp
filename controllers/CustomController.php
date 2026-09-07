@@ -30,7 +30,7 @@ class CustomController extends Controller
         return [
             'access' => [
                 'class' => AccessControl::class,
-                'only' => ['index','logout','leases','create-lease','delete-lease','bill','payment','record-payment','manage-deposit','profile','upload-profile-picture','change-password','check-current-password','notifications','read-notification','mark-all-notifications-read','settings','update-settings','enable-2fa','disable-2fa','inquiries','view-lease','renew','get-prices','terminate','delete-bill'],
+                'only' => ['index','logout','leases','create-lease','delete-lease','bill','payment','record-payment','manage-deposit','profile','upload-profile-picture','change-password','check-current-password','notifications','read-notification','mark-all-notifications-read','settings','update-settings','enable-2fa','disable-2fa','inquiries','view-lease','renew','get-prices','terminate','delete-bill','sign-lease'],
                 'rules' => [
                     [
                         'allow' => true,
@@ -64,6 +64,19 @@ class CustomController extends Controller
                     ],
                     [
                         'allow' => true,
+                        'actions' => ['sign-lease'],
+                        'roles' => ['@'],
+                        'matchCallback' => function () {
+                            // Only the actual tenant on the lease may sign it -
+                            // not even admin/manager, the same way a real
+                            // signature can't be entered on someone else's behalf.
+                            $id = Yii::$app->request->get('id');
+                            $lease = $id ? \app\models\Lease::findOne($id) : null;
+                            return $lease && (int) $lease->tenant_id === (int) Yii::$app->user->id;
+                        },
+                    ],
+                    [
+                        'allow' => true,
                         'actions' => ['index', 'logout', 'leases', 'bill', 'payment', 'profile', 'upload-profile-picture', 'change-password', 'check-current-password', 'notifications', 'read-notification', 'mark-all-notifications-read', 'settings', 'update-settings', 'enable-2fa', 'disable-2fa'],
                         'roles' => ['@'],
                     ],
@@ -80,6 +93,7 @@ class CustomController extends Controller
                     'delete-lease' => ['post'],
                     'record-payment' => ['get', 'post'], // GET shows the form, POST submits it
                     'manage-deposit' => ['get', 'post'],
+                    'sign-lease' => ['get', 'post'],
                     'upload-profile-picture' => ['post'],
                     'terminate' => ['post'],
                     'delete-bill' => ['post'],
@@ -337,6 +351,33 @@ public function actionCreateLease()
         'tname'=>$tname,
     ]);
  }
+
+    /**
+     * Tenant e-signature capture: a drawn signature (canvas, saved as PNG)
+     * marks the lease signed. Only the tenant the lease belongs to can
+     * reach this - enforced in behaviors(), not just in the view.
+     */
+    public function actionSignLease($id)
+    {
+        $lease = $this->findModel($id);
+
+        if ($lease->tenant_signed_at) {
+            Yii::$app->session->setFlash('success', 'This lease is already signed.');
+            return $this->redirect(['view-lease', 'tenant' => $lease->tenant_id]);
+        }
+
+        if (Yii::$app->request->isPost) {
+            $dataUrl = Yii::$app->request->post('signature_data');
+            if ($lease->saveTenantSignature($dataUrl)) {
+                Yii::$app->session->setFlash('success', 'Lease signed. Thank you.');
+                return $this->redirect(['view-lease', 'tenant' => $lease->tenant_id]);
+            }
+            Yii::$app->session->setFlash('error', $lease->getFirstError('tenant_signature_url') ?: 'Could not save your signature. Please try again.');
+        }
+
+        return $this->render('sign-lease', ['lease' => $lease]);
+    }
+
  public function actionRenew($id)
 {
     $oldLease = $this->findModel($id);

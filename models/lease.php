@@ -151,6 +151,40 @@ class Lease extends ActiveRecord
         return true;
     }
 
+    /**
+     * Saves a base64-encoded PNG signature (as produced by a canvas
+     * signature pad) and marks the lease signed. Rejects anything that
+     * doesn't decode to a real, reasonably-sized PNG.
+     */
+    public function saveTenantSignature($dataUrl)
+    {
+        if (!preg_match('/^data:image\/png;base64,(.+)$/', (string) $dataUrl, $matches)) {
+            $this->addError('tenant_signature_url', 'That signature could not be read. Please try signing again.');
+            return false;
+        }
+
+        $binary = base64_decode($matches[1], true);
+        if ($binary === false || strlen($binary) < 100 || strlen($binary) > 1024 * 1024) {
+            $this->addError('tenant_signature_url', 'That signature looks empty or too large. Please try again.');
+            return false;
+        }
+
+        $folder = Yii::getAlias('@webroot/uploads/signatures/');
+        if (!is_dir($folder)) {
+            mkdir($folder, 0777, true);
+        }
+
+        $fileName = 'sig_' . $this->id . '_' . Yii::$app->security->generateRandomString(10) . '.png';
+        if (file_put_contents($folder . $fileName, $binary) === false) {
+            $this->addError('tenant_signature_url', 'Could not save the signature. Please try again.');
+            return false;
+        }
+
+        $this->tenant_signature_url = 'uploads/signatures/' . $fileName;
+        $this->tenant_signed_at = date('Y-m-d H:i:s');
+        return $this->save(false, ['tenant_signature_url', 'tenant_signed_at']);
+    }
+
     public function getDurationMonths()
     {
         if ($this->lease_start_date && $this->lease_end_date) {
