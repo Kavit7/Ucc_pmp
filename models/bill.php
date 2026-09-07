@@ -4,6 +4,7 @@ namespace app\models;
 use Yii;
 use yii\db\ActiveRecord;
 use app\components\AuditLogBehavior;
+use app\components\Ledger;
 
 class Bill extends ActiveRecord
 {
@@ -67,6 +68,23 @@ class Bill extends ActiveRecord
         $bill->bill_status = $pendingStatusId ?: null;
         $bill->created_by = $createdBy;
 
-        return $bill->save(false) ? $bill : null;
+        if (!$bill->save(false)) {
+            return null;
+        }
+
+        // Rent is earned as soon as it's billed: debit what's owed to us,
+        // credit the income. Never blocks the bill itself from saving.
+        Ledger::postSafely(
+            date('Y-m-d'),
+            "Rent billed: lease #{$leaseId}",
+            [
+                ['account' => '1100', 'debit' => $amount],
+                ['account' => '4000', 'credit' => $amount],
+            ],
+            'bill',
+            $bill->id
+        );
+
+        return $bill;
     }
 }

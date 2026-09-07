@@ -732,6 +732,17 @@ $currentRoute = Yii::$app->controller->getRoute();
         </a>
     <?php endif; ?>
 
+    <?php if (in_array(Yii::$app->user->identity->role, ['admin', 'manager', 'accountant'], true)): ?>
+        <a class="nav-link <?= strpos($currentRoute, 'gl') !== false ? 'active' : '' ?>" href="<?= \yii\helpers\Url::to(['gl/index']) ?>">
+            <i class="fas fa-scale-balanced" style="color:#a3e635;"></i>
+            <span>Accounting</span>
+        </a>
+        <a class="nav-link <?= strpos($currentRoute, 'expense') !== false ? 'active' : '' ?>" href="<?= \yii\helpers\Url::to(['expense/index']) ?>">
+            <i class="fas fa-receipt" style="color:#f97316;"></i>
+            <span>Expenses</span>
+        </a>
+    <?php endif; ?>
+
         <a class="nav-link <?= strpos($currentRoute, 'custom/profile') !== false ? 'active' : '' ?>" href="<?= \yii\helpers\Url::to(['custom/profile']) ?>">
             <i class="fas fa-user-circle" style="color:#cbd5e1;"></i>
             <span>Profile</span>

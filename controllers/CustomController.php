@@ -812,6 +812,17 @@ if ($model !== null) {
                 $propertyName = $bill->lease->property->property_name ?? 'a property';
                 $amount = number_format($bill->amount, 2);
 
+                \app\components\Ledger::postSafely(
+                    $paidDate,
+                    "Rent collected: {$propertyName}",
+                    [
+                        ['account' => '1000', 'debit' => $bill->amount],
+                        ['account' => '1100', 'credit' => $bill->amount],
+                    ],
+                    'payment',
+                    $bill->id
+                );
+
                 Notification::notify(
                     $bill->lease->tenant_id ?? null,
                     'Payment recorded',
