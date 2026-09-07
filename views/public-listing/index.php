@@ -93,9 +93,9 @@ foreach ($dataProvider->getModels() as $model) {
         color: #fff;
         padding: 3rem 1.5rem;
     }
-    .hero-slide-1 { background: linear-gradient(135deg, #1e1030 0%, #3730a3 55%, #4f46e5 100%); }
-    .hero-slide-2 { background: linear-gradient(135deg, #0f172a 0%, #1e3a8a 55%, #0ea5e9 100%); }
-    .hero-slide-3 { background: linear-gradient(135deg, #1e1030 0%, #6d28d9 55%, #a855f7 100%); }
+    .hero-slide-1 { background: #1e1030; }
+    .hero-slide-2 { background: #0f172a; }
+    .hero-slide-3 { background: #3730a3; }
 
     .hero-content { max-width: 620px; animation: heroFadeUp 0.8s ease both; }
     .hero-content .hero-icon {
@@ -247,7 +247,7 @@ foreach ($dataProvider->getModels() as $model) {
         box-shadow: 0 12px 32px rgba(79, 70, 229, 0.18);
     }
 
-    .property-photo { position: relative; height: 190px; overflow: hidden; background: linear-gradient(135deg, #e0e7ff, #ddd6fe); }
+    .property-photo { position: relative; height: 190px; overflow: hidden; background: #eef2ff; }
     .property-photo img { width: 100%; height: 100%; object-fit: cover; transition: transform 0.4s ease; }
     .property-card:hover .property-photo img { transform: scale(1.08); }
     .property-photo .no-photo { width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; color: #818cf8; font-size: 2.5rem; }
@@ -296,9 +296,9 @@ foreach ($dataProvider->getModels() as $model) {
 
     /* ---------- Modals ---------- */
     .modal-content { border-radius: 16px; border: none; overflow: hidden; }
-    .modal-header-gradient { background: linear-gradient(135deg, #1e1030, #4f46e5); color: #fff; border: none; }
+    .modal-header-brand { background: #1e1030; color: #fff; border: none; }
     #detailsModal .details-photo {
-        height: 260px; background: linear-gradient(135deg, #e0e7ff, #ddd6fe);
+        height: 260px; background: #eef2ff;
         display: flex; align-items: center; justify-content: center; overflow: hidden;
     }
     #detailsModal .details-photo img { width: 100%; height: 100%; object-fit: cover; }
@@ -471,7 +471,7 @@ foreach ($dataProvider->getModels() as $model) {
 <div class="modal fade" id="detailsModal" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered modal-lg">
         <div class="modal-content">
-            <div class="modal-header modal-header-gradient">
+            <div class="modal-header modal-header-brand">
                 <h5 class="modal-title" id="details-name"></h5>
                 <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
             </div>
@@ -507,7 +507,7 @@ foreach ($dataProvider->getModels() as $model) {
                     <input type="text" name="website" tabindex="-1" autocomplete="off">
                 </div>
 
-                <div class="modal-header modal-header-gradient">
+                <div class="modal-header modal-header-brand">
                     <h5 class="modal-title"><i class="fas fa-paper-plane me-2"></i>Inquire about <span id="inquire-property-name"></span></h5>
                     <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
                 </div>

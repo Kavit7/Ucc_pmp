@@ -36,7 +36,7 @@ $this->beginPage();
 
         /* Header */
         .public-header {
-            background: linear-gradient(135deg, #14091c 0%, #1e1030 100%);
+            background: #1e1030;
             color: #fff;
             padding: 0.9rem 1.75rem;
             display: flex;
@@ -61,7 +61,7 @@ $this->beginPage();
             width: 38px;
             height: 38px;
             border-radius: 10px;
-            background: linear-gradient(135deg, var(--brand), #8b5cf6);
+            background: var(--brand);
             display: flex;
             align-items: center;
             justify-content: center;
