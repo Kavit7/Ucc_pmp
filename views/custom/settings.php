@@ -36,6 +36,42 @@ $this->registerJsFile(Yii::getAlias('@web/lib/sweetalert2/sweetalert2.min.js'));
         </div>
     </div>
 
+    <div class="card shadow-sm border-0 mb-4">
+        <div class="card-body p-4">
+            <h5 class="mb-3">Two-Factor Authentication</h5>
+            <?php if ($user->totp_enabled): ?>
+                <p class="text-success mb-3"><i class="fas fa-circle-check me-2"></i>Enabled. You'll be asked for a code from your authenticator app each time you log in.</p>
+                <button type="button" class="btn btn-outline-danger btn-sm" data-bs-toggle="modal" data-bs-target="#disable2faModal">Disable</button>
+            <?php else: ?>
+                <p class="text-muted mb-3">Not enabled. Add a second step to your login using an authenticator app (Google Authenticator, Authy, etc.).</p>
+                <?= Html::a('Enable Two-Factor Authentication', ['custom/enable-2fa'], ['class' => 'btn btn-primary btn-sm']) ?>
+            <?php endif; ?>
+        </div>
+    </div>
+
+    <?php if ($user->totp_enabled): ?>
+    <div class="modal fade" id="disable2faModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <?= Html::beginForm(['custom/disable-2fa'], 'post') ?>
+                    <div class="modal-header">
+                        <h5 class="modal-title">Disable Two-Factor Authentication</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                    </div>
+                    <div class="modal-body">
+                        <label class="form-label">Confirm your current password</label>
+                        <?= Html::passwordInput('currentPassword', '', ['class' => 'form-control', 'required' => true]) ?>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancel</button>
+                        <button type="submit" class="btn btn-danger">Disable</button>
+                    </div>
+                <?= Html::endForm() ?>
+            </div>
+        </div>
+    </div>
+    <?php endif; ?>
+
     <div class="card shadow-sm border-0">
         <div class="card-body p-4">
             <h5 class="mb-3">Account</h5>

@@ -15,6 +15,9 @@ use app\models\ChangePasswordForm;
 use app\models\Notification;
 use yii\data\ActiveDataProvider;
 use yii\web\NotFoundHttpException;
+use OTPHP\TOTP;
+use Endroid\QrCode\Builder\Builder;
+use Endroid\QrCode\Writer\SvgWriter;
 class CustomController extends Controller
 {
     public $layout = 'custom';
@@ -27,7 +30,7 @@ class CustomController extends Controller
         return [
             'access' => [
                 'class' => AccessControl::class,
-                'only' => ['index','logout','leases','create-lease','delete-lease','bill','payment','record-payment','manage-deposit','profile','upload-profile-picture','change-password','check-current-password','notifications','read-notification','mark-all-notifications-read','settings','update-settings','inquiries','view-lease','renew','get-prices','terminate','delete-bill'],
+                'only' => ['index','logout','leases','create-lease','delete-lease','bill','payment','record-payment','manage-deposit','profile','upload-profile-picture','change-password','check-current-password','notifications','read-notification','mark-all-notifications-read','settings','update-settings','enable-2fa','disable-2fa','inquiries','view-lease','renew','get-prices','terminate','delete-bill'],
                 'rules' => [
                     [
                         'allow' => true,
@@ -61,7 +64,7 @@ class CustomController extends Controller
                     ],
                     [
                         'allow' => true,
-                        'actions' => ['index', 'logout', 'leases', 'bill', 'payment', 'profile', 'upload-profile-picture', 'change-password', 'check-current-password', 'notifications', 'read-notification', 'mark-all-notifications-read', 'settings', 'update-settings'],
+                        'actions' => ['index', 'logout', 'leases', 'bill', 'payment', 'profile', 'upload-profile-picture', 'change-password', 'check-current-password', 'notifications', 'read-notification', 'mark-all-notifications-read', 'settings', 'update-settings', 'enable-2fa', 'disable-2fa'],
                         'roles' => ['@'],
                     ],
                 ],
@@ -80,6 +83,7 @@ class CustomController extends Controller
                     'upload-profile-picture' => ['post'],
                     'terminate' => ['post'],
                     'delete-bill' => ['post'],
+                    'disable-2fa' => ['post'],
                 ],
             ],
         ];
@@ -576,6 +580,85 @@ if ($model !== null) {
         $user->save(false, ['notifications_enabled']);
 
         Yii::$app->session->setFlash('success', 'Settings saved.');
+        return $this->redirect(['custom/settings']);
+    }
+
+    /**
+     * Two-factor authentication setup: shows a QR code (rendered locally,
+     * no external service) for a pending secret, and confirms it by
+     * requiring one valid code before turning 2FA on for the account.
+     */
+    public function actionEnable2fa()
+    {
+        $user = Yii::$app->user->identity;
+
+        if ($user->totp_enabled) {
+            Yii::$app->session->setFlash('success', 'Two-factor authentication is already enabled.');
+            return $this->redirect(['custom/settings']);
+        }
+
+        if (Yii::$app->request->isPost) {
+            $code = trim((string) Yii::$app->request->post('code'));
+            $secret = Yii::$app->session->get('2fa_setup_secret');
+            if ($secret && $code !== '') {
+                $totp = TOTP::createFromSecret($secret);
+                if ($totp->verify($code, null, 1)) {
+                    $user->totp_secret = $secret;
+                    $user->totp_enabled = 1;
+                    $user->save(false, ['totp_secret', 'totp_enabled']);
+                    Yii::$app->session->remove('2fa_setup_secret');
+                    Yii::$app->session->setFlash('success', 'Two-factor authentication is now enabled.');
+                    return $this->redirect(['custom/settings']);
+                }
+            }
+            Yii::$app->session->setFlash('error', 'That code did not match. Please try again.');
+        }
+
+        $secret = Yii::$app->session->get('2fa_setup_secret');
+        if (!$secret) {
+            // 20 raw bytes -> a 32-character base32 secret, the standard
+            // length authenticator apps (Google Authenticator, Authy) expect.
+            $secret = TOTP::generate(null, 20)->getSecret();
+            Yii::$app->session->set('2fa_setup_secret', $secret);
+        }
+
+        $totp = TOTP::createFromSecret($secret);
+        $totp->setLabel($user->email);
+        $totp->setIssuer(Yii::$app->name);
+
+        $qrSvg = Builder::create()
+            ->writer(new SvgWriter())
+            ->data($totp->getProvisioningUri())
+            ->size(220)
+            ->margin(8)
+            ->build()
+            ->getString();
+
+        return $this->render('enable-2fa', [
+            'secret' => $secret,
+            'qrSvg' => $qrSvg,
+        ]);
+    }
+
+    /**
+     * Turns two-factor authentication off. Requires the current password
+     * so a hijacked, still-logged-in session can't silently disable it.
+     */
+    public function actionDisable2fa()
+    {
+        $user = Yii::$app->user->identity;
+        $password = (string) Yii::$app->request->post('currentPassword');
+
+        if (!$user->validatePassword($password)) {
+            Yii::$app->session->setFlash('error', 'Current password is incorrect. Two-factor authentication was not disabled.');
+            return $this->redirect(['custom/settings']);
+        }
+
+        $user->totp_enabled = 0;
+        $user->totp_secret = null;
+        $user->save(false, ['totp_enabled', 'totp_secret']);
+
+        Yii::$app->session->setFlash('success', 'Two-factor authentication has been disabled.');
         return $this->redirect(['custom/settings']);
     }
 

@@ -41,13 +41,28 @@ class LoginForm extends Model
         }
     }
 
+    /**
+     * Validates credentials and logs in, unless the account has two-factor
+     * authentication enabled - in that case login is deferred and the
+     * pending state is stashed in session for LoginController::actionVerify2fa()
+     * to complete once the user supplies a valid TOTP code.
+     *
+     * @return bool|string true/false on a normal login attempt, or the
+     * string 'pending_2fa' when a code is still required.
+     */
     public function login()
     {
         if ($this->validate()) {
-            return Yii::$app->user->login(
-                $this->getUser(),
-                $this->rememberMe ? 3600*24*30 : 0
-            );
+            $user = $this->getUser();
+            $duration = $this->rememberMe ? 3600 * 24 * 30 : 0;
+
+            if ($user->totp_enabled) {
+                Yii::$app->session->set('2fa_pending_uid', $user->user_id);
+                Yii::$app->session->set('2fa_remember_duration', $duration);
+                return 'pending_2fa';
+            }
+
+            return Yii::$app->user->login($user, $duration);
         }
         return false;
     }

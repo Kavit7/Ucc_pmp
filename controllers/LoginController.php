@@ -11,6 +11,8 @@ use yii\filters\VerbFilter;
 use app\models\LoginForm;
 use app\models\PasswordResetRequestForm;
 use app\models\ResetPasswordForm;
+use app\models\Users;
+use OTPHP\TOTP;
 
 class LoginController extends Controller
 {  
@@ -63,14 +65,53 @@ class LoginController extends Controller
         }
 
         $model = new LoginForm();
-        if ($model->load(Yii::$app->request->post()) && $model->login()) {
-            return $this->goBack(); // ✅ uses LoginForm::login() which calls Users model
+        if ($model->load(Yii::$app->request->post())) {
+            $result = $model->login();
+            if ($result === 'pending_2fa') {
+                return $this->redirect(['login/verify2fa']);
+            }
+            if ($result) {
+                return $this->goBack(); // ✅ uses LoginForm::login() which calls Users model
+            }
         }
 
         $model->password = '';
         return $this->render('login', [
             'model' => $model,
         ]);
+    }
+
+    /**
+     * Second step of login for accounts with two-factor authentication
+     * enabled: prompts for a TOTP code and only completes the login
+     * (started by LoginForm::login()) once it verifies.
+     */
+    public function actionVerify2fa()
+    {
+        $uid = Yii::$app->session->get('2fa_pending_uid');
+        $user = $uid ? Users::findOne($uid) : null;
+
+        if (!$user || !$user->totp_enabled) {
+            Yii::$app->session->remove('2fa_pending_uid');
+            Yii::$app->session->remove('2fa_remember_duration');
+            return $this->redirect(['login/login']);
+        }
+
+        $error = null;
+        if (Yii::$app->request->isPost) {
+            $code = trim((string) Yii::$app->request->post('code'));
+            $totp = TOTP::createFromSecret($user->totp_secret);
+            if ($code !== '' && $totp->verify($code, null, 1)) {
+                $duration = (int) Yii::$app->session->get('2fa_remember_duration', 0);
+                Yii::$app->session->remove('2fa_pending_uid');
+                Yii::$app->session->remove('2fa_remember_duration');
+                Yii::$app->user->login($user, $duration);
+                return $this->goBack();
+            }
+            $error = 'That code is incorrect or has expired. Please try again.';
+        }
+
+        return $this->render('verify-2fa', ['error' => $error]);
     }
 
     public function actionLogout()
