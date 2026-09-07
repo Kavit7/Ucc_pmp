@@ -45,6 +45,8 @@ A web-based property management system built on [Yii 2](https://www.yiiframework
 
    Also copy `config/secret-local.php.example` to `config/secret-local.php` and generate a real key (see the comment in that file) - the app will boot without this, but sessions/CSRF/signed cookies aren't safe until you do.
 
+   Online rent payment (tenants paying through the app instead of staff recording payments manually) uses Flutterwave. It's optional - without keys, tenants just see a "not set up yet" message instead of a working "Pay Now" button. To enable it, add your Flutterwave test (or live) keys to the `flutterwave` section of `secret-local.php`, and point a webhook at `https://your-domain/payment-gateway/webhook` in the Flutterwave dashboard using the same `webhook_hash` value.
+
 3. **Run migrations** — this creates the app's own schema (properties, leases, bills, users, the Tanzania location hierarchy, etc.) and seeds the Tanzania location dataset (regions/districts/wards/streets, ~20,000 rows, bundled under `data/tanzania-locations/`):
 
    ```

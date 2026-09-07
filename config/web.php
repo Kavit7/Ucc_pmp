@@ -6,11 +6,16 @@ $db = require __DIR__ . '/db.php';
 // Real key lives in secret-local.php, gitignored and never committed. Falls
 // back to a placeholder so the app still boots on a fresh clone, but you
 // MUST set a real one before relying on sessions/CSRF/signed cookies.
-$secrets = ['cookieValidationKey' => 'CHANGE-ME-see-config/secret-local.php.example'];
+$secrets = [
+    'cookieValidationKey' => 'CHANGE-ME-see-config/secret-local.php.example',
+    'flutterwave' => ['public_key' => null, 'secret_key' => null, 'webhook_hash' => null],
+];
 $secretsFile = __DIR__ . '/secret-local.php';
 if (is_file($secretsFile)) {
     $secrets = array_merge($secrets, require $secretsFile);
 }
+
+$params['flutterwave'] = $secrets['flutterwave'];
 
 $config = [
     'id' => 'basic',

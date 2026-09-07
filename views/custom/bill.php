@@ -135,15 +135,23 @@ $filteredBills = array_filter($bills, function($b) use ($currentFilter, $billSta
                             <td><?= $bill->paid_date ? Yii::$app->formatter->asDate($bill->paid_date) : '-' ?></td>
                             <td>
                                 <?php if ($state !== 'paid'): ?>
-                                    <?= Html::a('Record Payment', ['custom/record-payment', 'id' => $bill->id], [
-                                        'class' => 'btn btn-success btn-sm',
+                                    <?php if ((Yii::$app->user->identity->role ?? null) === 'tenant'): ?>
+                                        <?= Html::a('<i class="fas fa-credit-card me-1"></i>Pay Now', ['payment-gateway/pay', 'id' => $bill->id], [
+                                            'class' => 'btn btn-primary btn-sm',
+                                        ]) ?>
+                                    <?php else: ?>
+                                        <?= Html::a('Record Payment', ['custom/record-payment', 'id' => $bill->id], [
+                                            'class' => 'btn btn-success btn-sm',
+                                        ]) ?>
+                                    <?php endif; ?>
+                                <?php endif; ?>
+                                <?php if ((Yii::$app->user->identity->role ?? null) !== 'tenant'): ?>
+                                    <?= Html::button('Delete', [
+                                        'class' => 'btn btn-danger btn-sm delete-bill-btn',
+                                        'data-id'=>$bill->id,
+                                        'data-url'=>Url::to(['custom/delete-bill','id'=>$bill->id])
                                     ]) ?>
                                 <?php endif; ?>
-                                <?= Html::button('Delete', [
-                                    'class' => 'btn btn-danger btn-sm delete-bill-btn',
-                                    'data-id'=>$bill->id,
-                                    'data-url'=>Url::to(['custom/delete-bill','id'=>$bill->id])
-                                ]) ?>
                             </td>
                         </tr>
                     <?php endforeach; ?>
