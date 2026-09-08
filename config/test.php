@@ -34,6 +34,16 @@ return [
         'request' => [
             'cookieValidationKey' => 'test',
             'enableCsrfValidation' => false,
+            // Unit tests run outside a real HTTP request, so
+            // yii\web\Application::bootstrap() can't derive @webroot from
+            // $_SERVER['SCRIPT_FILENAME'] the way it does for a real
+            // request - it falls back to the current working directory.
+            // Any test saving a file via Yii::getAlias('@webroot/...') then
+            // writes to the project root instead of web/, leaving stray
+            // folders behind. Setting scriptFile explicitly makes Yii
+            // derive @webroot from it correctly, same as a live request.
+            'scriptFile' => __DIR__ . '/../web/index.php',
+            'scriptUrl' => '/index.php',
             // but if you absolutely need it set cookie domain to localhost
             /*
             'csrfCookie' => [
