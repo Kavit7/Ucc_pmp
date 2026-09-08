@@ -93,18 +93,38 @@ foreach ($dataProvider->getModels() as $model) {
         color: #fff;
         padding: 3rem 1.5rem;
     }
-    .hero-slide-1 { background: #1e1030; }
-    .hero-slide-2 { background: #0f172a; }
-    .hero-slide-3 { background: #3730a3; }
+    .hero-slide-1 { background: linear-gradient(125deg, #1e1030 0%, #6d28d9 100%); }
+    .hero-slide-2 { background: linear-gradient(125deg, #0f172a 0%, #0e7490 100%); }
+    .hero-slide-3 { background: linear-gradient(125deg, #1e1030 0%, #c2410c 100%); }
 
-    .hero-content { max-width: 620px; animation: heroFadeUp 0.8s ease both; }
+    /* Soft drifting color blobs behind the hero text for depth */
+    #heroCarousel .carousel-item { position: relative; overflow: hidden; }
+    .hero-blob {
+        position: absolute; border-radius: 50%; filter: blur(50px);
+        opacity: 0.35; pointer-events: none; animation: blobDrift 9s ease-in-out infinite alternate;
+    }
+    .hero-blob-a { width: 260px; height: 260px; background: #f472b6; top: -60px; left: 8%; }
+    .hero-blob-b { width: 220px; height: 220px; background: #38bdf8; bottom: -70px; right: 10%; animation-delay: -3s; }
+    @keyframes blobDrift {
+        from { transform: translate(0, 0) scale(1); }
+        to { transform: translate(18px, -14px) scale(1.08); }
+    }
+    @media (prefers-reduced-motion: reduce) { .hero-blob { animation: none; } }
+
+    .hero-content { max-width: 620px; animation: heroFadeUp 0.8s ease both; position: relative; z-index: 1; }
     .hero-content .hero-icon {
         width: 62px; height: 62px; border-radius: 16px;
         background: rgba(255,255,255,0.14); border: 1px solid rgba(255,255,255,0.25);
         display: flex; align-items: center; justify-content: center;
         font-size: 1.6rem; margin: 0 auto 1.1rem;
         backdrop-filter: blur(4px);
+        animation: iconFloat 3.2s ease-in-out infinite;
     }
+    @keyframes iconFloat {
+        0%, 100% { transform: translateY(0); }
+        50% { transform: translateY(-6px); }
+    }
+    @media (prefers-reduced-motion: reduce) { .hero-content .hero-icon { animation: none; } }
     .hero-content h2 {
         font-size: clamp(1.6rem, 3.2vw, 2.4rem);
         font-weight: 800;
@@ -115,12 +135,13 @@ foreach ($dataProvider->getModels() as $model) {
     .hero .stat-pill {
         display: inline-flex; align-items: center; gap: 0.5rem;
         margin-top: 1.5rem;
-        background: rgba(255, 255, 255, 0.12);
-        border: 1px solid rgba(255, 255, 255, 0.2);
+        background: rgba(255, 255, 255, 0.14);
+        border: 1px solid rgba(255, 255, 255, 0.25);
         padding: 0.55rem 1.25rem; border-radius: 999px;
         font-weight: 600; font-size: 0.92rem;
         backdrop-filter: blur(4px);
     }
+    .hero .stat-pill i { color: #86efac; }
 
     #heroCarousel .carousel-indicators { margin-bottom: 0.5rem; }
     #heroCarousel .carousel-indicators [data-bs-target] {
@@ -197,7 +218,11 @@ foreach ($dataProvider->getModels() as $model) {
         font-size: 0.85rem; font-weight: 600; color: #334155;
         padding: 0.4rem 0.5rem;
     }
-    .trust-item i { color: #4f46e5; font-size: 1.05rem; }
+    .trust-item i { font-size: 1.05rem; }
+    .trust-item:nth-child(1) i { color: #4f46e5; }
+    .trust-item:nth-child(2) i { color: #059669; }
+    .trust-item:nth-child(3) i { color: #d97706; }
+    .trust-item:nth-child(4) i { color: #0891b2; }
 
     /* ---------- Listing grid ---------- */
     .listing-wrap { max-width: 1180px; margin: 0 auto; padding: 2.5rem 1.5rem 2rem; }
@@ -253,11 +278,13 @@ foreach ($dataProvider->getModels() as $model) {
     .property-photo .no-photo { width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; color: #818cf8; font-size: 2.5rem; }
     .property-photo .type-badge {
         position: absolute; top: 0.75rem; left: 0.75rem;
-        background: rgba(15, 23, 42, 0.72); color: #fff;
+        color: #fff;
         font-size: 0.72rem; font-weight: 600; padding: 0.3rem 0.7rem;
         border-radius: 999px; text-transform: uppercase; letter-spacing: 0.03em;
-        backdrop-filter: blur(2px);
+        box-shadow: 0 2px 8px rgba(15, 23, 42, 0.25);
+        transition: transform 0.2s ease;
     }
+    .property-card:hover .type-badge { transform: scale(1.06); }
     .property-photo .view-overlay {
         position: absolute; inset: 0;
         background: rgba(15, 23, 42, 0.55);
@@ -275,18 +302,24 @@ foreach ($dataProvider->getModels() as $model) {
     .property-body { padding: 1.15rem 1.25rem 1.25rem; display: flex; flex-direction: column; flex: 1; }
     .property-title { font-size: 1.05rem; font-weight: 700; color: #0f172a; margin-bottom: 0.25rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
     .property-location { color: #64748b; font-size: 0.85rem; margin-bottom: 0.85rem; display: flex; align-items: center; gap: 0.35rem; }
-    .property-price { font-size: 1.15rem; font-weight: 800; color: #4f46e5; margin-bottom: 1rem; }
-    .property-price span { font-size: 0.78rem; font-weight: 500; color: #94a3b8; }
+    .property-price {
+        display: inline-flex; align-items: baseline; gap: 0.3rem;
+        font-size: 1.05rem; font-weight: 800; color: #4338ca;
+        background: linear-gradient(120deg, #eef2ff, #f5f3ff);
+        border-radius: 999px; padding: 0.3rem 0.75rem;
+        margin-bottom: 1rem; width: fit-content;
+    }
+    .property-price span { font-size: 0.74rem; font-weight: 500; color: #7c7fa6; }
 
     .card-actions { margin-top: auto; display: flex; gap: 0.5rem; }
     .btn-inquire, .btn-details {
         border: none; font-weight: 600; border-radius: 10px; padding: 0.6rem;
-        transition: background 0.2s ease, color 0.2s ease;
+        transition: background 0.2s ease, color 0.2s ease, transform 0.15s ease;
     }
     .btn-inquire { flex: 1.3; background: #4f46e5; color: #fff; }
-    .btn-inquire:hover { background: #4338ca; color: #fff; }
+    .btn-inquire:hover { background: #4338ca; color: #fff; transform: translateY(-1px); }
     .btn-details { flex: 1; background: #eef2ff; color: #4f46e5; }
-    .btn-details:hover { background: #e0e7ff; color: #4338ca; }
+    .btn-details:hover { background: #e0e7ff; color: #4338ca; transform: translateY(-1px); }
 
     .empty-state { text-align: center; padding: 4rem 1rem; color: #64748b; }
     .empty-state i { font-size: 2.5rem; color: #c7d2fe; margin-bottom: 1rem; }
@@ -296,7 +329,7 @@ foreach ($dataProvider->getModels() as $model) {
 
     /* ---------- Modals ---------- */
     .modal-content { border-radius: 16px; border: none; overflow: hidden; }
-    .modal-header-brand { background: #1e1030; color: #fff; border: none; }
+    .modal-header-brand { background: linear-gradient(120deg, #1e1030, #6d28d9); color: #fff; border: none; }
     #detailsModal .details-photo {
         height: 260px; background: #eef2ff;
         display: flex; align-items: center; justify-content: center; overflow: hidden;
@@ -319,6 +352,8 @@ foreach ($dataProvider->getModels() as $model) {
     <div class="carousel-inner">
         <div class="carousel-item active">
             <div class="hero-slide-1 w-100">
+                <div class="hero-blob hero-blob-a"></div>
+                <div class="hero-blob hero-blob-b"></div>
                 <div class="hero-content mx-auto">
                     <div class="hero-icon"><i class="fas fa-hand-sparkles"></i></div>
                     <h2>Welcome! We're glad you're here</h2>
@@ -329,6 +364,8 @@ foreach ($dataProvider->getModels() as $model) {
         </div>
         <div class="carousel-item">
             <div class="hero-slide-2 w-100">
+                <div class="hero-blob hero-blob-a" style="background:#5eead4;"></div>
+                <div class="hero-blob hero-blob-b" style="background:#818cf8;"></div>
                 <div class="hero-content mx-auto">
                     <div class="hero-icon"><i class="fas fa-shield-halved"></i></div>
                     <h2>Verified &amp; Trusted Listings</h2>
@@ -338,6 +375,8 @@ foreach ($dataProvider->getModels() as $model) {
         </div>
         <div class="carousel-item">
             <div class="hero-slide-3 w-100">
+                <div class="hero-blob hero-blob-a" style="background:#fbbf24;"></div>
+                <div class="hero-blob hero-blob-b" style="background:#f472b6;"></div>
                 <div class="hero-content mx-auto">
                     <div class="hero-icon"><i class="fas fa-bolt"></i></div>
                     <h2>Fast, Direct Response</h2>
@@ -421,17 +460,32 @@ foreach ($dataProvider->getModels() as $model) {
         </div>
     </form>
 
+    <?php
+    // A small fixed palette, picked deterministically per type name (via a
+    // simple string hash) so "House" is always the same color across cards
+    // without hardcoding every admin-configurable property type by hand.
+    $typeBadgeColor = function ($name) {
+        $palette = ['#4f46e5', '#0891b2', '#d97706', '#059669', '#db2777', '#7c3aed'];
+        $hash = 0;
+        foreach (str_split((string) $name) as $ch) {
+            $hash = (($hash << 5) - $hash) + ord($ch);
+        }
+        return $palette[abs($hash) % count($palette)];
+    };
+    ?>
+
     <?= ListView::widget([
         'dataProvider' => $dataProvider,
         'options' => ['tag' => 'div', 'class' => 'row g-4'],
         'itemOptions' => ['tag' => 'div', 'class' => 'col-lg-4 col-md-6'],
-        'itemView' => function ($model) {
+        'itemView' => function ($model) use ($typeBadgeColor) {
             $photo = $model->photos[0]->photo_url ?? null;
             $image = $photo
                 ? '<img src="' . Html::encode(Url::to('@web/' . $photo)) . '" alt="' . Html::encode($model->property_name) . '">'
                 : '<div class="no-photo"><i class="fas fa-image"></i></div>';
 
             $typeBadge = $model->propertyType->list_Name ?? $model->usageType->list_Name ?? null;
+            $typeBadgeStyle = $typeBadge ? 'background:' . $typeBadgeColor($typeBadge) . ';' : '';
 
             $priceModel = $model->propertyPrice[0] ?? null;
             $price = $priceModel
@@ -444,7 +498,7 @@ foreach ($dataProvider->getModels() as $model) {
                 <div class="property-card reveal-on-scroll">
                     <div class="property-photo" data-bs-toggle="modal" data-bs-target="#detailsModal" data-property-id="' . $model->id . '">
                         ' . $image . '
-                        ' . ($typeBadge ? '<span class="type-badge">' . Html::encode($typeBadge) . '</span>' : '') . '
+                        ' . ($typeBadge ? '<span class="type-badge" style="' . $typeBadgeStyle . '">' . Html::encode($typeBadge) . '</span>' : '') . '
                         <div class="view-overlay"><span><i class="fas fa-eye me-1"></i> View Details</span></div>
                     </div>
                     <div class="property-body">
