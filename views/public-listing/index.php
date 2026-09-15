@@ -239,7 +239,17 @@ $hasActiveFilters = $q !== '' || $selectedType || $selectedRegion || ($minPrice 
         background: rgba(15, 23, 42, 0.6); color: #fff;
         font-size: 0.65rem; font-weight: 600; letter-spacing: 0.03em;
         padding: 0.22rem 0.6rem; border-radius: 999px;
+        cursor: help;
     }
+    /* Gentle float on the wrapper (not the <img> itself) so it doesn't
+       fight the existing hover-zoom transition on .property-photo img. */
+    .placeholder-wrap { width: 100%; height: 100%; animation: placeholderFloat 4s ease-in-out infinite; }
+    .placeholder-photo { object-fit: contain !important; padding: 2rem; }
+    @keyframes placeholderFloat {
+        0%, 100% { transform: translateY(0); }
+        50% { transform: translateY(-8px); }
+    }
+    @media (prefers-reduced-motion: reduce) { .placeholder-wrap { animation: none; } }
     .property-photo .view-overlay {
         position: absolute; inset: 0;
         background: rgba(15, 23, 42, 0.55);
@@ -432,8 +442,8 @@ $hasActiveFilters = $q !== '' || $selectedType || $selectedRegion || ($minPrice 
                 if ($photo) {
                     $image = '<img src="' . Html::encode(Url::to('@web/' . $photo)) . '" alt="' . Html::encode($model->property_name) . '">';
                 } else {
-                    $image = '<img src="' . Html::encode($placeholderFor($model->id)) . '" alt="Illustration" class="placeholder-photo">'
-                        . '<span class="illustration-badge">Illustration</span>';
+                    $image = '<div class="placeholder-wrap"><img src="' . Html::encode($placeholderFor($model->id)) . '" alt="Illustration" class="placeholder-photo"></div>'
+                        . '<span class="illustration-badge" data-bs-toggle="tooltip" data-bs-title="Illustration only - not a real photo of this property">Illustration</span>';
                 }
 
                 $typeBadge = $model->propertyType->list_Name ?? $model->usageType->list_Name ?? null;
@@ -574,11 +584,20 @@ document.getElementById('detailsModal').addEventListener('show.bs.modal', functi
 
     var photoEl = document.getElementById('details-photo');
     var images = data.images || [];
-    var illustrationTag = data.isPlaceholder ? '<span class="illustration-badge" style="position:absolute; bottom:0.75rem; left:1rem;">Illustration</span>' : '';
+    var illustrationTag = data.isPlaceholder ? '<span class="illustration-badge" style="position:absolute; bottom:0.75rem; left:1rem;" data-bs-toggle="tooltip" data-bs-title="Illustration only - not a real photo of this property">Illustration</span>' : '';
     if (images.length === 0) {
         photoEl.innerHTML = '<i class="fas fa-image"></i>';
     } else if (images.length === 1) {
-        photoEl.innerHTML = '<img src="' + images[0] + '" alt="">' + illustrationTag;
+        var imgHtml = data.isPlaceholder
+            ? '<div class="placeholder-wrap"><img src="' + images[0] + '" alt="" class="placeholder-photo"></div>'
+            : '<img src="' + images[0] + '" alt="">';
+        photoEl.innerHTML = imgHtml + illustrationTag;
+        // Bootstrap tooltips need explicit initialization - they don't
+        // auto-activate like modals do.
+        if (data.isPlaceholder) {
+            var badgeEl = photoEl.querySelector('.illustration-badge');
+            if (badgeEl) { new bootstrap.Tooltip(badgeEl); }
+        }
     } else {
         var carouselId = 'detailsPhotoCarousel';
         var slides = images.map(function (src, i) {
@@ -611,6 +630,12 @@ document.getElementById('details-inquire-btn').addEventListener('click', functio
         detailsModalEl.removeEventListener('hidden.bs.modal', openInquire);
     });
     detailsModal.hide();
+});
+
+// Bootstrap tooltips require explicit initialization (unlike modals,
+// they don't auto-activate from data-bs-toggle alone).
+document.querySelectorAll('[data-bs-toggle="tooltip"]').forEach(function (el) {
+    new bootstrap.Tooltip(el);
 });
 
 // Staggered scroll-reveal animation for property cards
