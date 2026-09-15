@@ -60,8 +60,13 @@ class LoginController extends Controller
 
     public function actionLogin()
     {
+        // goHome()/goBack() with no explicit default fall back to the site's
+        // home page, which is the public listing (the app's default route,
+        // reachable by guests) - not a real destination for someone who's
+        // actually logged in. Pass the dashboard explicitly so a login with
+        // no prior protected page to return to lands there instead.
         if (!Yii::$app->user->isGuest) {
-            return $this->goHome();
+            return $this->redirect(['dashboard/admin-dash']);
         }
 
         $model = new LoginForm();
@@ -71,7 +76,7 @@ class LoginController extends Controller
                 return $this->redirect(['login/verify2fa']);
             }
             if ($result) {
-                return $this->goBack(); // ✅ uses LoginForm::login() which calls Users model
+                return $this->goBack(['dashboard/admin-dash']); // ✅ uses LoginForm::login() which calls Users model
             }
         }
 
@@ -106,7 +111,7 @@ class LoginController extends Controller
                 Yii::$app->session->remove('2fa_pending_uid');
                 Yii::$app->session->remove('2fa_remember_duration');
                 Yii::$app->user->login($user, $duration);
-                return $this->goBack();
+                return $this->goBack(['dashboard/admin-dash']);
             }
             $error = 'That code is incorrect or has expired. Please try again.';
         }
