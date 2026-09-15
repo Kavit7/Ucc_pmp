@@ -1,0 +1,21 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 300" role="img" aria-label="Illustration of a classic house, used as a placeholder when no photo has been uploaded">
+  <defs>
+    <linearGradient id="sky1" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#eef2ff"/>
+      <stop offset="100%" stop-color="#e0e7ff"/>
+    </linearGradient>
+  </defs>
+  <rect width="400" height="300" fill="url(#sky1)"/>
+  <rect x="0" y="230" width="400" height="70" fill="#c7d2fe"/>
+  <rect x="110" y="140" width="180" height="100" fill="#ffffff" stroke="#4f46e5" stroke-width="3"/>
+  <polygon points="95,140 200,70 305,140" fill="#4f46e5"/>
+  <rect x="185" y="180" width="30" height="60" fill="#4338ca"/>
+  <rect x="130" y="160" width="35" height="35" fill="#c7d2fe" stroke="#4f46e5" stroke-width="2"/>
+  <rect x="235" y="160" width="35" height="35" fill="#c7d2fe" stroke="#4f46e5" stroke-width="2"/>
+  <line x1="147.5" y1="160" x2="147.5" y2="195" stroke="#4f46e5" stroke-width="2"/>
+  <line x1="130" y1="177.5" x2="165" y2="177.5" stroke="#4f46e5" stroke-width="2"/>
+  <line x1="252.5" y1="160" x2="252.5" y2="195" stroke="#4f46e5" stroke-width="2"/>
+  <line x1="235" y1="177.5" x2="270" y2="177.5" stroke="#4f46e5" stroke-width="2"/>
+  <rect x="330" y="180" width="14" height="60" fill="#a5b4fc"/>
+  <polygon points="323,180 337,155 351,180" fill="#818cf8"/>
+</svg>

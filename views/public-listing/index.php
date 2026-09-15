@@ -55,6 +55,15 @@ if ($regionsSentence) {
 }
 $welcomeLine .= '.';
 
+// Hand-drawn placeholder illustrations (not real photos) shown when a
+// property has no uploaded photo yet, so the listing doesn't look empty.
+// Picked deterministically per property id, so the same property always
+// gets the same illustration rather than a random one on every page load.
+$placeholderIllustrations = ['house-1.svg', 'house-2.svg', 'apartment.svg', 'bungalow.svg'];
+$placeholderFor = function ($id) use ($placeholderIllustrations) {
+    return Url::to('@web/images/placeholders/' . $placeholderIllustrations[$id % count($placeholderIllustrations)]);
+};
+
 // Property details, keyed by id, for the "View Details" popup - built once
 // here so the modal can be populated client-side without extra requests.
 $propertyDetails = [];
@@ -62,6 +71,10 @@ foreach ($dataProvider->getModels() as $model) {
     $images = array_values(array_filter(array_map(function ($photo) {
         return $photo->photo_url ? Url::to('@web/' . $photo->photo_url) : null;
     }, $model->photos)));
+    $hasRealPhoto = !empty($images);
+    if (!$hasRealPhoto) {
+        $images = [$placeholderFor($model->id)];
+    }
 
     $priceModel = $model->propertyPrice[0] ?? null;
     $priceText = null;
@@ -75,6 +88,7 @@ foreach ($dataProvider->getModels() as $model) {
     $propertyDetails[$model->id] = [
         'name' => $model->property_name,
         'images' => $images,
+        'isPlaceholder' => !$hasRealPhoto,
         'type' => $model->propertyType->list_Name ?? $model->usageType->list_Name ?? null,
         'location' => $model->street->street_name ?? null,
         'price' => $priceText,
@@ -211,7 +225,6 @@ $hasActiveFilters = $q !== '' || $selectedType || $selectedRegion || ($minPrice 
     .property-photo { position: relative; height: 210px; overflow: hidden; background: #eef2ff; }
     .property-photo img { width: 100%; height: 100%; object-fit: cover; transition: transform 0.4s ease; }
     .property-card:hover .property-photo img { transform: scale(1.08); }
-    .property-photo .no-photo { width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; color: #818cf8; font-size: 2.5rem; }
     .property-photo .type-badge {
         position: absolute; top: 0.75rem; left: 0.75rem;
         color: #fff;
@@ -221,6 +234,12 @@ $hasActiveFilters = $q !== '' || $selectedType || $selectedRegion || ($minPrice 
         transition: transform 0.2s ease;
     }
     .property-card:hover .type-badge { transform: scale(1.06); }
+    .illustration-badge {
+        position: absolute; bottom: 0.65rem; left: 0.75rem;
+        background: rgba(15, 23, 42, 0.6); color: #fff;
+        font-size: 0.65rem; font-weight: 600; letter-spacing: 0.03em;
+        padding: 0.22rem 0.6rem; border-radius: 999px;
+    }
     .property-photo .view-overlay {
         position: absolute; inset: 0;
         background: rgba(15, 23, 42, 0.55);
@@ -267,6 +286,7 @@ $hasActiveFilters = $q !== '' || $selectedType || $selectedRegion || ($minPrice 
     .modal-content { border-radius: 16px; border: none; overflow: hidden; }
     .modal-header-brand { background: linear-gradient(120deg, #1e1030, #6d28d9); color: #fff; border: none; }
     #detailsModal .details-photo {
+        position: relative;
         height: 260px; background: #eef2ff;
         display: flex; align-items: center; justify-content: center; overflow: hidden;
     }
@@ -407,11 +427,14 @@ $hasActiveFilters = $q !== '' || $selectedType || $selectedRegion || ($minPrice 
             'dataProvider' => $dataProvider,
             'options' => ['tag' => 'div', 'class' => 'row g-4'],
             'itemOptions' => ['tag' => 'div', 'class' => 'col-md-6'],
-            'itemView' => function ($model) use ($typeBadgeColor) {
+            'itemView' => function ($model) use ($typeBadgeColor, $placeholderFor) {
                 $photo = $model->photos[0]->photo_url ?? null;
-                $image = $photo
-                    ? '<img src="' . Html::encode(Url::to('@web/' . $photo)) . '" alt="' . Html::encode($model->property_name) . '">'
-                    : '<div class="no-photo"><i class="fas fa-image"></i></div>';
+                if ($photo) {
+                    $image = '<img src="' . Html::encode(Url::to('@web/' . $photo)) . '" alt="' . Html::encode($model->property_name) . '">';
+                } else {
+                    $image = '<img src="' . Html::encode($placeholderFor($model->id)) . '" alt="Illustration" class="placeholder-photo">'
+                        . '<span class="illustration-badge">Illustration</span>';
+                }
 
                 $typeBadge = $model->propertyType->list_Name ?? $model->usageType->list_Name ?? null;
                 $typeBadgeStyle = $typeBadge ? 'background:' . $typeBadgeColor($typeBadge) . ';' : '';
@@ -551,10 +574,11 @@ document.getElementById('detailsModal').addEventListener('show.bs.modal', functi
 
     var photoEl = document.getElementById('details-photo');
     var images = data.images || [];
+    var illustrationTag = data.isPlaceholder ? '<span class="illustration-badge" style="position:absolute; bottom:0.75rem; left:1rem;">Illustration</span>' : '';
     if (images.length === 0) {
         photoEl.innerHTML = '<i class="fas fa-image"></i>';
     } else if (images.length === 1) {
-        photoEl.innerHTML = '<img src="' + images[0] + '" alt="">';
+        photoEl.innerHTML = '<img src="' + images[0] + '" alt="">' + illustrationTag;
     } else {
         var carouselId = 'detailsPhotoCarousel';
         var slides = images.map(function (src, i) {
