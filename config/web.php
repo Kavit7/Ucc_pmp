@@ -76,6 +76,15 @@ $config = [
             'enablePrettyUrl' => true,
             'showScriptName' => false,
             'rules' => [
+                // A request can arrive with the app's own base path baked
+                // redundantly into the route itself (e.g. a stale cached
+                // page's link generated under a different base-path context
+                // gets clicked, or someone hand-edits a URL) - without this,
+                // Yii tries to resolve "Ucc_pmp/web/custom/leases" as a
+                // literal route and 404s instead of just routing to
+                // "custom/leases". Must come first: rules are tried in order,
+                // first match wins.
+                'Ucc_pmp/web/<route:.*>' => '<route>',
                 // ensure property-price routes work
                 'property-price' => 'property-price/index',
                 'property-price/<action:\w+>' => 'property-price/<action>',
