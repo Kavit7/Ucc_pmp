@@ -81,160 +81,61 @@ foreach ($dataProvider->getModels() as $model) {
         'description' => $model->description ?: 'No further description has been provided for this property yet - send an inquiry and we\'ll fill you in.',
     ];
 }
+
+$hasActiveFilters = $q !== '' || $selectedType || $selectedRegion || ($minPrice !== null && $minPrice !== '') || ($maxPrice !== null && $maxPrice !== '');
 ?>
 <style>
-    /* ---------- Hero carousel ---------- */
-    #heroCarousel .carousel-item {
-        min-height: 380px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        text-align: center;
+    /* ---------- Hero band + overlapping search card ---------- */
+    .hero-band {
+        position: relative;
+        overflow: hidden;
+        background: linear-gradient(125deg, #1e1030 0%, #6d28d9 100%);
         color: #fff;
-        padding: 3rem 1.5rem;
+        padding: 3.25rem 1.5rem 5.5rem;
+        text-align: center;
     }
-    .hero-slide-1 { background: linear-gradient(125deg, #1e1030 0%, #6d28d9 100%); }
-    .hero-slide-2 { background: linear-gradient(125deg, #0f172a 0%, #0e7490 100%); }
-    .hero-slide-3 { background: linear-gradient(125deg, #1e1030 0%, #c2410c 100%); }
-
-    /* Soft drifting color blobs behind the hero text for depth */
-    #heroCarousel .carousel-item { position: relative; overflow: hidden; }
     .hero-blob {
         position: absolute; border-radius: 50%; filter: blur(50px);
         opacity: 0.35; pointer-events: none; animation: blobDrift 9s ease-in-out infinite alternate;
     }
     .hero-blob-a { width: 260px; height: 260px; background: #f472b6; top: -60px; left: 8%; }
-    .hero-blob-b { width: 220px; height: 220px; background: #38bdf8; bottom: -70px; right: 10%; animation-delay: -3s; }
+    .hero-blob-b { width: 220px; height: 220px; background: #38bdf8; bottom: -40px; right: 10%; animation-delay: -3s; }
     @keyframes blobDrift {
         from { transform: translate(0, 0) scale(1); }
         to { transform: translate(18px, -14px) scale(1.08); }
     }
     @media (prefers-reduced-motion: reduce) { .hero-blob { animation: none; } }
 
-    .hero-content { max-width: 620px; animation: heroFadeUp 0.8s ease both; position: relative; z-index: 1; }
-    .hero-content .hero-icon {
-        width: 62px; height: 62px; border-radius: 16px;
+    .hero-inner { position: relative; z-index: 1; max-width: 680px; margin: 0 auto; animation: heroFadeUp 0.8s ease both; }
+    .hero-eyebrow {
+        display: inline-flex; align-items: center; gap: 0.4rem;
         background: rgba(255,255,255,0.14); border: 1px solid rgba(255,255,255,0.25);
-        display: flex; align-items: center; justify-content: center;
-        font-size: 1.6rem; margin: 0 auto 1.1rem;
-        backdrop-filter: blur(4px);
-        animation: iconFloat 3.2s ease-in-out infinite;
+        padding: 0.35rem 0.9rem; border-radius: 999px;
+        font-size: 0.72rem; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase;
+        backdrop-filter: blur(4px); margin-bottom: 1.1rem;
     }
-    @keyframes iconFloat {
-        0%, 100% { transform: translateY(0); }
-        50% { transform: translateY(-6px); }
-    }
-    @media (prefers-reduced-motion: reduce) { .hero-content .hero-icon { animation: none; } }
-    .hero-content h2 {
-        font-size: clamp(1.6rem, 3.2vw, 2.4rem);
-        font-weight: 800;
-        margin-bottom: 0.6rem;
-        letter-spacing: -0.01em;
-    }
-    .hero-content p { color: #e0e7ff; font-size: 1.05rem; margin: 0 auto; }
-    .hero .stat-pill {
-        display: inline-flex; align-items: center; gap: 0.5rem;
-        margin-top: 1.5rem;
-        background: rgba(255, 255, 255, 0.14);
-        border: 1px solid rgba(255, 255, 255, 0.25);
-        padding: 0.55rem 1.25rem; border-radius: 999px;
-        font-weight: 600; font-size: 0.92rem;
-        backdrop-filter: blur(4px);
-    }
-    .hero .stat-pill i { color: #86efac; }
-
-    #heroCarousel .carousel-indicators { margin-bottom: 0.5rem; }
-    #heroCarousel .carousel-indicators [data-bs-target] {
-        width: 8px; height: 8px; border-radius: 50%; background: rgba(255,255,255,0.5); border: none;
-    }
-    #heroCarousel .carousel-indicators .active { background: #fff; }
-    #heroCarousel .carousel-control-prev,
-    #heroCarousel .carousel-control-next { width: 5%; opacity: 0.6; }
-    #heroCarousel .carousel-control-prev:hover,
-    #heroCarousel .carousel-control-next:hover { opacity: 1; }
-
+    .hero-inner h1 { font-size: clamp(1.7rem, 3.6vw, 2.5rem); font-weight: 800; letter-spacing: -0.01em; margin-bottom: 0.7rem; }
+    .hero-inner p { color: #e0e7ff; font-size: 1.02rem; margin: 0 auto; }
     @keyframes heroFadeUp {
         from { opacity: 0; transform: translateY(18px); }
         to { opacity: 1; transform: translateY(0); }
     }
 
-    /* ---------- Sticky quick-search bar ---------- */
-    .quick-search-bar {
-        position: sticky;
-        top: 65px;
-        z-index: 40;
-        background: #fff;
-        border-bottom: 1px solid #eef0f4;
-        box-shadow: 0 2px 10px rgba(15, 23, 42, 0.05);
+    .hero-features { display: flex; flex-wrap: wrap; justify-content: center; gap: 0.6rem; margin-top: 1.4rem; }
+    .hero-features span {
+        display: inline-flex; align-items: center; gap: 0.45rem;
+        background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2);
+        padding: 0.45rem 0.9rem; border-radius: 999px;
+        font-size: 0.82rem; font-weight: 600;
     }
-    .quick-search-inner {
-        max-width: 1180px;
-        margin: 0 auto;
-        padding: 0.7rem 1.5rem;
-    }
-    .quick-search-inner form {
-        background: #f6f7fb;
-        border-radius: 12px;
-        padding: 0.35rem 0.35rem 0.35rem 1rem;
-    }
-    .quick-search-inner i.fa-magnifying-glass { color: #94a3b8; }
-    .quick-search-input {
-        border: none;
-        background: transparent;
-        flex: 1;
-        font-size: 0.92rem;
-        padding: 0.45rem 0.5rem;
-    }
-    .quick-search-input:focus { outline: none; box-shadow: none; }
-    .quick-search-btn {
-        border: none;
-        background: #4f46e5;
-        color: #fff;
-        font-weight: 600;
-        font-size: 0.85rem;
-        border-radius: 9px;
-        padding: 0.5rem 1.15rem;
-        white-space: nowrap;
-        transition: background 0.2s ease;
-    }
-    .quick-search-btn:hover { background: #4338ca; }
+    .hero-features i { color: #86efac; }
 
-    /* ---------- Trust strip ---------- */
-    .trust-strip {
-        max-width: 1180px;
-        margin: -2rem auto 0;
-        padding: 0 1.5rem;
-        position: relative;
-        z-index: 2;
-    }
-    .trust-strip .row {
-        background: #fff;
-        border-radius: 14px;
-        box-shadow: 0 8px 28px rgba(15, 23, 42, 0.09);
-        padding: 1.1rem 0.5rem;
-    }
-    .trust-item {
-        display: flex; align-items: center; justify-content: center; gap: 0.6rem;
-        font-size: 0.85rem; font-weight: 600; color: #334155;
-        padding: 0.4rem 0.5rem;
-    }
-    .trust-item i { font-size: 1.05rem; }
-    .trust-item:nth-child(1) i { color: #4f46e5; }
-    .trust-item:nth-child(2) i { color: #059669; }
-    .trust-item:nth-child(3) i { color: #d97706; }
-    .trust-item:nth-child(4) i { color: #0891b2; }
-
-    /* ---------- Listing grid ---------- */
-    .listing-wrap { max-width: 1180px; margin: 0 auto; padding: 2.5rem 1.5rem 2rem; }
-    .listing-heading { font-weight: 800; color: #0f172a; margin-bottom: 1.5rem; }
-
-    /* ---------- Filter bar ---------- */
-    .filter-bar {
-        background: #fff;
-        border: 1px solid #eef0f4;
-        border-radius: 14px;
-        padding: 0.9rem 1rem;
-        box-shadow: 0 1px 3px rgba(15, 23, 42, 0.05);
+    /* Search card overlaps the bottom edge of the hero band */
+    .hero-search-wrap { max-width: 1180px; margin: -3.25rem auto 0; padding: 0 1.5rem; position: relative; z-index: 2; }
+    .hero-search-card {
+        background: #fff; border-radius: 16px;
+        box-shadow: 0 14px 34px rgba(15, 23, 42, 0.14);
+        padding: 1.1rem 1.25rem;
     }
     .filter-input {
         border-radius: 10px;
@@ -247,6 +148,41 @@ foreach ($dataProvider->getModels() as $model) {
         border-color: #4f46e5;
         box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.12);
     }
+
+    /* ---------- Body: sidebar + grid ---------- */
+    .listing-body { max-width: 1180px; margin: 0 auto; padding: 2.5rem 1.5rem 2rem; display: grid; grid-template-columns: 260px 1fr; gap: 2rem; align-items: start; }
+    @media (max-width: 860px) { .listing-body { grid-template-columns: 1fr; } }
+
+    .listing-sidebar { position: sticky; top: 1.5rem; display: flex; flex-direction: column; gap: 1.25rem; }
+    .sidebar-card { background: #fff; border: 1px solid #eef0f4; border-radius: 14px; padding: 1.15rem 1.25rem; box-shadow: 0 1px 3px rgba(15, 23, 42, 0.05); }
+    .sidebar-card h6 { font-size: 0.72rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; color: #94a3b8; margin-bottom: 0.9rem; }
+
+    .trust-list { display: flex; flex-direction: column; gap: 0.75rem; }
+    .trust-list li { list-style: none; display: flex; align-items: center; gap: 0.65rem; font-size: 0.86rem; font-weight: 600; color: #334155; }
+    .trust-list i { width: 20px; text-align: center; font-size: 1rem; }
+    .trust-list li:nth-child(1) i { color: #4f46e5; }
+    .trust-list li:nth-child(2) i { color: #059669; }
+    .trust-list li:nth-child(3) i { color: #d97706; }
+
+    .pill-links { display: flex; flex-wrap: wrap; gap: 0.5rem; }
+    .pill-links a {
+        display: inline-flex; align-items: center; gap: 0.35rem;
+        background: #f6f7fb; color: #334155; text-decoration: none;
+        font-size: 0.8rem; font-weight: 600;
+        padding: 0.4rem 0.8rem; border-radius: 999px;
+        border: 1px solid #eef0f4; transition: background 0.15s ease, color 0.15s ease, border-color 0.15s ease;
+    }
+    .pill-links a:hover { background: #eef2ff; color: #4338ca; border-color: #e0e7ff; }
+    .pill-links a.active-pill { background: #4f46e5; color: #fff; border-color: #4f46e5; }
+
+    .sidebar-cta { background: linear-gradient(120deg, #1e1030, #4c1d95); color: #fff; text-align: center; }
+    .sidebar-cta h6 { color: #c4b5fd; }
+    .sidebar-cta p { font-size: 0.85rem; color: #e0e7ff; margin-bottom: 0.9rem; }
+    .sidebar-cta a { display: block; background: #fff; color: #4338ca; font-weight: 700; font-size: 0.85rem; padding: 0.55rem; border-radius: 10px; text-decoration: none; }
+
+    .listing-heading-row { display: flex; align-items: baseline; justify-content: space-between; flex-wrap: wrap; gap: 0.5rem; margin-bottom: 1.4rem; }
+    .listing-heading { font-weight: 800; color: #0f172a; margin: 0; }
+    .listing-count { color: #64748b; font-size: 0.88rem; }
 
     .property-card {
         background: #fff;
@@ -272,7 +208,7 @@ foreach ($dataProvider->getModels() as $model) {
         box-shadow: 0 12px 32px rgba(79, 70, 229, 0.18);
     }
 
-    .property-photo { position: relative; height: 190px; overflow: hidden; background: #eef2ff; }
+    .property-photo { position: relative; height: 210px; overflow: hidden; background: #eef2ff; }
     .property-photo img { width: 100%; height: 100%; object-fit: cover; transition: transform 0.4s ease; }
     .property-card:hover .property-photo img { transform: scale(1.08); }
     .property-photo .no-photo { width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; color: #818cf8; font-size: 2.5rem; }
@@ -347,89 +283,30 @@ foreach ($dataProvider->getModels() as $model) {
     #detailsModal .details-photo .carousel-control-next { width: 8%; }
 </style>
 
-<!-- Hero slideshow -->
-<div id="heroCarousel" class="carousel slide hero" data-bs-ride="carousel" data-bs-interval="5000">
-    <div class="carousel-inner">
-        <div class="carousel-item active">
-            <div class="hero-slide-1 w-100">
-                <div class="hero-blob hero-blob-a"></div>
-                <div class="hero-blob hero-blob-b"></div>
-                <div class="hero-content mx-auto">
-                    <div class="hero-icon"><i class="fas fa-hand-sparkles"></i></div>
-                    <h2>Welcome! We're glad you're here</h2>
-                    <p><?= Html::encode($welcomeLine) ?> Have a look around - we'd love to help you find the right fit.</p>
-                    <div class="stat-pill"><i class="fas fa-house-circle-check"></i> <?= (int) $totalAvailable ?> <?= $totalAvailable === 1 ? 'property' : 'properties' ?> available now</div>
-                </div>
-            </div>
-        </div>
-        <div class="carousel-item">
-            <div class="hero-slide-2 w-100">
-                <div class="hero-blob hero-blob-a" style="background:#5eead4;"></div>
-                <div class="hero-blob hero-blob-b" style="background:#818cf8;"></div>
-                <div class="hero-content mx-auto">
-                    <div class="hero-icon"><i class="fas fa-shield-halved"></i></div>
-                    <h2>Verified &amp; Trusted Listings</h2>
-                    <p>Every property is managed directly by our team - no third-party brokers, no surprise fees.</p>
-                </div>
-            </div>
-        </div>
-        <div class="carousel-item">
-            <div class="hero-slide-3 w-100">
-                <div class="hero-blob hero-blob-a" style="background:#fbbf24;"></div>
-                <div class="hero-blob hero-blob-b" style="background:#f472b6;"></div>
-                <div class="hero-content mx-auto">
-                    <div class="hero-icon"><i class="fas fa-bolt"></i></div>
-                    <h2>Fast, Direct Response</h2>
-                    <p>Send an inquiry and hear back from our team quickly - no waiting rooms, no middlemen.</p>
-                </div>
-            </div>
+<!-- Hero band -->
+<section class="hero-band">
+    <div class="hero-blob hero-blob-a"></div>
+    <div class="hero-blob hero-blob-b"></div>
+    <div class="hero-inner">
+        <span class="hero-eyebrow"><i class="fas fa-house-circle-check"></i> <?= (int) $totalAvailable ?> <?= $totalAvailable === 1 ? 'property' : 'properties' ?> available now</span>
+        <h1>Welcome! We're glad you're here</h1>
+        <p><?= Html::encode($welcomeLine) ?> Have a look around - we'd love to help you find the right fit.</p>
+        <div class="hero-features">
+            <span><i class="fas fa-shield-halved"></i> Verified &amp; Trusted</span>
+            <span><i class="fas fa-bolt"></i> Fast, Direct Response</span>
+            <span><i class="fas fa-hand-holding-dollar"></i> No Hidden Fees</span>
         </div>
     </div>
-    <button class="carousel-control-prev" type="button" data-bs-target="#heroCarousel" data-bs-slide="prev">
-        <span class="carousel-control-prev-icon" aria-hidden="true"></span>
-    </button>
-    <button class="carousel-control-next" type="button" data-bs-target="#heroCarousel" data-bs-slide="next">
-        <span class="carousel-control-next-icon" aria-hidden="true"></span>
-    </button>
-    <div class="carousel-indicators position-relative mb-0 mt-0" style="bottom:auto;">
-        <button type="button" data-bs-target="#heroCarousel" data-bs-slide-to="0" class="active" aria-current="true"></button>
-        <button type="button" data-bs-target="#heroCarousel" data-bs-slide-to="1"></button>
-        <button type="button" data-bs-target="#heroCarousel" data-bs-slide-to="2"></button>
-    </div>
-</div>
+</section>
 
-<!-- Sticky quick-search bar -->
-<div class="quick-search-bar">
-    <div class="quick-search-inner">
-        <form method="get" action="<?= Url::to(['public-listing/index']) ?>" class="d-flex align-items-center gap-2">
-            <i class="fas fa-magnifying-glass"></i>
-            <input type="text" name="q" value="<?= Html::encode($q) ?>" class="quick-search-input" placeholder="Search properties by name...">
-            <?php if ($selectedType): ?><input type="hidden" name="type" value="<?= Html::encode($selectedType) ?>"><?php endif; ?>
-            <?php if ($selectedRegion): ?><input type="hidden" name="region" value="<?= Html::encode($selectedRegion) ?>"><?php endif; ?>
-            <?php if ($minPrice !== null && $minPrice !== ''): ?><input type="hidden" name="min_price" value="<?= Html::encode($minPrice) ?>"><?php endif; ?>
-            <?php if ($maxPrice !== null && $maxPrice !== ''): ?><input type="hidden" name="max_price" value="<?= Html::encode($maxPrice) ?>"><?php endif; ?>
-            <button type="submit" class="quick-search-btn"><i class="fas fa-search me-1"></i> Search</button>
-        </form>
-    </div>
-</div>
-
-<!-- Trust strip -->
-<div class="trust-strip">
-    <div class="row g-2 text-center">
-        <div class="col-6 col-md-3"><div class="trust-item"><i class="fas fa-circle-check"></i> Verified Listings</div></div>
-        <div class="col-6 col-md-3"><div class="trust-item"><i class="fas fa-hand-holding-dollar"></i> No Hidden Fees</div></div>
-        <div class="col-6 col-md-3"><div class="trust-item"><i class="fas fa-clock"></i> Fast Response</div></div>
-        <div class="col-6 col-md-3"><div class="trust-item"><i class="fas fa-house-flag"></i> Wide Selection</div></div>
-    </div>
-</div>
-
-<div class="listing-wrap" id="available">
-    <h4 class="listing-heading">Available Now</h4>
-
-    <form method="get" action="<?= Url::to(['public-listing/index']) ?>" class="filter-bar mb-4">
-        <?php if ($q !== ''): ?><input type="hidden" name="q" value="<?= Html::encode($q) ?>"><?php endif; ?>
+<!-- Search card, overlapping the hero -->
+<div class="hero-search-wrap">
+    <form method="get" action="<?= Url::to(['public-listing/index']) ?>" class="hero-search-card">
         <div class="row g-2 align-items-center">
-            <div class="col-6 col-md-3">
+            <div class="col-12 col-md-4">
+                <input type="text" name="q" value="<?= Html::encode($q) ?>" class="form-control filter-input" placeholder="Search by property name...">
+            </div>
+            <div class="col-6 col-md-2">
                 <select name="type" class="form-select filter-input" onchange="this.form.submit()">
                     <option value="">All types</option>
                     <?php foreach ($typeOptions as $id => $name): ?>
@@ -437,7 +314,7 @@ foreach ($dataProvider->getModels() as $model) {
                     <?php endforeach; ?>
                 </select>
             </div>
-            <div class="col-6 col-md-3">
+            <div class="col-6 col-md-2">
                 <select name="region" class="form-select filter-input" onchange="this.form.submit()">
                     <option value="">All locations</option>
                     <?php foreach ($regionNames as $name): ?>
@@ -445,80 +322,133 @@ foreach ($dataProvider->getModels() as $model) {
                     <?php endforeach; ?>
                 </select>
             </div>
-            <div class="col-6 col-md-2">
-                <input type="number" name="min_price" value="<?= Html::encode($minPrice) ?>" class="form-control filter-input" placeholder="Min price" min="0">
+            <div class="col-3 col-md-1">
+                <input type="number" name="min_price" value="<?= Html::encode($minPrice) ?>" class="form-control filter-input" placeholder="Min" min="0">
             </div>
-            <div class="col-6 col-md-2">
-                <input type="number" name="max_price" value="<?= Html::encode($maxPrice) ?>" class="form-control filter-input" placeholder="Max price" min="0">
+            <div class="col-3 col-md-1">
+                <input type="number" name="max_price" value="<?= Html::encode($maxPrice) ?>" class="form-control filter-input" placeholder="Max" min="0">
             </div>
-            <div class="col-12 col-md-2 d-flex gap-2">
-                <button type="submit" class="btn btn-inquire flex-fill" style="margin-top:0;"><i class="fas fa-filter me-1"></i> Filter</button>
-                <?php if ($q !== '' || $selectedType || $selectedRegion || $minPrice !== null && $minPrice !== '' || $maxPrice !== null && $maxPrice !== ''): ?>
+            <div class="col-6 col-md-2 d-flex gap-2">
+                <button type="submit" class="btn btn-inquire flex-fill" style="margin-top:0;"><i class="fas fa-magnifying-glass me-1"></i> Search</button>
+                <?php if ($hasActiveFilters): ?>
                     <?= Html::a('<i class="fas fa-xmark"></i>', ['public-listing/index'], ['class' => 'btn btn-details', 'title' => 'Clear filters']) ?>
                 <?php endif; ?>
             </div>
         </div>
     </form>
+</div>
 
-    <?php
-    // A small fixed palette, picked deterministically per type name (via a
-    // simple string hash) so "House" is always the same color across cards
-    // without hardcoding every admin-configurable property type by hand.
-    $typeBadgeColor = function ($name) {
-        $palette = ['#4f46e5', '#0891b2', '#d97706', '#059669', '#db2777', '#7c3aed'];
-        $hash = 0;
-        foreach (str_split((string) $name) as $ch) {
-            $hash = (($hash << 5) - $hash) + ord($ch);
-        }
-        return $palette[abs($hash) % count($palette)];
-    };
-    ?>
+<!-- Sidebar + listing grid -->
+<div class="listing-body" id="available">
+    <aside class="listing-sidebar">
+        <div class="sidebar-card">
+            <h6>Why book with us</h6>
+            <ul class="trust-list">
+                <li><i class="fas fa-circle-check"></i> Verified listings</li>
+                <li><i class="fas fa-hand-holding-dollar"></i> No hidden fees</li>
+                <li><i class="fas fa-clock"></i> Fast response</li>
+            </ul>
+        </div>
 
-    <?= ListView::widget([
-        'dataProvider' => $dataProvider,
-        'options' => ['tag' => 'div', 'class' => 'row g-4'],
-        'itemOptions' => ['tag' => 'div', 'class' => 'col-lg-4 col-md-6'],
-        'itemView' => function ($model) use ($typeBadgeColor) {
-            $photo = $model->photos[0]->photo_url ?? null;
-            $image = $photo
-                ? '<img src="' . Html::encode(Url::to('@web/' . $photo)) . '" alt="' . Html::encode($model->property_name) . '">'
-                : '<div class="no-photo"><i class="fas fa-image"></i></div>';
+        <?php if (!empty($typeOptions)): ?>
+        <div class="sidebar-card">
+            <h6>Browse by Type</h6>
+            <div class="pill-links">
+                <?php foreach ($typeOptions as $id => $name): ?>
+                    <?= Html::a(Html::encode($name), ['public-listing/index', 'type' => $id], [
+                        'class' => (string) $selectedType === (string) $id ? 'active-pill' : '',
+                    ]) ?>
+                <?php endforeach; ?>
+            </div>
+        </div>
+        <?php endif; ?>
 
-            $typeBadge = $model->propertyType->list_Name ?? $model->usageType->list_Name ?? null;
-            $typeBadgeStyle = $typeBadge ? 'background:' . $typeBadgeColor($typeBadge) . ';' : '';
+        <?php if (!empty($regionNames)): ?>
+        <div class="sidebar-card">
+            <h6>Popular Locations</h6>
+            <div class="pill-links">
+                <?php foreach (array_slice($regionNames, 0, 8) as $name): ?>
+                    <?= Html::a(Html::encode(ucwords(str_replace('-', ' ', $name))), ['public-listing/index', 'region' => $name], [
+                        'class' => $selectedRegion === $name ? 'active-pill' : '',
+                    ]) ?>
+                <?php endforeach; ?>
+            </div>
+        </div>
+        <?php endif; ?>
 
-            $priceModel = $model->propertyPrice[0] ?? null;
-            $price = $priceModel
-                ? 'TZS ' . number_format($priceModel->unit_amount, 0) . ' <span>/ ' . Html::encode($priceModel->period ?: 'term') . '</span>'
-                : '<span>Contact for price</span>';
+        <div class="sidebar-card sidebar-cta">
+            <h6>Can't find it?</h6>
+            <p>Browse the listings and send an inquiry on any property that catches your eye.</p>
+            <a href="#property-grid">Browse Listings</a>
+        </div>
+    </aside>
 
-            $location = $model->street->street_name ?? null;
+    <main id="property-grid">
+        <div class="listing-heading-row">
+            <h4 class="listing-heading">Available Now</h4>
+            <span class="listing-count"><?= (int) $dataProvider->getTotalCount() ?> result<?= (int) $dataProvider->getTotalCount() === 1 ? '' : 's' ?></span>
+        </div>
 
-            return '
-                <div class="property-card reveal-on-scroll">
-                    <div class="property-photo" data-bs-toggle="modal" data-bs-target="#detailsModal" data-property-id="' . $model->id . '">
-                        ' . $image . '
-                        ' . ($typeBadge ? '<span class="type-badge" style="' . $typeBadgeStyle . '">' . Html::encode($typeBadge) . '</span>' : '') . '
-                        <div class="view-overlay"><span><i class="fas fa-eye me-1"></i> View Details</span></div>
-                    </div>
-                    <div class="property-body">
-                        <div class="property-title">' . Html::encode($model->property_name) . '</div>
-                        <div class="property-location"><i class="fas fa-location-dot"></i> ' . ($location ? Html::encode($location) : 'Location on request') . '</div>
-                        <div class="property-price">' . $price . '</div>
-                        <div class="card-actions">
-                            <button type="button" class="btn btn-details" data-bs-toggle="modal" data-bs-target="#detailsModal" data-property-id="' . $model->id . '">
-                                <i class="fas fa-eye me-1"></i> Details
-                            </button>
-                            <button type="button" class="btn btn-inquire" data-bs-toggle="modal" data-bs-target="#inquireModal" data-property-id="' . $model->id . '" data-property-name="' . Html::encode($model->property_name) . '">
-                                <i class="fas fa-paper-plane me-1"></i> Inquire
-                            </button>
+        <?php
+        // A small fixed palette, picked deterministically per type name (via a
+        // simple string hash) so "House" is always the same color across cards
+        // without hardcoding every admin-configurable property type by hand.
+        $typeBadgeColor = function ($name) {
+            $palette = ['#4f46e5', '#0891b2', '#d97706', '#059669', '#db2777', '#7c3aed'];
+            $hash = 0;
+            foreach (str_split((string) $name) as $ch) {
+                $hash = (($hash << 5) - $hash) + ord($ch);
+            }
+            return $palette[abs($hash) % count($palette)];
+        };
+        ?>
+
+        <?= ListView::widget([
+            'dataProvider' => $dataProvider,
+            'options' => ['tag' => 'div', 'class' => 'row g-4'],
+            'itemOptions' => ['tag' => 'div', 'class' => 'col-md-6'],
+            'itemView' => function ($model) use ($typeBadgeColor) {
+                $photo = $model->photos[0]->photo_url ?? null;
+                $image = $photo
+                    ? '<img src="' . Html::encode(Url::to('@web/' . $photo)) . '" alt="' . Html::encode($model->property_name) . '">'
+                    : '<div class="no-photo"><i class="fas fa-image"></i></div>';
+
+                $typeBadge = $model->propertyType->list_Name ?? $model->usageType->list_Name ?? null;
+                $typeBadgeStyle = $typeBadge ? 'background:' . $typeBadgeColor($typeBadge) . ';' : '';
+
+                $priceModel = $model->propertyPrice[0] ?? null;
+                $price = $priceModel
+                    ? 'TZS ' . number_format($priceModel->unit_amount, 0) . ' <span>/ ' . Html::encode($priceModel->period ?: 'term') . '</span>'
+                    : '<span>Contact for price</span>';
+
+                $location = $model->street->street_name ?? null;
+
+                return '
+                    <div class="property-card reveal-on-scroll">
+                        <div class="property-photo" data-bs-toggle="modal" data-bs-target="#detailsModal" data-property-id="' . $model->id . '">
+                            ' . $image . '
+                            ' . ($typeBadge ? '<span class="type-badge" style="' . $typeBadgeStyle . '">' . Html::encode($typeBadge) . '</span>' : '') . '
+                            <div class="view-overlay"><span><i class="fas fa-eye me-1"></i> View Details</span></div>
                         </div>
-                    </div>
-                </div>';
-        },
-        'emptyText' => '<div class="empty-state"><i class="fas fa-house-circle-xmark d-block"></i>No properties are currently available.<br>Please check back soon.</div>',
-        'layout' => "{items}\n<div class='mt-4 d-flex justify-content-center'>{pager}</div>",
-    ]) ?>
+                        <div class="property-body">
+                            <div class="property-title">' . Html::encode($model->property_name) . '</div>
+                            <div class="property-location"><i class="fas fa-location-dot"></i> ' . ($location ? Html::encode($location) : 'Location on request') . '</div>
+                            <div class="property-price">' . $price . '</div>
+                            <div class="card-actions">
+                                <button type="button" class="btn btn-details" data-bs-toggle="modal" data-bs-target="#detailsModal" data-property-id="' . $model->id . '">
+                                    <i class="fas fa-eye me-1"></i> Details
+                                </button>
+                                <button type="button" class="btn btn-inquire" data-bs-toggle="modal" data-bs-target="#inquireModal" data-property-id="' . $model->id . '" data-property-name="' . Html::encode($model->property_name) . '">
+                                    <i class="fas fa-paper-plane me-1"></i> Inquire
+                                </button>
+                            </div>
+                        </div>
+                    </div>';
+            },
+            'emptyText' => '<div class="empty-state"><i class="fas fa-house-circle-xmark d-block"></i>No properties are currently available.<br>Please check back soon.</div>',
+            'layout' => "{items}\n<div class='mt-4 d-flex justify-content-center'>{pager}</div>",
+        ]) ?>
+    </main>
 </div>
 
 <!-- Details modal -->
